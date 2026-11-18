@@ -1,0 +1,67 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "cable": "enrichment_solution:block/advanced_energy_cable",
+    "plug": "enrichment_solution:block/enrichment_chamber_side",
+    "particle": "enrichment_solution:block/advanced_energy_cable"
+  },
+  "elements": [
+    {
+      "name": "machine_plug",
+      "from": [5, 5, 0],
+      "to": [11, 11, 1.5],
+      "faces": {
+        "north": { "uv": [5, 5, 11, 11], "texture": "#plug" },
+        "south": { "uv": [5, 5, 11, 11], "texture": "#plug" },
+        "east":  { "uv": [0, 5, 2, 11],  "texture": "#plug" },
+        "west":  { "uv": [14, 5, 16, 11], "texture": "#plug" },
+        "up":    { "uv": [5, 0, 11, 2],  "texture": "#plug" },
+        "down":  { "uv": [5, 14, 11, 16], "texture": "#plug" }
+      }
+    },
+    {
+      "name": "wire_top_left",
+      "from": [6, 8.5, 1.5],
+      "to": [7.5, 10, 6],
+      "faces": {
+        "east":  { "uv": [0, 0, 12, 4], "texture": "#cable" },
+        "west":  { "uv": [0, 0, 12, 4], "texture": "#cable" },
+        "up":    { "uv": [0, 0, 12, 4], "texture": "#cable" },
+        "down":  { "uv": [0, 0, 12, 4], "texture": "#cable" }
+      }
+    },
+    {
+      "name": "wire_top_right",
+      "from": [8.5, 8.5, 1.5],
+      "to": [10, 10, 6],
+      "faces": {
+        "east":  { "uv": [0, 4, 12, 8], "texture": "#cable" },
+        "west":  { "uv": [0, 4, 12, 8], "texture": "#cable" },
+        "up":    { "uv": [0, 4, 12, 8], "texture": "#cable" },
+        "down":  { "uv": [0, 4, 12, 8], "texture": "#cable" }
+      }
+    },
+    {
+      "name": "wire_bottom_left",
+      "from": [6, 6, 1.5],
+      "to": [7.5, 7.5, 6],
+      "faces": {
+        "east":  { "uv": [0, 4, 12, 8], "texture": "#cable" },
+        "west":  { "uv": [0, 4, 12, 8], "texture": "#cable" },
+        "up":    { "uv": [0, 4, 12, 8], "texture": "#cable" },
+        "down":  { "uv": [0, 4, 12, 8], "texture": "#cable" }
+      }
+    },
+    {
+      "name": "wire_bottom_right",
+      "from": [8.5, 6, 1.5],
+      "to": [10, 7.5, 6],
+      "faces": {
+        "east":  { "uv": [0, 0, 12, 4], "texture": "#cable" },
+        "west":  { "uv": [0, 0, 12, 4], "texture": "#cable" },
+        "up":    { "uv": [0, 0, 12, 4], "texture": "#cable" },
+        "down":  { "uv": [0, 0, 12, 4], "texture": "#cable" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "HTH",
+    " B "
+  ],
+  "key": {
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "T": {
+      "item": "enrichment_solution:tank_block"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    }
+  },
+  "result": {
+    "id": "enrichment_solution:tank_water_input",
+    "count": 1
+  }
+}

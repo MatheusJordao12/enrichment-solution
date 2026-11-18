@@ -1,0 +1,57 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "cable": "enrichment_solution:block/advanced_energy_cable",
+    "particle": "enrichment_solution:block/advanced_energy_cable"
+  },
+  "elements": [
+    {
+      "name": "wire_top_left",
+      "from": [6, 8.5, 0],
+      "to": [7.5, 10, 6],
+      "faces": {
+        "north": { "uv": [0, 0, 4, 4], "texture": "#cable" },
+        "east":  { "uv": [0, 0, 16, 4], "texture": "#cable" },
+        "west":  { "uv": [0, 0, 16, 4], "texture": "#cable" },
+        "up":    { "uv": [0, 0, 16, 4], "texture": "#cable" },
+        "down":  { "uv": [0, 0, 16, 4], "texture": "#cable" }
+      }
+    },
+    {
+      "name": "wire_top_right",
+      "from": [8.5, 8.5, 0],
+      "to": [10, 10, 6],
+      "faces": {
+        "north": { "uv": [0, 4, 4, 8], "texture": "#cable" },
+        "east":  { "uv": [0, 4, 16, 8], "texture": "#cable" },
+        "west":  { "uv": [0, 4, 16, 8], "texture": "#cable" },
+        "up":    { "uv": [0, 4, 16, 8], "texture": "#cable" },
+        "down":  { "uv": [0, 4, 16, 8], "texture": "#cable" }
+      }
+    },
+    {
+      "name": "wire_bottom_left",
+      "from": [6, 6, 0],
+      "to": [7.5, 7.5, 6],
+      "faces": {
+        "north": { "uv": [0, 4, 4, 8], "texture": "#cable" },
+        "east":  { "uv": [0, 4, 16, 8], "texture": "#cable" },
+        "west":  { "uv": [0, 4, 16, 8], "texture": "#cable" },
+        "up":    { "uv": [0, 4, 16, 8], "texture": "#cable" },
+        "down":  { "uv": [0, 4, 16, 8], "texture": "#cable" }
+      }
+    },
+    {
+      "name": "wire_bottom_right",
+      "from": [8.5, 6, 0],
+      "to": [10, 7.5, 6],
+      "faces": {
+        "north": { "uv": [0, 0, 4, 4], "texture": "#cable" },
+        "east":  { "uv": [0, 0, 16, 4], "texture": "#cable" },
+        "west":  { "uv": [0, 0, 16, 4], "texture": "#cable" },
+        "up":    { "uv": [0, 0, 16, 4], "texture": "#cable" },
+        "down":  { "uv": [0, 0, 16, 4], "texture": "#cable" }
+      }
+    }
+  ]
+}

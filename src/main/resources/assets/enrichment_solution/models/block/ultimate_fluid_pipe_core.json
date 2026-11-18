@@ -1,0 +1,78 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "pipe": "enrichment_solution:block/ultimate_fluid_pipe",
+    "particle": "enrichment_solution:block/ultimate_fluid_pipe"
+  },
+  "elements": [
+    {
+      "name": "pipe_hub",
+      "from": [
+        6,
+        6,
+        6
+      ],
+      "to": [
+        10,
+        10,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "up": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#pipe"
+        },
+        "down": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#pipe"
+        }
+      }
+    }
+  ]
+}

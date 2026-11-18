@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "enrichment_solution:block/ultimate_energy_cell"
+  }
+}

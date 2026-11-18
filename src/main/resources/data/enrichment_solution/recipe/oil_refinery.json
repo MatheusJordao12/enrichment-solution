@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SBS",
+    "AMA",
+    "SCS"
+  ],
+  "key": {
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "C": {
+      "item": "enrichment_solution:energy_cable"
+    }
+  },
+  "result": {
+    "id": "enrichment_solution:oil_refinery",
+    "count": 1
+  }
+}

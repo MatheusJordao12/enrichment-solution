@@ -1,0 +1,5 @@
+delegue meu prompt para um subagente melhorar, me perguntando o que for necessário
+sempre me diga como devo fazer para atualizar no jogo com as modificações adicionadas. (Qual o comando do gradlew que deve ser rodado o build pode ser você quem dá)
+quando pedir para gerar minérios, ingots e raw, você deve pegar a base absoluta do Minecraft e fizer parecido com o que o minecraft faz.
+todas as texturas genéricas usadas para representar blocos ou materiais que já existem no Minecraft (como stone, deepslate, etc.) devem ser copiadas diretamente das texturas oficiais do Minecraft (extraídas do jar do cliente no cache do Gradle ou referenciadas via `minecraft:block/...`), nunca geradas artificialmente do zero.
+delegue agente para fazer texuras. Ele tem que receber o máximo de informação possível do que ele vai fazer de textura. Ele tem que conseguir fazer as texturas de forma completa e que não fique estranha. 

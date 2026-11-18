@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "enrichment_solution:block/oil_refinery_top",
+    "front": "enrichment_solution:block/oil_refinery_front_on",
+    "side": "enrichment_solution:block/oil_refinery_side"
+  }
+}

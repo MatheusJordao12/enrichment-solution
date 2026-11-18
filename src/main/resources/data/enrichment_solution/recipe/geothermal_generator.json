@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SCS",
+    "AMA",
+    "RPR"
+  ],
+  "key": {
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "A": {
+      "item": "enrichment_solution:pressed_aluminium"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "enrichment_solution:energy_cable"
+    }
+  },
+  "result": {
+    "id": "enrichment_solution:geothermal_generator",
+    "count": 1
+  }
+}

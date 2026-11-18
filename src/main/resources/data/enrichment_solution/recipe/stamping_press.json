@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SPS",
+    "AMA",
+    "SCS"
+  ],
+  "key": {
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "C": {
+      "item": "enrichment_solution:energy_cable"
+    }
+  },
+  "result": {
+    "id": "enrichment_solution:stamping_press",
+    "count": 1
+  }
+}

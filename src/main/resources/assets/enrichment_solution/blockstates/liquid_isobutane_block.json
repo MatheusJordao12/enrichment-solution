@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "enrichment_solution:block/liquid_isobutane_block"
+    }
+  }
+}

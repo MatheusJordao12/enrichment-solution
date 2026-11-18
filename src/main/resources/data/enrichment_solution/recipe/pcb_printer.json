@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SGS",
+    "AMA",
+    "RCR"
+  ],
+  "key": {
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "C": {
+      "item": "enrichment_solution:energy_cable"
+    }
+  },
+  "result": {
+    "id": "enrichment_solution:pcb_printer",
+    "count": 1
+  }
+}

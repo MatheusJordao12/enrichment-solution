@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "active=false": { "model": "enrichment_solution:block/reactor_core" },
+    "active=true":  { "model": "enrichment_solution:block/reactor_core_active" }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "advanced=false,facing=north": { "model": "enrichment_solution:block/solar_panel" },
+    "advanced=false,facing=east":  { "model": "enrichment_solution:block/solar_panel", "y": 90 },
+    "advanced=false,facing=south": { "model": "enrichment_solution:block/solar_panel", "y": 180 },
+    "advanced=false,facing=west":  { "model": "enrichment_solution:block/solar_panel", "y": 270 },
+    "advanced=true,facing=north":  { "model": "enrichment_solution:block/solar_panel_advanced_base" },
+    "advanced=true,facing=east":   { "model": "enrichment_solution:block/solar_panel_advanced_base", "y": 90 },
+    "advanced=true,facing=south":  { "model": "enrichment_solution:block/solar_panel_advanced_base", "y": 180 },
+    "advanced=true,facing=west":   { "model": "enrichment_solution:block/solar_panel_advanced_base", "y": 270 }
+  }
+}

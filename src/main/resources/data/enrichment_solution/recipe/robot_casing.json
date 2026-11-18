@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SGS",
+    "SMS",
+    "AAA"
+  ],
+  "key": {
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    }
+  },
+  "result": {
+    "id": "enrichment_solution:robot_casing",
+    "count": 1
+  }
+}

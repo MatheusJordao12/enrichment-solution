@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:lake",
+  "config": {
+    "barrier": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:deepslate"
+      }
+    },
+    "fluid": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "enrichment_solution:crude_oil_block",
+        "Properties": {
+          "level": "0"
+        }
+      }
+    }
+  }
+}

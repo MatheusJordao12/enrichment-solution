@@ -1,0 +1,79 @@
+{
+  "multipart": [
+    {
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_core" }
+    },
+    {
+      "when": { "north": "cable" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_arm" }
+    },
+    {
+      "when": { "north": "machine" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_machine" }
+    },
+    {
+      "when": { "east": "cable" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_arm", "y": 90 }
+    },
+    {
+      "when": { "east": "machine" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_machine", "y": 90 }
+    },
+    {
+      "when": { "south": "cable" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_arm", "y": 180 }
+    },
+    {
+      "when": { "south": "machine" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_machine", "y": 180 }
+    },
+    {
+      "when": { "west": "cable" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_arm", "y": 270 }
+    },
+    {
+      "when": { "west": "machine" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_machine", "y": 270 }
+    },
+    {
+      "when": { "up": "cable" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_arm", "x": 270 }
+    },
+    {
+      "when": { "up": "machine" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_machine", "x": 270 }
+    },
+    {
+      "when": { "down": "cable" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_arm", "x": 90 }
+    },
+    {
+      "when": { "down": "machine" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_machine", "x": 90 }
+    },
+    {
+      "when": { "north": "pump" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_pump" }
+    },
+    {
+      "when": { "west": "pump" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_pump", "y": 270 }
+    },
+    {
+      "when": { "south": "pump" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_pump", "y": 180 }
+    },
+    {
+      "when": { "up": "pump" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_pump", "x": 270 }
+    },
+    {
+      "when": { "east": "pump" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_pump", "y": 90 }
+    },
+    {
+      "when": { "down": "pump" },
+      "apply": { "model": "enrichment_solution:block/advanced_energy_cable_pump", "x": 90 }
+    }
+  ]
+}

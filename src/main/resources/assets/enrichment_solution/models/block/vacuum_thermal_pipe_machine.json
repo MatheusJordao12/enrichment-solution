@@ -1,0 +1,34 @@
+﻿{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "pipe": "enrichment_solution:block/vacuum_thermal_pipe",
+    "plug": "enrichment_solution:block/enrichment_chamber_side",
+    "particle": "enrichment_solution:block/vacuum_thermal_pipe"
+  },
+  "elements": [
+    {
+      "name": "machine_plug",
+      "from": [5, 5, 0],
+      "to": [11, 11, 1.5],
+      "faces": {
+        "north": { "uv": [5, 5, 11, 11], "texture": "#plug" },
+        "south": { "uv": [5, 5, 11, 11], "texture": "#plug" },
+        "east": { "uv": [0, 5, 2, 11], "texture": "#plug" },
+        "west": { "uv": [14, 5, 16, 11], "texture": "#plug" },
+        "up": { "uv": [5, 0, 11, 2], "texture": "#plug" },
+        "down": { "uv": [5, 14, 11, 16], "texture": "#plug" }
+      }
+    },
+    {
+      "name": "pipe_arm",
+      "from": [6, 6, 1.5],
+      "to": [10, 10, 6],
+      "faces": {
+        "east": { "uv": [0, 0, 12, 8], "texture": "#pipe" },
+        "west": { "uv": [0, 0, 12, 8], "texture": "#pipe" },
+        "up": { "uv": [0, 0, 12, 8], "texture": "#pipe" },
+        "down": { "uv": [0, 0, 12, 8], "texture": "#pipe" }
+      }
+    }
+  ]
+}

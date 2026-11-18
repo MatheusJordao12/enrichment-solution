@@ -1,0 +1,358 @@
+{
+  "credit": "Made with Blockbench",
+  "parent": "minecraft:block/block",
+  "textures": {
+    "0": "enrichment_solution:block/solar_panel_metal",
+    "2": "enrichment_solution:block/solar_panel_cells",
+    "3": "enrichment_solution:block/cell",
+    "4": "enrichment_solution:block/cell_large",
+    "particle": "enrichment_solution:block/solar_panel_metal"
+  },
+  "elements": [
+    {
+      "name": "base_plate",
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        1.5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            14,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            14,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            14,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            14,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "power_junction",
+      "from": [
+        4,
+        1.5,
+        10
+      ],
+      "to": [
+        12,
+        4,
+        14.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4.5,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4.5,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            4.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            4.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "support_column",
+      "from": [
+        6.5,
+        1.5,
+        6
+      ],
+      "to": [
+        9.5,
+        7.5,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3,
+            6
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3,
+            6
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            3,
+            6
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3,
+            6
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "tilt_hinge",
+      "from": [
+        -2,
+        7,
+        6.5
+      ],
+      "to": [
+        18,
+        8.5,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "cable_conduit",
+      "from": [
+        7.25,
+        3,
+        9
+      ],
+      "to": [
+        8.75,
+        6.5,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            3.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            3.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            3.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            3.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            1.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            1.5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

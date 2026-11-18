@@ -1,0 +1,48 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "pipe": "enrichment_solution:block/ultimate_fluid_pipe",
+    "particle": "enrichment_solution:block/ultimate_fluid_pipe"
+  },
+  "elements": [
+    {
+      "name": "pipe_body",
+      "from": [6, 6, 1],
+      "to": [10, 10, 15],
+      "faces": {
+        "north": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "south": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "east": { "uv": [0, 0, 16, 8], "texture": "#pipe" },
+        "west": { "uv": [0, 0, 16, 8], "texture": "#pipe" },
+        "up": { "uv": [0, 0, 16, 8], "texture": "#pipe" },
+        "down": { "uv": [0, 0, 16, 8], "texture": "#pipe" }
+      }
+    },
+    {
+      "name": "collar_north",
+      "from": [5.5, 5.5, 1.5],
+      "to": [10.5, 10.5, 3],
+      "faces": {
+        "north": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "south": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "east": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "west": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "up": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "down": { "uv": [0, 8, 16, 16], "texture": "#pipe" }
+      }
+    },
+    {
+      "name": "collar_south",
+      "from": [5.5, 5.5, 13],
+      "to": [10.5, 10.5, 14.5],
+      "faces": {
+        "north": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "south": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "east": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "west": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "up": { "uv": [0, 8, 16, 16], "texture": "#pipe" },
+        "down": { "uv": [0, 8, 16, 16], "texture": "#pipe" }
+      }
+    }
+  ]
+}

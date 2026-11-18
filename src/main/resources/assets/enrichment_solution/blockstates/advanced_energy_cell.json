@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "enrichment_solution:block/advanced_energy_cell"
+    }
+  }
+}

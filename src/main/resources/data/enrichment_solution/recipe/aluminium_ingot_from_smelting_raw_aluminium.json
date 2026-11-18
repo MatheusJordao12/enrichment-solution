@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 200,
+  "experience": 0.7,
+  "ingredient": {
+    "item": "enrichment_solution:raw_aluminium"
+  },
+  "result": {
+    "id": "enrichment_solution:aluminium_ingot"
+  }
+}

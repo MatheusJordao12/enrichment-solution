@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "enrichment_solution:deepslate_bauxite_ore",
+    "enrichment_solution:deepslate_aluminium_ore"
+  ]
+}

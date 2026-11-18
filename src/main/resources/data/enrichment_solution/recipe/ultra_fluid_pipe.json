@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PCP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "enrichment_solution:ultimate_fluid_pipe"
+    },
+    "C": {
+      "item": "enrichment_solution:ultra_circuit"
+    }
+  },
+  "result": {
+    "id": "enrichment_solution:ultra_fluid_pipe",
+    "count": 8
+  }
+}

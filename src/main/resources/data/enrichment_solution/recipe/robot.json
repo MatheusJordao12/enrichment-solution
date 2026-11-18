@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SES",
+    "ACA",
+    "WMW"
+  ],
+  "key": {
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    },
+    "E": {
+      "item": "enrichment_solution:mechanical_eyes"
+    },
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "C": {
+      "item": "enrichment_solution:robot_circuit"
+    },
+    "W": {
+      "item": "enrichment_solution:wheel"
+    },
+    "M": {
+      "item": "enrichment_solution:robot_casing"
+    }
+  },
+  "result": {
+    "id": "enrichment_solution:robot",
+    "count": 1
+  }
+}

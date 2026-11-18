@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "enrichment_solution:block/pcb_printer" },
+    "facing=south": { "model": "enrichment_solution:block/pcb_printer", "y": 180 },
+    "facing=west": { "model": "enrichment_solution:block/pcb_printer", "y": 270 },
+    "facing=east": { "model": "enrichment_solution:block/pcb_printer", "y": 90 }
+  }
+}
