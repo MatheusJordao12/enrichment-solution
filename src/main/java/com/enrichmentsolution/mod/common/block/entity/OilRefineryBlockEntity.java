@@ -6,6 +6,9 @@ import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
 import com.enrichmentsolution.mod.common.menu.OilRefineryMenu;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeCache;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeKind;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModFluids;
 import net.minecraft.core.BlockPos;
@@ -18,9 +21,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -30,30 +35,25 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Refines Crude Oil into Liquid Isobutane using Forge Energy (FE).
- * Recipe: 100 mB Crude Oil + 1,000 FE (25 ticks @ 40 FE/t) -> 50 mB Liquid Isobutane.
+ * The conversion is a datapack recipe ({@code enrichment_solution:refining}); by default
+ * 100 mB Crude Oil + 1,000 FE (25 ticks @ 40 FE/t) -> 50 mB Liquid Isobutane.
  */
 public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implements com.enrichmentsolution.mod.common.block.ISideConfigurableBlockEntity, MenuProvider {
 
     public static final int TANK_CAPACITY = 16_000;
-    public static final int CRUDE_OIL_PER_OP = 100;
-    public static final int ISOBUTANE_PER_OP = 50;
 
     private static final int ENERGY_CAPACITY = 50_000;
     private static final int MAX_RECEIVE = 2_000;
-    private static final int ENERGY_PER_TICK = 40;
-    private static final int PROCESS_TIME = 25;
     private static final int AUTO_PUSH_RATE = 100;
 
-    /** Recipe snapshot for the JEI plugin. */
-    public static java.util.List<com.enrichmentsolution.mod.common.compat.RefiningRecipe> getJeiRecipes() {
-        return java.util.List.of(new com.enrichmentsolution.mod.common.compat.RefiningRecipe(
-                new FluidStack(ModFluids.CRUDE_OIL.get(), CRUDE_OIL_PER_OP),
-                new FluidStack(ModFluids.LIQUID_ISOBUTANE.get(), ISOBUTANE_PER_OP),
-                ENERGY_PER_TICK,
-                PROCESS_TIME));
-    }
+    /** GUI fallback used while no refining recipe matches the tanks. */
+    private static final int DEFAULT_PROCESS_TIME = 25;
+
+    private final MachineRecipeCache recipes = new MachineRecipeCache(MachineRecipeKind.REFINING);
 
     private int progress = 0;
+    @Nullable
+    private MachineRecipe activeRecipe;
 
     private final SideConfigHolder sideConfig = SideConfigHolder.createDefault(
             SideConfigMode.NONE,
@@ -65,7 +65,7 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
     );
 
     private final FluidTank inputTank = new FluidTank(TANK_CAPACITY,
-            stack -> stack.getFluid() == ModFluids.CRUDE_OIL.get()) {
+            stack -> isValidInputFluid(stack.getFluid())) {
         @Override
         protected void onContentsChanged() {
             setChanged();
@@ -73,7 +73,7 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
     };
 
     private final FluidTank outputTank = new FluidTank(TANK_CAPACITY,
-            stack -> stack.getFluid() == ModFluids.LIQUID_ISOBUTANE.get()) {
+            stack -> isValidOutputFluid(stack.getFluid())) {
         @Override
         protected void onContentsChanged() {
             setChanged();
@@ -140,7 +140,8 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
             int outCap = outputTank.getCapacity();
             return switch (index) {
                 case OilRefineryMenu.DATA_PROGRESS -> progress;
-                case OilRefineryMenu.DATA_MAX_PROGRESS -> PROCESS_TIME;
+                case OilRefineryMenu.DATA_MAX_PROGRESS ->
+                        activeRecipe == null ? DEFAULT_PROCESS_TIME : activeRecipe.ticks();
                 case OilRefineryMenu.DATA_ENERGY_LOW -> energy & 0xFFFF;
                 case OilRefineryMenu.DATA_ENERGY_HIGH -> (energy >>> 16) & 0xFFFF;
                 case OilRefineryMenu.DATA_MAX_ENERGY_LOW -> maxEnergy & 0xFFFF;
@@ -222,18 +223,19 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
 
     @Override
     protected void tickServer(Level level, BlockPos pos, BlockState state) {
+        activeRecipe = findRecipe();
         boolean isWorking = false;
-        if (canProcess() && energyStorage.getEnergyStored() >= ENERGY_PER_TICK) {
-            energyStorage.consumeInternal(ENERGY_PER_TICK, false);
+        if (activeRecipe != null && energyStorage.getEnergyStored() >= activeRecipe.energyPerTick()) {
+            energyStorage.consumeInternal(activeRecipe.energyPerTick(), false);
             progress++;
             isWorking = true;
 
-            if (progress >= PROCESS_TIME) {
-                process();
+            if (progress >= activeRecipe.ticks()) {
+                process(activeRecipe);
                 progress = 0;
             }
             setChanged();
-        } else if (progress > 0 && !canProcess()) {
+        } else if (progress > 0 && activeRecipe == null) {
             progress = 0;
             setChanged();
         }
@@ -245,14 +247,59 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
         pushOutputFluid(level, pos);
     }
 
-    private boolean canProcess() {
-        return inputTank.getFluidAmount() >= CRUDE_OIL_PER_OP
-                && outputTank.getSpace() >= ISOBUTANE_PER_OP;
+    /** Whether the fluid may enter the input tank: any recipe input fluid, plus the default crude oil fallback. */
+    private boolean isValidInputFluid(Fluid fluid) {
+        if (level != null) {
+            for (RecipeHolder<MachineRecipe> holder : recipes.get(level)) {
+                MachineRecipe recipe = holder.value();
+                if (recipe.hasFluidInput() && recipe.fluidInput().getFluid() == fluid) {
+                    return true;
+                }
+            }
+        }
+        return fluid == ModFluids.CRUDE_OIL.get();
     }
 
-    private void process() {
-        inputTank.drain(CRUDE_OIL_PER_OP, IFluidHandler.FluidAction.EXECUTE);
-        outputTank.fill(new FluidStack(ModFluids.LIQUID_ISOBUTANE.get(), ISOBUTANE_PER_OP), IFluidHandler.FluidAction.EXECUTE);
+    /** Whether the fluid may enter the output tank: any recipe output fluid, plus the default isobutane fallback. */
+    private boolean isValidOutputFluid(Fluid fluid) {
+        if (level != null) {
+            for (RecipeHolder<MachineRecipe> holder : recipes.get(level)) {
+                MachineRecipe recipe = holder.value();
+                if (recipe.hasFluidOutput() && recipe.fluidOutput().getFluid() == fluid) {
+                    return true;
+                }
+            }
+        }
+        return fluid == ModFluids.LIQUID_ISOBUTANE.get();
+    }
+
+    @Nullable
+    private MachineRecipe findRecipe() {
+        if (level == null) {
+            return null;
+        }
+        FluidStack input = inputTank.getFluid();
+        if (input.isEmpty()) {
+            return null;
+        }
+        RecipeHolder<MachineRecipe> holder = recipes.find(level, recipe -> {
+            if (!recipe.hasFluidInput() || !recipe.hasFluidOutput()) {
+                return false;
+            }
+            if (recipe.fluidInput().getFluid() != input.getFluid()
+                    || input.getAmount() < recipe.fluidInput().getAmount()) {
+                return false;
+            }
+            // Simulated fill also validates the output tank filter and its remaining space.
+            return outputTank.fill(recipe.fluidOutput().copy(), IFluidHandler.FluidAction.SIMULATE)
+                    >= recipe.fluidOutput().getAmount();
+        });
+        return holder == null ? null : holder.value();
+    }
+
+    private void process(MachineRecipe recipe) {
+        inputTank.drain(recipe.fluidInput().getAmount(), IFluidHandler.FluidAction.EXECUTE);
+        outputTank.fill(recipe.fluidOutput().copy(), IFluidHandler.FluidAction.EXECUTE);
     }
 
     private void pushOutputFluid(Level level, BlockPos pos) {

@@ -1,25 +1,38 @@
 package com.enrichmentsolution.mod.compat.jei;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
-import com.enrichmentsolution.mod.common.block.entity.EnrichmentChamberBlockEntity;
-import com.enrichmentsolution.mod.common.block.entity.OilRefineryBlockEntity;
-import com.enrichmentsolution.mod.common.block.entity.PcbPrinterBlockEntity;
-import com.enrichmentsolution.mod.common.block.entity.StampingPressBlockEntity;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeKind;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipes;
 import com.enrichmentsolution.mod.registry.ModBlocks;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeManager;
 
-/** Registers the machine recipes of the mod as JEI categories. */
+import java.util.Comparator;
+import java.util.List;
+
+/** Registers the datapack machine recipes of the mod as JEI categories. */
 @JeiPlugin
 public class EnrichmentJeiPlugin implements IModPlugin {
 
     private static final ResourceLocation UID =
             ResourceLocation.fromNamespaceAndPath(EnrichmentSolutionMod.MOD_ID, "jei_plugin");
+
+    /** Most specific recipe first (same order the machines use), then stable by output name. */
+    private static final Comparator<MachineRecipe> DISPLAY_ORDER = Comparator
+            .comparingInt((MachineRecipe recipe) -> recipe.itemInputs().size())
+            .reversed()
+            .thenComparing(Comparator.comparing((MachineRecipe recipe) -> recipe.itemOutput().getDescriptionId()));
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -38,10 +51,23 @@ public class EnrichmentJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        registration.addRecipes(PcbPrintingCategory.TYPE, PcbPrinterBlockEntity.getPrintingRecipes());
-        registration.addRecipes(EnrichmentCategory.TYPE, EnrichmentChamberBlockEntity.getJeiRecipes());
-        registration.addRecipes(RefiningCategory.TYPE, OilRefineryBlockEntity.getJeiRecipes());
-        registration.addRecipes(PressingCategory.TYPE, StampingPressBlockEntity.getJeiRecipes());
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) {
+            return;
+        }
+        RecipeManager manager = level.getRecipeManager();
+        registration.addRecipes(EnrichmentCategory.TYPE, recipesOf(manager, MachineRecipeKind.ENRICHMENT));
+        registration.addRecipes(RefiningCategory.TYPE, recipesOf(manager, MachineRecipeKind.REFINING));
+        registration.addRecipes(PressingCategory.TYPE, recipesOf(manager, MachineRecipeKind.STAMPING));
+        registration.addRecipes(PcbPrintingCategory.TYPE, recipesOf(manager, MachineRecipeKind.PCB_PRINTING));
+    }
+
+    /** Same source as the machines: the recipe manager of the current level. */
+    private static List<MachineRecipe> recipesOf(RecipeManager manager, MachineRecipeKind kind) {
+        return manager.<RecipeInput, MachineRecipe>getAllRecipesFor(MachineRecipes.typeFor(kind)).stream()
+                .map(RecipeHolder::value)
+                .sorted(DISPLAY_ORDER)
+                .toList();
     }
 
     @Override

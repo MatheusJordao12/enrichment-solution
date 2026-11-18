@@ -1,13 +1,17 @@
 package com.enrichmentsolution.mod.common.block.entity;
 
+import com.enrichmentsolution.mod.EnrichmentSolutionMod;
 import com.enrichmentsolution.mod.common.block.PcbPrinterBlock;
 import com.enrichmentsolution.mod.common.block.RelativeSide;
 import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
 import com.enrichmentsolution.mod.common.menu.PcbPrinterMenu;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeCache;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeKind;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeMatcher;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
-import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -16,26 +20,23 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.function.Supplier;
-
 /**
- * PCB Printer BlockEntity: 100 FE buffer, consumes 20 FE/tick over 100 ticks (5s = 2,000 FE)
- * to print Robot Circuits and tiered Circuits from 3 unordered input slots.
+ * PCB Printer BlockEntity: 100 FE buffer, prints Robot Circuits and tiered Circuits from 3 unordered input slots.
+ * The recipes come from the datapack ({@code enrichment_solution:pcb_printing}); the pending operation remembers the
+ * recipe id so it survives save/load and datapack reloads.
  */
 public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements com.enrichmentsolution.mod.common.block.ISideConfigurableBlockEntity, MenuProvider {
 
@@ -48,58 +49,19 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
 
     public static final int ENERGY_CAPACITY = 100;
     public static final int MAX_RECEIVE = 2_000;
-    public static final int FE_PER_TICK = 20;
-    public static final int PRINT_TICKS = 100;
 
-    private record IngredientReq(Supplier<? extends Item> item, int count) {}
+    /** GUI fallback used while no printing recipe is pending. */
+    private static final int DEFAULT_PRINT_TICKS = 100;
 
-    private record PcbRecipe(String id, Supplier<? extends Item> output, List<IngredientReq> ingredients) {}
+    /** Legacy saves stored the bare recipe key, without namespace or folder. */
+    private static final String LEGACY_RECIPE_PREFIX = "pcb/";
 
-    private static final List<PcbRecipe> RECIPES = List.of(
-            new PcbRecipe("robot_circuit", ModItems.ROBOT_CIRCUIT, List.of(
-                    new IngredientReq(ModItems.STEEL_INGOT, 2),
-                    new IngredientReq(ModItems.ALUMINIUM_INGOT, 2),
-                    new IngredientReq(() -> Items.REDSTONE, 2)
-            )),
-            new PcbRecipe("basic_circuit", ModItems.BASIC_CIRCUIT, List.of(
-                    new IngredientReq(() -> Items.REDSTONE, 1),
-                    new IngredientReq(() -> Items.IRON_INGOT, 1),
-                    new IngredientReq(ModItems.ALUMINIUM_INGOT, 1)
-            )),
-            new PcbRecipe("advanced_circuit", ModItems.ADVANCED_CIRCUIT, List.of(
-                    new IngredientReq(() -> Items.GOLD_INGOT, 1),
-                    new IngredientReq(ModItems.ALUMINIUM_INGOT, 1),
-                    new IngredientReq(ModItems.BASIC_CIRCUIT, 1)
-            )),
-            new PcbRecipe("ultimate_circuit", ModItems.ULTIMATE_CIRCUIT, List.of(
-                    new IngredientReq(() -> Items.DIAMOND, 1),
-                    new IngredientReq(ModItems.ADVANCED_CIRCUIT, 1),
-                    new IngredientReq(() -> Items.GOLD_INGOT, 1)
-            )),
-            new PcbRecipe("ultra_circuit", ModItems.ULTRA_CIRCUIT, List.of(
-                    new IngredientReq(() -> Items.DIAMOND, 1),
-                    new IngredientReq(ModItems.ULTIMATE_CIRCUIT, 1),
-                    new IngredientReq(() -> Items.NETHERITE_INGOT, 1)
-            ))
-    );
-
-    /** Recipe snapshots for the JEI plugin. */
-    public static List<com.enrichmentsolution.mod.common.compat.PcbPrintingRecipe> getPrintingRecipes() {
-        List<com.enrichmentsolution.mod.common.compat.PcbPrintingRecipe> recipes = new java.util.ArrayList<>();
-        for (PcbRecipe recipe : RECIPES) {
-            List<ItemStack> inputs = new java.util.ArrayList<>();
-            for (IngredientReq requirement : recipe.ingredients()) {
-                inputs.add(new ItemStack(requirement.item().get(), requirement.count()));
-            }
-            recipes.add(new com.enrichmentsolution.mod.common.compat.PcbPrintingRecipe(
-                    new ItemStack(recipe.output().get()), inputs));
-        }
-        return recipes;
-    }
+    private final MachineRecipeCache recipes = new MachineRecipeCache(MachineRecipeKind.PCB_PRINTING);
 
     private boolean printing = false;
     private int progress = 0;
-    private String pendingOutputKey = "";
+    @Nullable
+    private ResourceLocation pendingRecipeId;
     private final SideConfigHolder sideConfig = SideConfigHolder.allInput();
 
     public PcbPrinterBlockEntity(BlockPos pos, BlockState blockState) {
@@ -139,84 +101,60 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
         if (printing) {
             return false;
         }
-        if (energyStorage.getEnergyStored() < FE_PER_TICK) {
+        RecipeHolder<MachineRecipe> holder = findMatchingRecipe();
+        if (holder == null) {
             return false;
         }
-        PcbRecipe recipe = findMatchingRecipe();
-        return recipe != null && canAcceptOutput(recipe.output().get());
+        MachineRecipe recipe = holder.value();
+        if (energyStorage.getEnergyStored() < recipe.energyPerTick()) {
+            return false;
+        }
+        return MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput());
     }
 
     @Nullable
-    private PcbRecipe findMatchingRecipe() {
-        for (PcbRecipe recipe : RECIPES) {
-            if (matchRecipeSlots(recipe) != null) {
-                return recipe;
-            }
+    private RecipeHolder<MachineRecipe> findMatchingRecipe() {
+        if (level == null) {
+            return null;
         }
-        return null;
+        return recipes.find(level, recipe -> recipe.hasItemInputs()
+                && recipe.hasItemOutput()
+                && recipe.itemInputs().size() <= INPUT_SLOTS
+                && MachineRecipeMatcher.matchSlots(recipe, itemHandler::getStackInSlot, INPUT_SLOTS) != null);
     }
 
-    private int @Nullable [] matchRecipeSlots(PcbRecipe recipe) {
-        List<IngredientReq> ingredients = recipe.ingredients();
-        int[] matchedSlots = new int[ingredients.size()];
-        boolean[] slotUsed = new boolean[INPUT_SLOTS];
-
-        for (int i = 0; i < ingredients.size(); i++) {
-            IngredientReq req = ingredients.get(i);
-            int foundSlot = -1;
-            for (int slot = 0; slot < INPUT_SLOTS; slot++) {
-                if (slotUsed[slot]) {
-                    continue;
-                }
-                ItemStack stack = itemHandler.getStackInSlot(slot);
-                if (stack.is(req.item().get()) && stack.getCount() >= req.count()) {
-                    foundSlot = slot;
-                    break;
-                }
-            }
-            if (foundSlot < 0) {
-                return null;
-            }
-            slotUsed[foundSlot] = true;
-            matchedSlots[i] = foundSlot;
+    @Nullable
+    private MachineRecipe getPendingRecipe() {
+        if (level == null) {
+            return null;
         }
-        return matchedSlots;
-    }
-
-    private boolean canAcceptOutput(Item outputItem) {
-        ItemStack output = itemHandler.getStackInSlot(SLOT_OUTPUT);
-        if (output.isEmpty()) {
-            return true;
-        }
-        return output.is(outputItem) && output.getCount() < output.getMaxStackSize();
-    }
-
-    private Item getPendingOutputItem() {
-        for (PcbRecipe recipe : RECIPES) {
-            if (recipe.id().equals(pendingOutputKey)) {
-                return recipe.output().get();
-            }
-        }
-        return ModItems.ROBOT_CIRCUIT.get();
+        RecipeHolder<MachineRecipe> holder = recipes.byId(level, this.pendingRecipeId);
+        return holder == null ? null : holder.value();
     }
 
     public boolean startPrinting() {
-        if (level == null || level.isClientSide || printing || energyStorage.getEnergyStored() < FE_PER_TICK) {
+        if (level == null || level.isClientSide || printing) {
             return false;
         }
-        PcbRecipe recipe = findMatchingRecipe();
-        if (recipe == null || !canAcceptOutput(recipe.output().get())) {
+        RecipeHolder<MachineRecipe> holder = findMatchingRecipe();
+        if (holder == null) {
             return false;
         }
-        int[] matchedSlots = matchRecipeSlots(recipe);
+        MachineRecipe recipe = holder.value();
+        if (!MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput())) {
+            return false;
+        }
+        if (energyStorage.getEnergyStored() < recipe.energyPerTick()) {
+            return false;
+        }
+        int[] matchedSlots = MachineRecipeMatcher.matchSlots(recipe, itemHandler::getStackInSlot, INPUT_SLOTS);
         if (matchedSlots == null) {
             return false;
         }
-        List<IngredientReq> ingredients = recipe.ingredients();
-        for (int i = 0; i < ingredients.size(); i++) {
-            itemHandler.extractItem(matchedSlots[i], ingredients.get(i).count(), false);
+        for (int i = 0; i < matchedSlots.length; i++) {
+            itemHandler.extractItem(matchedSlots[i], recipe.itemInputs().get(i).count(), false);
         }
-        pendingOutputKey = recipe.id();
+        this.pendingRecipeId = holder.id();
         printing = true;
         progress = 0;
         setChanged();
@@ -229,20 +167,29 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
         if (!printing) {
             return;
         }
-        Item outputItem = getPendingOutputItem();
-        if (!canAcceptOutput(outputItem)) {
-            return;
-        }
-        if (energyStorage.getEnergyStored() < FE_PER_TICK) {
-            return;
-        }
-        energyStorage.consumeInternal(FE_PER_TICK, false);
-        progress++;
-        if (progress >= PRINT_TICKS) {
-            itemHandler.insertItem(SLOT_OUTPUT, new ItemStack(outputItem, 1), false);
+        MachineRecipe recipe = getPendingRecipe();
+        if (recipe == null) {
+            // The recipe disappeared (datapack change): abort instead of producing a wrong output.
             printing = false;
             progress = 0;
-            pendingOutputKey = "";
+            pendingRecipeId = null;
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+            return;
+        }
+        if (!MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput())) {
+            return;
+        }
+        if (energyStorage.getEnergyStored() < recipe.energyPerTick()) {
+            return;
+        }
+        energyStorage.consumeInternal(recipe.energyPerTick(), false);
+        progress++;
+        if (progress >= recipe.ticks()) {
+            itemHandler.insertItem(SLOT_OUTPUT, recipe.itemOutput().copy(), false);
+            printing = false;
+            progress = 0;
+            pendingRecipeId = null;
             setChanged();
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         } else {
@@ -255,7 +202,7 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
         super.saveAdditional(tag, registries);
         tag.putBoolean("Printing", printing);
         tag.putInt("Progress", progress);
-        tag.putString("PendingOutput", pendingOutputKey);
+        tag.putString("PendingOutput", pendingRecipeId == null ? "" : pendingRecipeId.toString());
         sideConfig.saveAdditional(tag);
     }
 
@@ -265,13 +212,25 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
         printing = tag.getBoolean("Printing");
         progress = tag.getInt("Progress");
         if (tag.contains("PendingOutput")) {
-            pendingOutputKey = tag.getString("PendingOutput");
+            pendingRecipeId = parsePendingRecipeId(tag.getString("PendingOutput"));
         } else if (printing) {
-            pendingOutputKey = "robot_circuit";
+            pendingRecipeId = parsePendingRecipeId(LEGACY_RECIPE_PREFIX + "robot_circuit");
         } else {
-            pendingOutputKey = "";
+            pendingRecipeId = null;
         }
         sideConfig.loadAdditional(tag);
+    }
+
+    /** Accepts the current {@code namespace:path} format and the legacy bare recipe key ("robot_circuit"). */
+    @Nullable
+    private static ResourceLocation parsePendingRecipeId(String value) {
+        if (value.isEmpty()) {
+            return null;
+        }
+        if (value.indexOf(':') < 0) {
+            return ResourceLocation.fromNamespaceAndPath(EnrichmentSolutionMod.MOD_ID, LEGACY_RECIPE_PREFIX + value);
+        }
+        return ResourceLocation.tryParse(value);
     }
 
     @Override
@@ -279,7 +238,7 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
         CompoundTag tag = super.getUpdateTag(registries);
         tag.putBoolean("Printing", printing);
         tag.putInt("Progress", progress);
-        tag.putString("PendingOutput", pendingOutputKey);
+        tag.putString("PendingOutput", pendingRecipeId == null ? "" : pendingRecipeId.toString());
         return tag;
     }
 
@@ -299,7 +258,10 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
                 case PcbPrinterMenu.DATA_ENERGY -> energyStorage.getEnergyStored();
                 case PcbPrinterMenu.DATA_MAX_ENERGY -> energyStorage.getMaxEnergyStored();
                 case PcbPrinterMenu.DATA_PROGRESS -> progress;
-                case PcbPrinterMenu.DATA_MAX_PROGRESS -> PRINT_TICKS;
+                case PcbPrinterMenu.DATA_MAX_PROGRESS -> {
+                    MachineRecipe pending = getPendingRecipe();
+                    yield pending == null ? DEFAULT_PRINT_TICKS : pending.ticks();
+                }
                 case PcbPrinterMenu.DATA_PRINTING -> printing ? 1 : 0;
                 case PcbPrinterMenu.DATA_CAN_START -> canStartPrinting() ? 1 : 0;
                 default -> 0;

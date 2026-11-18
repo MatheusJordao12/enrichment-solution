@@ -1,7 +1,7 @@
 package com.enrichmentsolution.mod.compat.jei;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
-import com.enrichmentsolution.mod.common.compat.RefiningRecipe;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
 import com.enrichmentsolution.mod.registry.ModBlocks;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -18,10 +18,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 /** JEI category for the Oil Refinery (fluid in, fluid out). */
-public class RefiningCategory implements IRecipeCategory<RefiningRecipe> {
+public class RefiningCategory implements IRecipeCategory<MachineRecipe> {
 
-    public static final RecipeType<RefiningRecipe> TYPE =
-            RecipeType.create(EnrichmentSolutionMod.MOD_ID, "refining", RefiningRecipe.class);
+    public static final RecipeType<MachineRecipe> TYPE =
+            RecipeType.create(EnrichmentSolutionMod.MOD_ID, "refining", MachineRecipe.class);
 
     private static final int WIDTH = 110;
     private static final int HEIGHT = 62;
@@ -41,7 +41,7 @@ public class RefiningCategory implements IRecipeCategory<RefiningRecipe> {
     }
 
     @Override
-    public RecipeType<RefiningRecipe> getRecipeType() {
+    public RecipeType<MachineRecipe> getRecipeType() {
         return TYPE;
     }
 
@@ -71,24 +71,28 @@ public class RefiningCategory implements IRecipeCategory<RefiningRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, RefiningRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 11, 26)
-                .setFluidRenderer(16_000L, true, 16, 16)
-                .addFluidStack(recipe.input().getFluid(), recipe.input().getAmount());
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 77, 26)
-                .setFluidRenderer(16_000L, true, 16, 16)
-                .addFluidStack(recipe.output().getFluid(), recipe.output().getAmount());
+    public void setRecipe(IRecipeLayoutBuilder builder, MachineRecipe recipe, IFocusGroup focuses) {
+        if (recipe.hasFluidInput()) {
+            builder.addSlot(RecipeIngredientRole.INPUT, 11, 26)
+                    .setFluidRenderer(16_000L, true, 16, 16)
+                    .addFluidStack(recipe.fluidInput().getFluid(), recipe.fluidInput().getAmount());
+        }
+        if (recipe.hasFluidOutput()) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 77, 26)
+                    .setFluidRenderer(16_000L, true, 16, 16)
+                    .addFluidStack(recipe.fluidOutput().getFluid(), recipe.fluidOutput().getAmount());
+        }
     }
 
     @Override
-    public void draw(RefiningRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics guiGraphics,
+    public void draw(MachineRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics guiGraphics,
                      double mouseX, double mouseY) {
         this.slot.draw(guiGraphics, 10, 25);
         this.slot.draw(guiGraphics, 76, 25);
         this.arrow.draw(guiGraphics, 40, 26);
         guiGraphics.drawString(Minecraft.getInstance().font,
                 Component.translatable("jei.enrichment_solution.cost",
-                        recipe.energyPerTick(), recipe.energyPerTick() * recipe.ticks()),
+                        recipe.energyPerTick(), recipe.totalEnergy()),
                 10, 8, 0x606060, false);
     }
 }

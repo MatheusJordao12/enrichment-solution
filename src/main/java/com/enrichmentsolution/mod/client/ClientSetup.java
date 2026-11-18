@@ -20,6 +20,7 @@ import com.enrichmentsolution.mod.client.screen.RobotScreen;
 import com.enrichmentsolution.mod.client.screen.SolarPanelScreen;
 import com.enrichmentsolution.mod.client.screen.StampingPressScreen;
 import com.enrichmentsolution.mod.client.screen.TankScreen;
+import com.enrichmentsolution.mod.common.network.ModNetwork;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModEntities;
 import com.enrichmentsolution.mod.registry.ModMenuTypes;
@@ -29,6 +30,7 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
@@ -36,6 +38,15 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 
 @EventBusSubscriber(modid = EnrichmentSolutionMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientSetup {
+
+    /**
+     * Wires the client HUD into the common network layer. {@code ModNetwork} never references
+     * client classes itself, so a dedicated server never loads {@code InspectHud}.
+     */
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        ModNetwork.setInspectSink(InspectHud::accept);
+    }
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {

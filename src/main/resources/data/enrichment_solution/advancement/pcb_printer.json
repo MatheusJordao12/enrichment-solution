@@ -1,0 +1,34 @@
+{
+  "parent": "enrichment_solution:enrichment_chamber",
+  "display": {
+    "icon": {
+      "id": "enrichment_solution:pcb_printer"
+    },
+    "title": {
+      "translate": "advancement.enrichment_solution.pcb_printer.title"
+    },
+    "description": {
+      "translate": "advancement.enrichment_solution.pcb_printer.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "get": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:pcb_printer"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ]
+}

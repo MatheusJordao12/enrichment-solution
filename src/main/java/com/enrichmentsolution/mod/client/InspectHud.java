@@ -28,6 +28,10 @@ import java.util.List;
 /**
  * Head-slot goggles HUD: while worn, points the crosshair at a fluid pipe or energy cable
  * (up to 4 blocks) and shows what is inside — fluid name, mB, temperature / multiplier or FE.
+ * <p>
+ * This is the client half of the inspector. It is registered as the network sink by
+ * {@link ClientSetup#onClientSetup}, so {@code common/network/ModNetwork} stays free of client
+ * classes and a dedicated server never loads this file.
  */
 @EventBusSubscriber(modid = EnrichmentSolutionMod.MOD_ID, value = Dist.CLIENT)
 public final class InspectHud {
@@ -39,6 +43,7 @@ public final class InspectHud {
     private static InspectResponsePayload current;
     private static int life;
 
+    /** Sink for {@code ModNetwork}: called on the client thread with the server's answer. */
     public static void accept(InspectResponsePayload payload) {
         current = payload;
         life = LINGER_TICKS;

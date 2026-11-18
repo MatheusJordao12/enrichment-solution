@@ -4,6 +4,7 @@ import com.enrichmentsolution.mod.client.config.ModClientConfig;
 import com.enrichmentsolution.mod.client.screen.AnimationSolutionScreen;
 import com.enrichmentsolution.mod.common.entity.RobotEntity;
 import com.enrichmentsolution.mod.common.network.ModNetwork;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipes;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModBlocks;
 import com.enrichmentsolution.mod.registry.ModCreativeTabs;
@@ -40,9 +41,10 @@ public class EnrichmentSolutionMod {
         ModEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
+        MachineRecipes.register(modEventBus);
 
-        modContainer.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC);
         if (FMLEnvironment.dist == Dist.CLIENT) {
+            modContainer.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC);
             modContainer.registerExtensionPoint(
                     IConfigScreenFactory.class,
                     (container, parent) -> new AnimationSolutionScreen(parent)

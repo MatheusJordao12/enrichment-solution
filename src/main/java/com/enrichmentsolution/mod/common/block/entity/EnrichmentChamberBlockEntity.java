@@ -8,8 +8,11 @@ import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
 import com.enrichmentsolution.mod.common.menu.EnrichmentChamberMenu;
 import com.enrichmentsolution.mod.common.menu.QuadEnrichmentMenu;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeCache;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeKind;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeMatcher;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
-import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -24,7 +27,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,9 +38,10 @@ import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Converts Raw Uranium into Enriched Uranium using Forge Energy (FE).
- * Single mode: Slot 0 = Input, Slot 1 = Output (100 ticks).
- * Quad mode (2x2x1 multiblock Master): Slots 0..3 = Inputs, Slots 4..7 = Outputs (50 ticks, 2x faster, 4 parallel channels).
+ * Converts Raw Uranium into Enriched Uranium using Forge Energy (FE). The conversion itself is a datapack recipe
+ * ({@code enrichment_solution:enrichment}).
+ * Single mode: Slot 0 = Input, Slot 1 = Output.
+ * Quad mode (2x2x1 multiblock Master): Slots 0..3 = Inputs, Slots 4..7 = Outputs (2x faster, 4 parallel channels).
  */
 public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity implements com.enrichmentsolution.mod.common.block.ISideConfigurableBlockEntity, MenuProvider {
 
@@ -44,18 +50,12 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
 
     private static final int ENERGY_CAPACITY = 50_000;
     private static final int MAX_RECEIVE = 2_000;
-    private static final int ENERGY_PER_TICK = 40;
-    private static final int PROCESS_TIME = 100;
-    private static final int QUAD_PROCESS_TIME = 50;
 
-    /** Recipe snapshot for the JEI plugin. */
-    public static java.util.List<com.enrichmentsolution.mod.common.compat.EnrichmentRecipe> getJeiRecipes() {
-        return java.util.List.of(new com.enrichmentsolution.mod.common.compat.EnrichmentRecipe(
-                new ItemStack(ModItems.RAW_URANIUM.get()),
-                new ItemStack(ModItems.ENRICHED_URANIUM.get()),
-                ENERGY_PER_TICK,
-                PROCESS_TIME));
-    }
+    /** GUI fallbacks used while no recipe matches the current input (the progress bar is empty in that case). */
+    private static final int DEFAULT_PROCESS_TIME = 100;
+    private static final int DEFAULT_QUAD_PROCESS_TIME = 50;
+
+    private final MachineRecipeCache recipes = new MachineRecipeCache(MachineRecipeKind.ENRICHMENT);
 
     private int progress = 0;
     private final int[] quadProgress = new int[4];
@@ -71,7 +71,7 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
             }
             return switch (index) {
                 case EnrichmentChamberMenu.DATA_PROGRESS -> progress;
-                case EnrichmentChamberMenu.DATA_MAX_PROGRESS -> PROCESS_TIME;
+                case EnrichmentChamberMenu.DATA_MAX_PROGRESS -> getMaxProgress();
                 case EnrichmentChamberMenu.DATA_ENERGY_LOW -> energyStorage.getEnergyStored() & 0xFFFF;
                 case EnrichmentChamberMenu.DATA_ENERGY_HIGH -> (energyStorage.getEnergyStored() >>> 16) & 0xFFFF;
                 case EnrichmentChamberMenu.DATA_MAX_ENERGY_LOW -> energyStorage.getMaxEnergyStored() & 0xFFFF;
@@ -106,7 +106,7 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
                 case QuadEnrichmentMenu.DATA_PROGRESS_1 -> quadProgress[1];
                 case QuadEnrichmentMenu.DATA_PROGRESS_2 -> quadProgress[2];
                 case QuadEnrichmentMenu.DATA_PROGRESS_3 -> quadProgress[3];
-                case QuadEnrichmentMenu.DATA_MAX_PROGRESS -> QUAD_PROCESS_TIME;
+                case QuadEnrichmentMenu.DATA_MAX_PROGRESS -> getQuadMaxProgress();
                 case QuadEnrichmentMenu.DATA_ENERGY_LOW -> energyStorage.getEnergyStored() & 0xFFFF;
                 case QuadEnrichmentMenu.DATA_ENERGY_HIGH -> (energyStorage.getEnergyStored() >>> 16) & 0xFFFF;
                 case QuadEnrichmentMenu.DATA_MAX_ENERGY_LOW -> energyStorage.getMaxEnergyStored() & 0xFFFF;
@@ -212,17 +212,19 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
         }
 
         boolean isWorking = false;
-        if (canProcessSingle() && energyStorage.getEnergyStored() >= ENERGY_PER_TICK) {
-            energyStorage.consumeInternal(ENERGY_PER_TICK, false);
+        RecipeHolder<MachineRecipe> holder = findSingleRecipe(itemHandler.getStackInSlot(SLOT_INPUT));
+        MachineRecipe recipe = holder == null ? null : holder.value();
+        if (canProcessSingle(recipe) && energyStorage.getEnergyStored() >= recipe.energyPerTick()) {
+            energyStorage.consumeInternal(recipe.energyPerTick(), false);
             progress++;
             isWorking = true;
 
-            if (progress >= PROCESS_TIME) {
-                processSingle();
+            if (progress >= recipe.ticks()) {
+                processSingle(recipe);
                 progress = 0;
             }
             setChanged();
-        } else if (progress > 0 && !canProcessSingle()) {
+        } else if (progress > 0 && !canProcessSingle(recipe)) {
             progress = 0;
             setChanged();
         }
@@ -241,17 +243,20 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
         boolean dirty = false;
 
         for (int ch = 0; ch < 4; ch++) {
-            if (canProcessChannel(ch) && energyStorage.getEnergyStored() >= ENERGY_PER_TICK) {
-                energyStorage.consumeInternal(ENERGY_PER_TICK, false);
+            RecipeHolder<MachineRecipe> holder = findChannelRecipe(ch);
+            MachineRecipe recipe = holder == null ? null : holder.value();
+            boolean canProcess = canProcessChannel(ch, recipe);
+            if (canProcess && energyStorage.getEnergyStored() >= recipe.energyPerTick()) {
+                energyStorage.consumeInternal(recipe.energyPerTick(), false);
                 quadProgress[ch]++;
                 anyWorking = true;
                 dirty = true;
 
-                if (quadProgress[ch] >= QUAD_PROCESS_TIME) {
-                    processChannel(ch);
+                if (quadProgress[ch] >= quadTicks(recipe)) {
+                    processChannel(ch, recipe);
                     quadProgress[ch] = 0;
                 }
-            } else if (quadProgress[ch] > 0 && !canProcessChannel(ch)) {
+            } else if (quadProgress[ch] > 0 && !canProcess) {
                 quadProgress[ch] = 0;
                 dirty = true;
             }
@@ -266,38 +271,46 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
         }
     }
 
-    private boolean canProcessSingle() {
-        ItemStack input = itemHandler.getStackInSlot(SLOT_INPUT);
-        if (!input.is(ModItems.RAW_URANIUM.get())) {
-            return false;
-        }
-        ItemStack output = itemHandler.getStackInSlot(SLOT_OUTPUT);
-        if (output.isEmpty()) {
-            return true;
-        }
-        return output.is(ModItems.ENRICHED_URANIUM.get()) && output.getCount() < output.getMaxStackSize();
+    /** The quad multiblock runs every channel twice as fast as a single chamber. */
+    private static int quadTicks(MachineRecipe recipe) {
+        return Math.max(1, recipe.ticks() / 2);
     }
 
-    private void processSingle() {
-        itemHandler.extractItem(SLOT_INPUT, 1, false);
-        itemHandler.insertItem(SLOT_OUTPUT, new ItemStack(ModItems.ENRICHED_URANIUM.get(), 1), false);
+    private static boolean isSingleInputRecipe(MachineRecipe recipe) {
+        return recipe.hasItemInputs() && recipe.itemInputs().size() == 1 && recipe.hasItemOutput();
     }
 
-    private boolean canProcessChannel(int ch) {
-        ItemStack input = itemHandler.getStackInSlot(ch);
-        if (!input.is(ModItems.RAW_URANIUM.get())) {
-            return false;
+    @Nullable
+    private RecipeHolder<MachineRecipe> findSingleRecipe(ItemStack input) {
+        if (level == null || input.isEmpty()) {
+            return null;
         }
-        ItemStack output = itemHandler.getStackInSlot(4 + ch);
-        if (output.isEmpty()) {
-            return true;
-        }
-        return output.is(ModItems.ENRICHED_URANIUM.get()) && output.getCount() < output.getMaxStackSize();
+        return recipes.find(level, recipe -> isSingleInputRecipe(recipe) && recipe.itemInputs().get(0).matches(input));
     }
 
-    private void processChannel(int ch) {
-        itemHandler.extractItem(ch, 1, false);
-        itemHandler.insertItem(4 + ch, new ItemStack(ModItems.ENRICHED_URANIUM.get(), 1), false);
+    @Nullable
+    private RecipeHolder<MachineRecipe> findChannelRecipe(int channel) {
+        return findSingleRecipe(itemHandler.getStackInSlot(channel));
+    }
+
+    private boolean canProcessSingle(@Nullable MachineRecipe recipe) {
+        return recipe != null
+                && MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput());
+    }
+
+    private void processSingle(MachineRecipe recipe) {
+        itemHandler.extractItem(SLOT_INPUT, recipe.itemInputs().get(0).count(), false);
+        itemHandler.insertItem(SLOT_OUTPUT, recipe.itemOutput().copy(), false);
+    }
+
+    private boolean canProcessChannel(int channel, @Nullable MachineRecipe recipe) {
+        return recipe != null
+                && MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(4 + channel), recipe.itemOutput());
+    }
+
+    private void processChannel(int channel, MachineRecipe recipe) {
+        itemHandler.extractItem(channel, recipe.itemInputs().get(0).count(), false);
+        itemHandler.insertItem(4 + channel, recipe.itemOutput().copy(), false);
     }
 
     public boolean isAutoSort() {
@@ -312,17 +325,26 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
         setChanged();
     }
 
+    /**
+     * Spreads the four quad input slots evenly. Only runs when every non-empty slot holds the same item and that item is
+     * a valid single input of the enrichment recipe type.
+     */
     public void distributeInputsEvenly() {
+        Item targetItem = null;
         int total = 0;
         for (int i = 0; i < 4; i++) {
             ItemStack stack = itemHandler.getStackInSlot(i);
-            if (stack.is(ModItems.RAW_URANIUM.get())) {
-                total += stack.getCount();
-            } else if (!stack.isEmpty()) {
+            if (stack.isEmpty()) {
+                continue;
+            }
+            if (targetItem == null) {
+                targetItem = stack.getItem();
+            } else if (!stack.is(targetItem)) {
                 return;
             }
+            total += stack.getCount();
         }
-        if (total == 0) {
+        if (targetItem == null || total == 0 || !isEnrichmentInput(targetItem)) {
             return;
         }
 
@@ -334,7 +356,7 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
             ItemStack current = itemHandler.getStackInSlot(i);
             if (current.getCount() != targetCount) {
                 itemHandler.setStackInSlot(i, targetCount > 0
-                        ? new ItemStack(ModItems.RAW_URANIUM.get(), targetCount)
+                        ? new ItemStack(targetItem, targetCount)
                         : ItemStack.EMPTY);
                 changed = true;
             }
@@ -342,6 +364,15 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
         if (changed) {
             setChanged();
         }
+    }
+
+    private boolean isEnrichmentInput(Item item) {
+        if (level == null) {
+            return false;
+        }
+        ItemStack probe = new ItemStack(item);
+        return recipes.find(level, recipe -> isSingleInputRecipe(recipe)
+                && recipe.itemInputs().get(0).ingredient().test(probe)) != null;
     }
 
     public void absorbFromSlave(EnrichmentChamberBlockEntity slave) {
@@ -407,8 +438,23 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
         return progress;
     }
 
+    /** Operation time of the recipe currently matching the single input slot, for the GUI. */
     public int getMaxProgress() {
-        return PROCESS_TIME;
+        RecipeHolder<MachineRecipe> holder = findSingleRecipe(itemHandler.getStackInSlot(SLOT_INPUT));
+        return holder == null ? DEFAULT_PROCESS_TIME : holder.value().ticks();
+    }
+
+    /** Operation time of the quad channels, for the GUI. */
+    public int getQuadMaxProgress() {
+        if (level != null) {
+            for (int ch = 0; ch < 4; ch++) {
+                RecipeHolder<MachineRecipe> holder = findChannelRecipe(ch);
+                if (holder != null) {
+                    return quadTicks(holder.value());
+                }
+            }
+        }
+        return DEFAULT_QUAD_PROCESS_TIME;
     }
 
     @Override

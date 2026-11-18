@@ -1,7 +1,8 @@
 package com.enrichmentsolution.mod.compat.jei;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
-import com.enrichmentsolution.mod.common.compat.EnrichmentRecipe;
+import com.enrichmentsolution.mod.common.recipe.MachineItemInput;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
 import com.enrichmentsolution.mod.registry.ModBlocks;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -18,10 +19,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 /** JEI category for the Enrichment Chamber. */
-public class EnrichmentCategory implements IRecipeCategory<EnrichmentRecipe> {
+public class EnrichmentCategory implements IRecipeCategory<MachineRecipe> {
 
-    public static final RecipeType<EnrichmentRecipe> TYPE =
-            RecipeType.create(EnrichmentSolutionMod.MOD_ID, "enrichment", EnrichmentRecipe.class);
+    public static final RecipeType<MachineRecipe> TYPE =
+            RecipeType.create(EnrichmentSolutionMod.MOD_ID, "enrichment", MachineRecipe.class);
 
     private static final int WIDTH = 110;
     private static final int HEIGHT = 54;
@@ -41,7 +42,7 @@ public class EnrichmentCategory implements IRecipeCategory<EnrichmentRecipe> {
     }
 
     @Override
-    public RecipeType<EnrichmentRecipe> getRecipeType() {
+    public RecipeType<MachineRecipe> getRecipeType() {
         return TYPE;
     }
 
@@ -71,20 +72,25 @@ public class EnrichmentCategory implements IRecipeCategory<EnrichmentRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, EnrichmentRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 11, 20).addItemStack(recipe.input());
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 77, 20).addItemStack(recipe.output());
+    public void setRecipe(IRecipeLayoutBuilder builder, MachineRecipe recipe, IFocusGroup focuses) {
+        if (!recipe.itemInputs().isEmpty()) {
+            MachineItemInput input = recipe.itemInputs().get(0);
+            builder.addSlot(RecipeIngredientRole.INPUT, 11, 20).addItemStack(input.displayStack());
+        }
+        if (recipe.hasItemOutput()) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 77, 20).addItemStack(recipe.itemOutput());
+        }
     }
 
     @Override
-    public void draw(EnrichmentRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics guiGraphics,
+    public void draw(MachineRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics guiGraphics,
                      double mouseX, double mouseY) {
         this.slot.draw(guiGraphics, 10, 19);
         this.slot.draw(guiGraphics, 76, 19);
         this.arrow.draw(guiGraphics, 40, 20);
         guiGraphics.drawString(Minecraft.getInstance().font,
                 Component.translatable("jei.enrichment_solution.cost",
-                        recipe.energyPerTick(), recipe.energyPerTick() * recipe.ticks()),
+                        recipe.energyPerTick(), recipe.totalEnergy()),
                 10, 6, 0x606060, false);
     }
 }

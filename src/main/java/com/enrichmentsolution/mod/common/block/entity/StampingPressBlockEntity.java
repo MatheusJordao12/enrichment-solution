@@ -6,8 +6,11 @@ import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.StampingPressBlock;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
 import com.enrichmentsolution.mod.common.menu.StampingPressMenu;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeCache;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeKind;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipeMatcher;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
-import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -18,9 +21,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,10 +30,10 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Stamping Press BlockEntity:
- * 100,000 FE buffer, consumes 25 FE/t over 80 ticks (4s = 2,000 FE) per operation.
- * Automatically crafts Mechanical Eyes (Pressed Aluminium + Glowstone Dust + Robot Circuit + Glass Pane)
- * or Pressed Aluminium (Aluminium Ingot).
+ * Stamping Press BlockEntity.
+ * 100,000 FE buffer; the operation cost and duration come from the datapack recipes
+ * ({@code enrichment_solution:stamping}). Inputs are matched unordered across the four input slots and the most
+ * specific recipe (more item inputs) wins, so Mechanical Eyes are preferred over single-ingot Pressed Aluminium.
  */
 public class StampingPressBlockEntity extends AbstractMachineBlockEntity implements com.enrichmentsolution.mod.common.block.ISideConfigurableBlockEntity, MenuProvider {
 
@@ -41,33 +43,15 @@ public class StampingPressBlockEntity extends AbstractMachineBlockEntity impleme
 
     public static final int ENERGY_CAPACITY = 100_000;
     public static final int MAX_RECEIVE = 2_000;
-    public static final int FE_PER_TICK = 25;
-    public static final int PROCESS_TICKS = 80;
 
-    /** Recipe snapshots for the JEI plugin (checked in this order in-game). */
-    public static java.util.List<com.enrichmentsolution.mod.common.compat.PressingRecipe> getJeiRecipes() {
-        return java.util.List.of(
-                new com.enrichmentsolution.mod.common.compat.PressingRecipe(
-                        java.util.List.of(
-                                new ItemStack(ModItems.PRESSED_ALUMINIUM.get()),
-                                new ItemStack(Items.GLOWSTONE_DUST),
-                                new ItemStack(ModItems.ROBOT_CIRCUIT.get()),
-                                new ItemStack(Items.GLASS_PANE)),
-                        new ItemStack(ModItems.MECHANICAL_EYES.get()),
-                        FE_PER_TICK, PROCESS_TICKS),
-                new com.enrichmentsolution.mod.common.compat.PressingRecipe(
-                        java.util.List.of(new ItemStack(ModItems.ALUMINIUM_INGOT.get())),
-                        new ItemStack(ModItems.PRESSED_ALUMINIUM.get()),
-                        FE_PER_TICK, PROCESS_TICKS));
-    }
+    /** GUI fallback used while no stamping recipe matches the input slots. */
+    private static final int DEFAULT_PROCESS_TICKS = 80;
 
-    private enum RecipeType {
-        NONE,
-        MECHANICAL_EYES,
-        PRESSED_ALUMINIUM
-    }
+    private final MachineRecipeCache recipes = new MachineRecipeCache(MachineRecipeKind.STAMPING);
 
     private int progress = 0;
+    @Nullable
+    private MachineRecipe activeRecipe;
     private final SideConfigHolder sideConfig = SideConfigHolder.allInput();
 
     public StampingPressBlockEntity(BlockPos pos, BlockState blockState) {
@@ -97,23 +81,26 @@ public class StampingPressBlockEntity extends AbstractMachineBlockEntity impleme
 
     @Override
     protected void tickServer(Level level, BlockPos pos, BlockState state) {
-        RecipeType recipe = matchRecipe();
+        RecipeHolder<MachineRecipe> holder = findRecipe();
+        MachineRecipe recipe = holder == null ? null : holder.value();
+        this.activeRecipe = recipe;
+
         boolean wasLit = state.getValue(StampingPressBlock.LIT);
         boolean isWorking = false;
 
-        if (recipe != RecipeType.NONE && canAcceptOutput(getResultFor(recipe))
-                && energyStorage.getEnergyStored() >= FE_PER_TICK) {
-            energyStorage.consumeInternal(FE_PER_TICK, false);
+        if (recipe != null
+                && MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput())
+                && energyStorage.getEnergyStored() >= recipe.energyPerTick()) {
+            energyStorage.consumeInternal(recipe.energyPerTick(), false);
             progress++;
             isWorking = true;
 
-            if (progress >= PROCESS_TICKS) {
-                consumeInputs(recipe);
-                itemHandler.insertItem(SLOT_OUTPUT, getResultFor(recipe), false);
+            if (progress >= recipe.ticks()) {
+                completeOperation(recipe);
                 progress = 0;
             }
             setChanged();
-        } else if (recipe == RecipeType.NONE && progress > 0) {
+        } else if (recipe == null && progress > 0) {
             progress = 0;
             setChanged();
         }
@@ -123,68 +110,26 @@ public class StampingPressBlockEntity extends AbstractMachineBlockEntity impleme
         }
     }
 
-    private RecipeType matchRecipe() {
-        if (hasItem(ModItems.PRESSED_ALUMINIUM.get())
-                && hasItem(Items.GLOWSTONE_DUST)
-                && hasItem(ModItems.ROBOT_CIRCUIT.get())
-                && hasItem(Items.GLASS_PANE)) {
-            return RecipeType.MECHANICAL_EYES;
+    private void completeOperation(MachineRecipe recipe) {
+        int[] slots = MachineRecipeMatcher.matchSlots(recipe, itemHandler::getStackInSlot, INPUT_SLOTS);
+        if (slots == null) {
+            return;
         }
-        if (hasItem(ModItems.ALUMINIUM_INGOT.get())) {
-            return RecipeType.PRESSED_ALUMINIUM;
+        for (int i = 0; i < slots.length; i++) {
+            itemHandler.extractItem(slots[i], recipe.itemInputs().get(i).count(), false);
         }
-        return RecipeType.NONE;
+        itemHandler.insertItem(SLOT_OUTPUT, recipe.itemOutput().copy(), false);
     }
 
-    private boolean hasItem(Item item) {
-        for (int i = 0; i < INPUT_SLOTS; i++) {
-            ItemStack stack = itemHandler.getStackInSlot(i);
-            if (!stack.isEmpty() && stack.is(item)) {
-                return true;
-            }
+    @Nullable
+    private RecipeHolder<MachineRecipe> findRecipe() {
+        if (level == null) {
+            return null;
         }
-        return false;
-    }
-
-    private void consumeOne(Item item) {
-        for (int i = 0; i < INPUT_SLOTS; i++) {
-            ItemStack stack = itemHandler.getStackInSlot(i);
-            if (!stack.isEmpty() && stack.is(item)) {
-                itemHandler.extractItem(i, 1, false);
-                return;
-            }
-        }
-    }
-
-    private void consumeInputs(RecipeType recipe) {
-        if (recipe == RecipeType.MECHANICAL_EYES) {
-            consumeOne(ModItems.PRESSED_ALUMINIUM.get());
-            consumeOne(Items.GLOWSTONE_DUST);
-            consumeOne(ModItems.ROBOT_CIRCUIT.get());
-            consumeOne(Items.GLASS_PANE);
-        } else if (recipe == RecipeType.PRESSED_ALUMINIUM) {
-            consumeOne(ModItems.ALUMINIUM_INGOT.get());
-        }
-    }
-
-    private ItemStack getResultFor(RecipeType recipe) {
-        return switch (recipe) {
-            case MECHANICAL_EYES -> new ItemStack(ModItems.MECHANICAL_EYES.get(), 1);
-            case PRESSED_ALUMINIUM -> new ItemStack(ModItems.PRESSED_ALUMINIUM.get(), 1);
-            case NONE -> ItemStack.EMPTY;
-        };
-    }
-
-    private boolean canAcceptOutput(ItemStack result) {
-        if (result.isEmpty()) {
-            return false;
-        }
-        ItemStack output = itemHandler.getStackInSlot(SLOT_OUTPUT);
-        if (output.isEmpty()) {
-            return true;
-        }
-        return ItemStack.isSameItemSameComponents(output, result)
-                && output.getCount() + result.getCount() <= output.getMaxStackSize();
+        return recipes.find(level, recipe -> recipe.hasItemInputs()
+                && recipe.hasItemOutput()
+                && recipe.itemInputs().size() <= INPUT_SLOTS
+                && MachineRecipeMatcher.matchSlots(recipe, itemHandler::getStackInSlot, INPUT_SLOTS) != null);
     }
 
     @Override
@@ -213,7 +158,8 @@ public class StampingPressBlockEntity extends AbstractMachineBlockEntity impleme
                 case StampingPressMenu.DATA_MAX_ENERGY_LOW -> energyStorage.getMaxEnergyStored() & 0xFFFF;
                 case StampingPressMenu.DATA_MAX_ENERGY_HIGH -> (energyStorage.getMaxEnergyStored() >>> 16) & 0xFFFF;
                 case StampingPressMenu.DATA_PROGRESS -> progress;
-                case StampingPressMenu.DATA_MAX_PROGRESS -> PROCESS_TICKS;
+                case StampingPressMenu.DATA_MAX_PROGRESS ->
+                        activeRecipe == null ? DEFAULT_PROCESS_TICKS : activeRecipe.ticks();
                 default -> 0;
             };
         }

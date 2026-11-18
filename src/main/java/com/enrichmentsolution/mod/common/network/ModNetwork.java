@@ -1,30 +1,49 @@
 package com.enrichmentsolution.mod.common.network;
 
-import com.enrichmentsolution.mod.client.InspectHud;
 import com.enrichmentsolution.mod.common.block.entity.EnergyCableBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.FluidPipeBlockEntity;
 import com.enrichmentsolution.mod.common.fluid.ThermalFluidHelper;
 import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.fluids.FluidStack;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 /**
  * Network glue for the goggles inspector: the client asks for the contents of the conduit
  * under the crosshair and the server answers with a small, already-shaped payload.
+ * <p>
+ * This class lives in {@code common} and must never touch client classes directly, otherwise a
+ * dedicated server would try to load them. The HUD that consumes the answer is plugged in by the
+ * client only, through {@link #setInspectSink(Consumer)}.
  */
 public final class ModNetwork {
 
     /** Vanilla reach is 4.5 blocks; the goggles intentionally match a 4 block inspection range. */
     public static final double INSPECT_RANGE = 4.0D;
+
+    /**
+     * Receives the inspection answers on the client. Stays {@code null} on a dedicated server, which
+     * makes {@link #handleResponse} a no-op there instead of loading {@code client.InspectHud}.
+     */
+    @Nullable
+    private static volatile Consumer<InspectResponsePayload> inspectSink;
+
+    /**
+     * Registers the client-side consumer of inspection answers. Called by the client setup only;
+     * passing {@code null} removes the sink (e.g. when leaving a world).
+     */
+    public static void setInspectSink(@Nullable Consumer<InspectResponsePayload> sink) {
+        inspectSink = sink;
+    }
 
     public static void register(RegisterPayloadHandlersEvent event) {
         event.registrar("1")
@@ -42,11 +61,12 @@ public final class ModNetwork {
     }
 
     private static void handleResponse(InspectResponsePayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (FMLEnvironment.dist.isClient()) {
-                InspectHud.accept(payload);
-            }
-        });
+        Consumer<InspectResponsePayload> sink = inspectSink;
+        if (sink == null) {
+            // Dedicated server (or client not initialized yet): nothing to render here.
+            return;
+        }
+        context.enqueueWork(() -> sink.accept(payload));
     }
 
     private static InspectResponsePayload inspect(ServerPlayer player, BlockPos pos) {

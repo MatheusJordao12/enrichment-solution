@@ -1,7 +1,8 @@
 package com.enrichmentsolution.mod.compat.jei;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
-import com.enrichmentsolution.mod.common.compat.PcbPrintingRecipe;
+import com.enrichmentsolution.mod.common.recipe.MachineItemInput;
+import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
 import com.enrichmentsolution.mod.registry.ModBlocks;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -18,10 +19,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 /** JEI category showing the circuits printed by the PCB Printer. */
-public class PcbPrintingCategory implements IRecipeCategory<PcbPrintingRecipe> {
+public class PcbPrintingCategory implements IRecipeCategory<MachineRecipe> {
 
-    public static final RecipeType<PcbPrintingRecipe> TYPE =
-            RecipeType.create(EnrichmentSolutionMod.MOD_ID, "pcb_printing", PcbPrintingRecipe.class);
+    public static final RecipeType<MachineRecipe> TYPE =
+            RecipeType.create(EnrichmentSolutionMod.MOD_ID, "pcb_printing", MachineRecipe.class);
 
     private static final int WIDTH = 134;
     private static final int HEIGHT = 54;
@@ -42,7 +43,7 @@ public class PcbPrintingCategory implements IRecipeCategory<PcbPrintingRecipe> {
     }
 
     @Override
-    public RecipeType<PcbPrintingRecipe> getRecipeType() {
+    public RecipeType<MachineRecipe> getRecipeType() {
         return TYPE;
     }
 
@@ -72,18 +73,23 @@ public class PcbPrintingCategory implements IRecipeCategory<PcbPrintingRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, PcbPrintingRecipe recipe, IFocusGroup focuses) {
-        for (int i = 0; i < recipe.inputs().size(); i++) {
-            builder.addSlot(RecipeIngredientRole.INPUT, 2 + i * SLOT_STEP, 20)
-                    .addItemStack(recipe.inputs().get(i));
+    public void setRecipe(IRecipeLayoutBuilder builder, MachineRecipe recipe, IFocusGroup focuses) {
+        for (int i = 0; i < recipe.itemInputs().size(); i++) {
+            MachineItemInput input = recipe.itemInputs().get(i);
+            ItemStack stack = input.displayStack();
+            if (!stack.isEmpty()) {
+                builder.addSlot(RecipeIngredientRole.INPUT, 2 + i * SLOT_STEP, 20).addItemStack(stack);
+            }
         }
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 113, 20).addItemStack(recipe.output());
+        if (recipe.hasItemOutput()) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 113, 20).addItemStack(recipe.itemOutput());
+        }
     }
 
     @Override
-    public void draw(PcbPrintingRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics guiGraphics,
+    public void draw(MachineRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics guiGraphics,
                      double mouseX, double mouseY) {
-        for (int i = 0; i < recipe.inputs().size(); i++) {
+        for (int i = 0; i < recipe.itemInputs().size(); i++) {
             this.slot.draw(guiGraphics, 1 + i * SLOT_STEP, 19);
         }
         this.slot.draw(guiGraphics, 112, 19);

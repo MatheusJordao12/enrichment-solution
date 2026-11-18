@@ -137,6 +137,7 @@ public class EnergyCableBlock extends BaseEntityBlock {
         return state;
     }
 
+    /** Recomputes the arm toward {@code direction}, dropping cached cable routes when the connection pattern changes. */
     @Override
     protected BlockState updateShape(
             BlockState state,
@@ -146,7 +147,12 @@ public class EnergyCableBlock extends BaseEntityBlock {
             BlockPos pos,
             BlockPos neighborPos
     ) {
-        return state.setValue(PROPERTY_BY_DIRECTION.get(direction), getConnectionType(level, pos, direction));
+        ConnectionType type = getConnectionType(level, pos, direction);
+        if (type != state.getValue(PROPERTY_BY_DIRECTION.get(direction))
+                && level instanceof Level serverLevel && !serverLevel.isClientSide) {
+            EnergyCableBlockEntity.invalidateNetwork(serverLevel);
+        }
+        return state.setValue(PROPERTY_BY_DIRECTION.get(direction), type);
     }
 
     @Override
@@ -167,6 +173,7 @@ public class EnergyCableBlock extends BaseEntityBlock {
             updated = updated.setValue(PROPERTY_BY_DIRECTION.get(dir), getConnectionType(level, pos, dir));
         }
         if (!updated.equals(state)) {
+            EnergyCableBlockEntity.invalidateNetwork(level);
             level.setBlock(pos, updated, Block.UPDATE_ALL);
         }
     }
@@ -219,6 +226,24 @@ public class EnergyCableBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new EnergyCableBlockEntity(pos, state);
+    }
+
+    /** Placing a cable changes the network shape, so every cached cable route is dropped. */
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!level.isClientSide) {
+            EnergyCableBlockEntity.invalidateNetwork(level);
+        }
+    }
+
+    /** Removing a cable changes the network shape, so every cached cable route is dropped. */
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!level.isClientSide) {
+            EnergyCableBlockEntity.invalidateNetwork(level);
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Nullable
