@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "enrichment_solution:advanced_circuit"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "U": {
+      "item": "enrichment_solution:mining_upgrade_tier_2"
+    }
+  },
+  "pattern": [
+    "DCD",
+    "DUD",
+    "DCD"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:mining_upgrade_tier_3"
+  }
+}

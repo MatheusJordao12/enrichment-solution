@@ -237,6 +237,14 @@ public class RobotMenu extends AbstractContainerMenu {
         return robot != null ? robot.getMaxEnergyStored() : 0;
     }
 
+    public int getStoredXp() {
+        return robot != null ? robot.getStoredXp() : 0;
+    }
+
+    public int getMaxStoredXp() {
+        return robot != null ? robot.getMaxStoredXp() : 0;
+    }
+
     public int getSlotUpgradeTier() {
         return robot != null ? robot.getSlotUpgradeTier() : 0;
     }

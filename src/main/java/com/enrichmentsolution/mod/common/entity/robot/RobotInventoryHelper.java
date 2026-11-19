@@ -2,20 +2,29 @@ package com.enrichmentsolution.mod.common.entity.robot;
 
 import com.enrichmentsolution.mod.common.entity.RobotEntity;
 import com.enrichmentsolution.mod.common.item.EnergyCellBlockItem;
+import com.enrichmentsolution.mod.common.item.HammerXItem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.ShearsItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 /**
@@ -47,7 +56,8 @@ public class RobotInventoryHelper {
                 super.onContentsChanged(slot);
                 if (!robot.level().isClientSide) {
                     if (slot == RobotEntity.SLOT_PICKAXE) {
-                        boolean nowHasSword = getStackInSlot(RobotEntity.SLOT_PICKAXE).is(ItemTags.SWORDS);
+                        ItemStack toolStack = getStackInSlot(RobotEntity.SLOT_PICKAXE);
+                        boolean nowHasSword = toolStack.is(ItemTags.SWORDS) || toolStack.getItem() instanceof SwordItem;
                         if (robot.isPowered()) {
                             if (nowHasSword && !wasHoldingSword) {
                                 robot.setDetransformTicks(0);
@@ -76,7 +86,19 @@ public class RobotInventoryHelper {
     }
 
     public static boolean isValidTool(ItemStack stack) {
-        return stack.is(ItemTags.PICKAXES) || stack.is(ItemTags.SWORDS);
+        if (stack.isEmpty()) {
+            return false;
+        }
+        Item item = stack.getItem();
+        return item instanceof DiggerItem
+                || item instanceof PickaxeItem
+                || item instanceof SwordItem
+                || item instanceof TieredItem
+                || item instanceof ShearsItem
+                || item instanceof HammerXItem
+                || stack.has(DataComponents.TOOL)
+                || stack.getCapability(Capabilities.EnergyStorage.ITEM) != null
+                || stack.isDamageableItem();
     }
 
     public static ItemStack getTool(ItemStackHandler inventory) {
@@ -86,7 +108,9 @@ public class RobotInventoryHelper {
 
     public static ItemStack getPickaxe(ItemStackHandler inventory) {
         ItemStack stack = inventory.getStackInSlot(RobotEntity.SLOT_PICKAXE);
-        return stack.is(ItemTags.PICKAXES) ? stack : ItemStack.EMPTY;
+        return !stack.isEmpty() && (stack.getItem() instanceof PickaxeItem || stack.is(ItemTags.PICKAXES))
+                ? stack
+                : ItemStack.EMPTY;
     }
 
     public static boolean hasStorageSpaceFor(RobotEntity robot, ItemStackHandler inventory, ItemStack stack) {
@@ -213,6 +237,7 @@ public class RobotInventoryHelper {
                 inventory.setStackInSlot(i, preserved[i]);
             }
         }
-        this.wasHoldingSword = inventory.getStackInSlot(RobotEntity.SLOT_PICKAXE).is(ItemTags.SWORDS);
+        ItemStack toolStack = inventory.getStackInSlot(RobotEntity.SLOT_PICKAXE);
+        this.wasHoldingSword = toolStack.is(ItemTags.SWORDS) || toolStack.getItem() instanceof SwordItem;
     }
 }

@@ -11,6 +11,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PickaxeItem;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
@@ -29,10 +30,10 @@ public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
     );
 
     // Follow button (main tab)
-    private static final int FOLLOW_BTN_X = 25;
+    private static final int FOLLOW_BTN_X = 27;
     private static final int FOLLOW_BTN_Y = 54;
-    private static final int FOLLOW_BTN_W = 18;
-    private static final int FOLLOW_BTN_H = 18;
+    private static final int FOLLOW_BTN_W = 16;
+    private static final int FOLLOW_BTN_H = 16;
 
     // 54x54 Open Expanded Storage button (main tab when tier >= 1)
     private static final int STORAGE_BTN_X = 61;
@@ -48,16 +49,20 @@ public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
     // Side panels
     private static final int PANEL_OFFSET_X = 22;
     private static final int PANEL_Y = 6;
-    private static final int BATTERY_PANEL_W = 56;
+    private static final int BATTERY_PANEL_W = 72;
     private static final int BATTERY_PANEL_H = 76;
     private static final int TOOL_PANEL_W = 88;
     private static final int TOOL_PANEL_H = 92;
 
-    // Energy bar inside Battery panel
-    private static final int BAR_REL_X = 33;
+    // Energy & XP bars inside Battery panel
+    private static final int BAR_REL_X = 31;
     private static final int BAR_REL_Y = 11;
     private static final int BAR_W = 14;
     private static final int BAR_H = 52;
+    private static final int XP_BAR_REL_X = 51;
+    private static final int XP_BAR_REL_Y = 11;
+    private static final int XP_BAR_W = 12;
+    private static final int XP_BAR_H = 52;
 
     // Expanded storage controls
     private static final int BACK_BTN_X = 154;
@@ -125,7 +130,7 @@ public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
 
     private boolean isPickaxeEquipped() {
         ItemStack tool = menu.getToolStack();
-        return !tool.isEmpty() && tool.is(ItemTags.PICKAXES);
+        return !tool.isEmpty() && (tool.getItem() instanceof PickaxeItem || tool.is(ItemTags.PICKAXES));
     }
 
     @Override
@@ -182,7 +187,7 @@ public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
         guiGraphics.fill(bx + 1, by + 1, bx + FOLLOW_BTN_W - 1, by + FOLLOW_BTN_H - 1, bg);
 
         ResourceLocation icon = follow ? FOLLOW_WALKING_TEXTURE : FOLLOW_SITTING_TEXTURE;
-        guiGraphics.blit(icon, bx + 1, by + 1, 0, 0, 16, 16, 16, 16);
+        guiGraphics.blit(icon, bx + 1, by + 1, FOLLOW_BTN_W - 2, FOLLOW_BTN_H - 2, 0, 0, 16, 16, 16, 16);
     }
 
     private void renderSideButtons(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
@@ -214,7 +219,7 @@ public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
     }
 
     private void renderBatteryPanel(GuiGraphics guiGraphics, int px, int py, int mouseX, int mouseY) {
-        guiGraphics.blit(GUI_TEXTURE, px, py, 176, 0, BATTERY_PANEL_W, BATTERY_PANEL_H);
+        drawBeveledPanel(guiGraphics, px, py, BATTERY_PANEL_W, BATTERY_PANEL_H);
 
         // 3 energy cell slot frames
         for (int row = 0; row < 3; row++) {
@@ -234,6 +239,21 @@ public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
             int top = by + (BAR_H - filled);
             guiGraphics.fill(bx + 1, top, bx + BAR_W - 1, by + BAR_H, 0xFF16A34A);
             guiGraphics.fill(bx + 2, top, bx + BAR_W - 4, by + BAR_H, 0xFF4ADE80);
+        }
+
+        // Vertical XP Tank bar
+        int xbx = px + XP_BAR_REL_X;
+        int xby = py + XP_BAR_REL_Y;
+        guiGraphics.fill(xbx - 1, xby - 1, xbx + XP_BAR_W + 1, xby + XP_BAR_H + 1, 0xFF373737);
+        guiGraphics.fill(xbx, xby, xbx + XP_BAR_W, xby + XP_BAR_H, 0xFF1E293B);
+
+        int xp = menu.getStoredXp();
+        int maxXp = menu.getMaxStoredXp();
+        if (maxXp > 0 && xp > 0) {
+            int filled = Math.min(XP_BAR_H, (int) Math.ceil((double) xp / maxXp * XP_BAR_H));
+            int top = xby + (XP_BAR_H - filled);
+            guiGraphics.fill(xbx + 1, top, xbx + XP_BAR_W - 1, xby + XP_BAR_H, 0xFF59C710);
+            guiGraphics.fill(xbx + 2, top, xbx + XP_BAR_W - 3, xby + XP_BAR_H, 0xFF80FF20);
         }
     }
 
@@ -542,7 +562,7 @@ public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
             ItemStack toolStack = menu.getToolStack();
             if (toolStack.isEmpty()) {
                 guiGraphics.renderTooltip(font, Component.translatable("gui.enrichment_solution.robot.tool_config.no_tool"), mouseX, mouseY);
-            } else if (toolStack.is(ItemTags.PICKAXES)) {
+            } else if (isPickaxeEquipped()) {
                 guiGraphics.renderTooltip(font, Component.translatable("gui.enrichment_solution.robot.tool_config_tab"), mouseX, mouseY);
             } else {
                 guiGraphics.renderTooltip(font, Component.translatable("gui.enrichment_solution.robot.tool_config.not_pickaxe"), mouseX, mouseY);
@@ -560,6 +580,22 @@ public class RobotScreen extends AbstractContainerScreen<RobotMenu> {
                                 "tooltip.enrichment_solution.energy",
                                 String.format("%,d", menu.getEnergyStored()),
                                 String.format("%,d", menu.getMaxEnergyStored())
+                        ),
+                        mouseX,
+                        mouseY
+                );
+                return;
+            }
+
+            int xpBarX = sideX + PANEL_OFFSET_X + XP_BAR_REL_X;
+            int xpBarY = y + PANEL_Y + XP_BAR_REL_Y;
+            if (isInside(mouseX, mouseY, xpBarX, xpBarY, XP_BAR_W, XP_BAR_H)) {
+                guiGraphics.renderTooltip(
+                        font,
+                        Component.translatable(
+                                "tooltip.enrichment_solution.robot.xp_tank",
+                                String.format("%,d", menu.getStoredXp()),
+                                String.format("%,d", menu.getMaxStoredXp())
                         ),
                         mouseX,
                         mouseY

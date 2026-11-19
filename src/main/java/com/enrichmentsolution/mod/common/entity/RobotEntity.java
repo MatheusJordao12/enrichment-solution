@@ -17,7 +17,9 @@ import com.enrichmentsolution.mod.common.item.RobotItem;
 import com.enrichmentsolution.mod.common.menu.RobotMenu;
 import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -27,6 +29,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -35,6 +38,7 @@ import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -47,12 +51,19 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,6 +82,10 @@ public class RobotEntity extends PathfinderMob {
 
     public static final int HIT_ENERGY_COST = 1_000;
     public static final int EXPLOSION_ENERGY_COST = 5_000;
+    public static final int MAX_STORED_XP = 5_000;
+    public static final int TOOL_RECHARGE_PER_TICK = 1_000;
+    public static final int MINING_ENERGY_COST = 10;
+    public static final int MINING_BLOCKS_PER_ENERGY_COST = 9;
 
     public static final byte EVENT_PICKUP = 100;
     public static final byte EVENT_ATTACK = 101;
@@ -114,6 +129,10 @@ public class RobotEntity extends PathfinderMob {
             SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<BlockPos>> DATA_LINKED_CHEST_POS =
             SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+    private static final EntityDataAccessor<Integer> DATA_STORED_XP =
+            SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_MINING_UPGRADE_TIER =
+            SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.INT);
 
     public final AnimationState pickupAnimationState = new AnimationState();
     public final AnimationState mineAnimationState = new AnimationState();
@@ -132,6 +151,7 @@ public class RobotEntity extends PathfinderMob {
     private boolean hasDigAnchor = false;
     private int digAnchorChunkX = 0;
     private int digAnchorChunkZ = 0;
+    private int blocksBrokenCounter = 0;
 
     public RobotEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -166,6 +186,8 @@ public class RobotEntity extends PathfinderMob {
         builder.define(DATA_DIG_CHUNKS, false);
         builder.define(DATA_CHUNK_RADIUS, 1);
         builder.define(DATA_LINKED_CHEST_POS, Optional.empty());
+        builder.define(DATA_STORED_XP, 0);
+        builder.define(DATA_MINING_UPGRADE_TIER, 0);
     }
 
     @Override
@@ -251,6 +273,60 @@ public class RobotEntity extends PathfinderMob {
             }
         } else {
             RobotAnimationController.tickClientAnimations(this);
+        }
+    }
+
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        if (this.level().isClientSide) {
+            return;
+        }
+
+        // 1. Auto-charge FE tool in slot 0 from Robot's battery
+        if (hasAutoRecharger() && getEnergyStored() > 0) {
+            ItemStack tool = inventory.getStackInSlot(SLOT_PICKAXE);
+            if (!tool.isEmpty()) {
+                IEnergyStorage toolEnergy = tool.getCapability(Capabilities.EnergyStorage.ITEM);
+                if (toolEnergy != null && toolEnergy.canReceive()) {
+                    int maxTransfer = Math.min(TOOL_RECHARGE_PER_TICK, getEnergyStored());
+                    int accepted = toolEnergy.receiveEnergy(maxTransfer, false);
+                    if (accepted > 0) {
+                        consumeEnergy(accepted);
+                        syncMainHandPickaxe();
+                    }
+                }
+            }
+        }
+
+        // 2. Absorb nearby ExperienceOrb entities within 2.5 blocks
+        if (getStoredXp() < MAX_STORED_XP) {
+            List<ExperienceOrb> orbs = this.level().getEntitiesOfClass(
+                    ExperienceOrb.class,
+                    this.getBoundingBox().inflate(2.5D));
+            for (ExperienceOrb orb : orbs) {
+                if (orb.isAlive() && getStoredXp() < MAX_STORED_XP) {
+                    addXp(orb.getValue());
+                    orb.discard();
+                }
+            }
+        }
+
+        // 3. Mending repair for damaged slot 0 tool using stored XP (2 durability per 1 XP)
+        ItemStack tool = inventory.getStackInSlot(SLOT_PICKAXE);
+        if (!tool.isEmpty() && tool.isDamaged() && getStoredXp() > 0) {
+            Holder<Enchantment> mending = this.registryAccess()
+                    .lookupOrThrow(Registries.ENCHANTMENT)
+                    .getOrThrow(Enchantments.MENDING);
+            if (EnchantmentHelper.getItemEnchantmentLevel(mending, tool) > 0) {
+                int xpNeeded = (tool.getDamageValue() + 1) / 2;
+                int xpConsumed = consumeXp(Math.min(getStoredXp(), xpNeeded));
+                if (xpConsumed > 0) {
+                    int repairAmount = Math.min(tool.getDamageValue(), xpConsumed * 2);
+                    tool.setDamageValue(tool.getDamageValue() - repairAmount);
+                    syncMainHandPickaxe();
+                }
+            }
         }
     }
 
@@ -347,6 +423,21 @@ public class RobotEntity extends PathfinderMob {
         if (held.is(ModItems.SLOT_UPGRADE_TIER_3.get()) && getSlotUpgradeTier() < 3) {
             return applySlotUpgrade(player, held, 3);
         }
+        if (held.is(ModItems.MINING_UPGRADE_TIER_1.get()) && getMiningUpgradeTier() < 1) {
+            return applyMiningUpgrade(player, held, 1);
+        }
+        if (held.is(ModItems.MINING_UPGRADE_TIER_2.get()) && getMiningUpgradeTier() < 2) {
+            return applyMiningUpgrade(player, held, 2);
+        }
+        if (held.is(ModItems.MINING_UPGRADE_TIER_3.get()) && getMiningUpgradeTier() < 3) {
+            return applyMiningUpgrade(player, held, 3);
+        }
+        if (held.is(ModItems.MINING_UPGRADE_TIER_4.get()) && getMiningUpgradeTier() < 4) {
+            return applyMiningUpgrade(player, held, 4);
+        }
+        if (held.is(ModItems.MINING_UPGRADE_TIER_5.get()) && getMiningUpgradeTier() < 5) {
+            return applyMiningUpgrade(player, held, 5);
+        }
 
         if (player.isShiftKeyDown()) {
             return handleShiftInteract(player);
@@ -369,6 +460,15 @@ public class RobotEntity extends PathfinderMob {
         return InteractionResult.CONSUME;
     }
 
+    private InteractionResult applyMiningUpgrade(Player player, ItemStack held, int tier) {
+        setMiningUpgradeTier(tier);
+        if (!player.getAbilities().instabuild) {
+            held.shrink(1);
+        }
+        this.playSound(SoundEvents.ANVIL_USE, 0.7F, 1.2F);
+        return InteractionResult.CONSUME;
+    }
+
     private InteractionResult handleShiftInteract(Player player) {
         if (isRecharging()) {
             setRechargeCancelled(true);
@@ -382,6 +482,8 @@ public class RobotEntity extends PathfinderMob {
         tag.put(RobotItem.TAG_INVENTORY, inventory.serializeNBT(this.registryAccess()));
         tag.putBoolean(RobotItem.TAG_AUTO_RECHARGER, hasAutoRecharger());
         tag.putInt(RobotItem.TAG_SLOT_UPGRADE_TIER, getSlotUpgradeTier());
+        tag.putInt(RobotItem.TAG_MINING_UPGRADE_TIER, getMiningUpgradeTier());
+        tag.putInt(RobotItem.TAG_STORED_XP, getStoredXp());
         tag.putInt(RobotItem.TAG_MINING_TARGET_Y, getMiningTargetY());
         tag.putBoolean(RobotItem.TAG_DIG_CHUNKS, isDigChunks());
         tag.putInt(RobotItem.TAG_CHUNK_RADIUS, getChunkRadius());
@@ -422,6 +524,9 @@ public class RobotEntity extends PathfinderMob {
         compound.putBoolean("FollowOwner", isFollowOwner());
         compound.putBoolean("AutoRecharger", hasAutoRecharger());
         compound.putInt("SlotUpgradeTier", getSlotUpgradeTier());
+        compound.putInt("MiningUpgradeTier", getMiningUpgradeTier());
+        compound.putInt("StoredXp", getStoredXp());
+        compound.putInt("BlocksBrokenCounter", blocksBrokenCounter);
         compound.putInt("MiningTargetY", getMiningTargetY());
         compound.putBoolean("DigChunks", isDigChunks());
         compound.putInt("ChunkRadius", getChunkRadius());
@@ -455,6 +560,15 @@ public class RobotEntity extends PathfinderMob {
         }
         if (compound.contains("SlotUpgradeTier")) {
             setSlotUpgradeTier(compound.getInt("SlotUpgradeTier"));
+        }
+        if (compound.contains("MiningUpgradeTier")) {
+            setMiningUpgradeTier(compound.getInt("MiningUpgradeTier"));
+        }
+        if (compound.contains("StoredXp")) {
+            setStoredXp(compound.getInt("StoredXp"));
+        }
+        if (compound.contains("BlocksBrokenCounter")) {
+            this.blocksBrokenCounter = Math.max(0, compound.getInt("BlocksBrokenCounter"));
         }
         if (compound.contains("MiningTargetY")) {
             setMiningTargetY(compound.getInt("MiningTargetY"));
@@ -518,9 +632,11 @@ public class RobotEntity extends PathfinderMob {
 
     public boolean hasSword() {
         if (this.level().isClientSide) {
-            return getMainHandItem().is(ItemTags.SWORDS);
+            ItemStack mainHand = getMainHandItem();
+            return mainHand.is(ItemTags.SWORDS) || mainHand.getItem() instanceof SwordItem;
         }
-        return inventory.getStackInSlot(SLOT_PICKAXE).is(ItemTags.SWORDS);
+        ItemStack slotTool = inventory.getStackInSlot(SLOT_PICKAXE);
+        return slotTool.is(ItemTags.SWORDS) || slotTool.getItem() instanceof SwordItem;
     }
 
     public boolean isFollowOwner() {
@@ -750,6 +866,63 @@ public class RobotEntity extends PathfinderMob {
 
     public void setSlotUpgradeTier(int tier) {
         this.entityData.set(DATA_SLOT_UPGRADE_TIER, Math.max(0, Math.min(3, tier)));
+    }
+
+    public int getMiningUpgradeTier() {
+        return this.entityData.get(DATA_MINING_UPGRADE_TIER);
+    }
+
+    public void setMiningUpgradeTier(int tier) {
+        this.entityData.set(DATA_MINING_UPGRADE_TIER, Math.max(0, Math.min(5, tier)));
+    }
+
+    public int getStoredXp() {
+        return this.entityData.get(DATA_STORED_XP);
+    }
+
+    public int getMaxStoredXp() {
+        return MAX_STORED_XP;
+    }
+
+    public void setStoredXp(int xp) {
+        this.entityData.set(DATA_STORED_XP, Mth.clamp(xp, 0, MAX_STORED_XP));
+    }
+
+    public int addXp(int amount) {
+        if (amount <= 0) {
+            return 0;
+        }
+        int current = getStoredXp();
+        int space = MAX_STORED_XP - current;
+        int added = Math.min(amount, space);
+        if (added > 0) {
+            setStoredXp(current + added);
+        }
+        return added;
+    }
+
+    public int consumeXp(int amount) {
+        if (amount <= 0) {
+            return 0;
+        }
+        int current = getStoredXp();
+        int consumed = Math.min(amount, current);
+        if (consumed > 0) {
+            setStoredXp(current - consumed);
+        }
+        return consumed;
+    }
+
+    public boolean hasMiningEnergy() {
+        return getEnergyStored() >= MINING_ENERGY_COST;
+    }
+
+    public void onBlockBrokenByRobot() {
+        blocksBrokenCounter++;
+        if (blocksBrokenCounter >= MINING_BLOCKS_PER_ENERGY_COST) {
+            blocksBrokenCounter -= MINING_BLOCKS_PER_ENERGY_COST;
+            consumeEnergy(MINING_ENERGY_COST);
+        }
     }
 
     public int getStorageCapacity() {

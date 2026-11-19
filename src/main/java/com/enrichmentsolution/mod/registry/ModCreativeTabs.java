@@ -74,6 +74,11 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.SLOT_UPGRADE_TIER_1.get());
                         output.accept(ModItems.SLOT_UPGRADE_TIER_2.get());
                         output.accept(ModItems.SLOT_UPGRADE_TIER_3.get());
+                        output.accept(ModItems.MINING_UPGRADE_TIER_1.get());
+                        output.accept(ModItems.MINING_UPGRADE_TIER_2.get());
+                        output.accept(ModItems.MINING_UPGRADE_TIER_3.get());
+                        output.accept(ModItems.MINING_UPGRADE_TIER_4.get());
+                        output.accept(ModItems.MINING_UPGRADE_TIER_5.get());
                         output.accept(ModItems.ROBOT_CIRCUIT.get());
                         output.accept(ModItems.BASIC_CIRCUIT.get());
                         output.accept(ModItems.ADVANCED_CIRCUIT.get());

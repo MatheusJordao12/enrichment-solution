@@ -40,6 +40,8 @@ public class RobotItem extends Item {
     public static final String TAG_LINKED_CHEST_X = "LinkedChestX";
     public static final String TAG_LINKED_CHEST_Y = "LinkedChestY";
     public static final String TAG_LINKED_CHEST_Z = "LinkedChestZ";
+    public static final String TAG_STORED_XP = "StoredXp";
+    public static final String TAG_MINING_UPGRADE_TIER = "MiningUpgradeTier";
 
     public RobotItem(Properties properties) {
         super(properties);
@@ -138,6 +140,12 @@ public class RobotItem extends Item {
             }
             if (tag.contains(TAG_SLOT_UPGRADE_TIER)) {
                 robot.setSlotUpgradeTier(tag.getInt(TAG_SLOT_UPGRADE_TIER));
+            }
+            if (tag.contains(TAG_MINING_UPGRADE_TIER)) {
+                robot.setMiningUpgradeTier(tag.getInt(TAG_MINING_UPGRADE_TIER));
+            }
+            if (tag.contains(TAG_STORED_XP)) {
+                robot.setStoredXp(tag.getInt(TAG_STORED_XP));
             }
             if (tag.contains(TAG_MINING_TARGET_Y)) {
                 robot.setMiningTargetY(tag.getInt(TAG_MINING_TARGET_Y));

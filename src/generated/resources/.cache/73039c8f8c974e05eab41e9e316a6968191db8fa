@@ -1,4 +1,4 @@
-// 1.21.1	2026-11-19T14:32:55.1171616	Item Models: enrichment_solution
+// 1.21.1	2026-11-19T15:09:30.0075696	Item Models: enrichment_solution
 548878c7107849d924474086fade94fa527dbb49 assets/enrichment_solution/models/item/advanced_circuit.json
 e2fe54503cedb017f1fa58bff22e799205cf836f assets/enrichment_solution/models/item/advanced_energy_cell.json
 af57baa29ae4611afe41ad89320fcd34d9cae38c assets/enrichment_solution/models/item/aluminium_ingot.json
@@ -27,6 +27,11 @@ db457c55fe725c7a0bc4059bd192163e25c7e20d assets/enrichment_solution/models/item/
 b571e30af180965194d590f18e127f8f01e10f35 assets/enrichment_solution/models/item/mechanical_eyes.json
 64ae895d5c89f62dbbd3ddf66d9ab7291977f45a assets/enrichment_solution/models/item/meteorotite_ingot.json
 1732447a3154277301a09847b150975da381c07f assets/enrichment_solution/models/item/meteorotite_ore.json
+f0e563fc58810064e7e1bea03a084fb6a448a7d7 assets/enrichment_solution/models/item/mining_upgrade_tier_1.json
+e7745a912f70563c261e9a315447be53e49322d5 assets/enrichment_solution/models/item/mining_upgrade_tier_2.json
+c08e2b3970db04a01f8e279864adbe3acfc10f0a assets/enrichment_solution/models/item/mining_upgrade_tier_3.json
+e10107b46c45a4e2e89d6cf50fbd93de1d35a1c4 assets/enrichment_solution/models/item/mining_upgrade_tier_4.json
+2cae8a145e23e5f4fea4122aa59d5c0d7fe6574e assets/enrichment_solution/models/item/mining_upgrade_tier_5.json
 63693e5f32e9e8b60932e4a28be4e9f63dc4248f assets/enrichment_solution/models/item/oil_refinery.json
 8716aa478cb7ec2f2f996e48c7cb117b6ab88da6 assets/enrichment_solution/models/item/oxidated_plutonium_ingot.json
 430ddbb48f516c4d9679393399809c0f7c313d4c assets/enrichment_solution/models/item/oxidated_plutonium_ore.json

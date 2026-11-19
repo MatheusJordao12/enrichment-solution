@@ -28,6 +28,11 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.SLOT_UPGRADE_TIER_1.get());
         basicItem(ModItems.SLOT_UPGRADE_TIER_2.get());
         basicItem(ModItems.SLOT_UPGRADE_TIER_3.get());
+        basicItem(ModItems.MINING_UPGRADE_TIER_1.get());
+        basicItem(ModItems.MINING_UPGRADE_TIER_2.get());
+        basicItem(ModItems.MINING_UPGRADE_TIER_3.get());
+        basicItem(ModItems.MINING_UPGRADE_TIER_4.get());
+        basicItem(ModItems.MINING_UPGRADE_TIER_5.get());
         basicItem(ModItems.ROBOT_CIRCUIT.get());
         basicItem(ModItems.BASIC_CIRCUIT.get());
         basicItem(ModItems.ADVANCED_CIRCUIT.get());

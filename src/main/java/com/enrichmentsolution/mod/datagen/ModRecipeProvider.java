@@ -419,6 +419,56 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('U', ModItems.SLOT_UPGRADE_TIER_2.get())
                 .unlockedBy("has_slot_upgrade_tier_2", has(ModItems.SLOT_UPGRADE_TIER_2.get()))
                 .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.MINING_UPGRADE_TIER_1.get())
+                .pattern("ASA")
+                .pattern("SPS")
+                .pattern("ASA")
+                .define('A', ModItems.ALUMINIUM_INGOT.get())
+                .define('S', ModItems.STEEL_INGOT.get())
+                .define('P', Items.IRON_PICKAXE)
+                .unlockedBy("has_steel_ingot", has(ModItems.STEEL_INGOT.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.MINING_UPGRADE_TIER_2.get())
+                .pattern("GCG")
+                .pattern("GUG")
+                .pattern("GCG")
+                .define('G', Items.GOLD_INGOT)
+                .define('C', ModItems.BASIC_CIRCUIT.get())
+                .define('U', ModItems.MINING_UPGRADE_TIER_1.get())
+                .unlockedBy("has_mining_upgrade_tier_1", has(ModItems.MINING_UPGRADE_TIER_1.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.MINING_UPGRADE_TIER_3.get())
+                .pattern("DCD")
+                .pattern("DUD")
+                .pattern("DCD")
+                .define('D', Items.DIAMOND)
+                .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                .define('U', ModItems.MINING_UPGRADE_TIER_2.get())
+                .unlockedBy("has_mining_upgrade_tier_2", has(ModItems.MINING_UPGRADE_TIER_2.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.MINING_UPGRADE_TIER_4.get())
+                .pattern("ECE")
+                .pattern("EUE")
+                .pattern("ECE")
+                .define('E', Items.EMERALD)
+                .define('C', ModItems.ULTIMATE_CIRCUIT.get())
+                .define('U', ModItems.MINING_UPGRADE_TIER_3.get())
+                .unlockedBy("has_mining_upgrade_tier_3", has(ModItems.MINING_UPGRADE_TIER_3.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.MINING_UPGRADE_TIER_5.get())
+                .pattern("NCN")
+                .pattern("NUN")
+                .pattern("NCN")
+                .define('N', Items.NETHERITE_INGOT)
+                .define('C', ModItems.ULTRA_CIRCUIT.get())
+                .define('U', ModItems.MINING_UPGRADE_TIER_4.get())
+                .unlockedBy("has_mining_upgrade_tier_4", has(ModItems.MINING_UPGRADE_TIER_4.get()))
+                .save(output);
     }
 
     private void tierUpgrade8(RecipeOutput output, ItemLike result, ItemLike previous, ItemLike circuit) {

@@ -1,12 +1,15 @@
 package com.enrichmentsolution.mod.common.entity.goal;
 
 import com.enrichmentsolution.mod.common.entity.RobotEntity;
+import com.enrichmentsolution.mod.common.item.HammerXItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,7 +60,8 @@ public class RobotMineStoneGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!robot.isPowered() || robot.isTransforming() || !robot.hasPickaxe() || !robot.hasAnyStorageSlotFree()) {
+        if (!robot.isPowered() || !robot.hasMiningEnergy() || robot.isTransforming()
+                || !isPickaxeTool(robot.getTool()) || !robot.hasAnyStorageSlotFree()) {
             return false;
         }
         if (robot.hasLinkedChest() && !robot.hasEmptyStorageSlot()) {
@@ -73,7 +77,8 @@ public class RobotMineStoneGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        if (!robot.isPowered() || robot.isTransforming() || !robot.hasPickaxe() || !robot.hasAnyStorageSlotFree()) {
+        if (!robot.isPowered() || !robot.hasMiningEnergy() || robot.isTransforming()
+                || !isPickaxeTool(robot.getTool()) || !robot.hasAnyStorageSlotFree()) {
             return false;
         }
         if (robot.hasLinkedChest() && !robot.hasEmptyStorageSlot()) {
@@ -142,25 +147,28 @@ public class RobotMineStoneGoal extends Goal {
             lastProgressPos = robot.position();
             breakTicks++;
 
-            ItemStack pickaxe = robot.getPickaxe();
-            int requiredTicks = 0;
+            ItemStack pickaxe = robot.getTool();
+            float baseTicks = 0.0F;
             for (BlockPos pos : columnTargets) {
                 BlockState blockState = serverLevel.getBlockState(pos);
                 float speed = Math.max(1.0F, pickaxe.getDestroySpeed(blockState));
-                requiredTicks += Math.max(10, Math.round(60.0F / speed));
+                baseTicks += Math.max(2.0F, 60.0F / speed);
             }
+            float speedMultiplier = getMiningSpeedMultiplier(robot.getMiningUpgradeTier());
+            int requiredTicks = Math.max(1, Math.round(baseTicks / speedMultiplier));
 
             if (breakTicks >= requiredTicks) {
                 for (BlockPos pos : columnTargets) {
-                    if (!robot.hasPickaxe()) {
+                    if (!isPickaxeTool(robot.getTool()) || !robot.hasMiningEnergy()) {
                         break;
                     }
                     BlockState blockState = serverLevel.getBlockState(pos);
                     if (!isTargetBlock(serverLevel, pos, blockState)) {
                         continue;
                     }
-                    ItemStack currentPickaxe = robot.getPickaxe();
-                    List<ItemStack> drops = Block.getDrops(blockState, serverLevel, pos, null, robot, currentPickaxe);
+                    ItemStack currentPickaxe = robot.getTool();
+                    List<ItemStack> drops = Block.getDrops(blockState, serverLevel, pos, serverLevel.getBlockEntity(pos), robot, currentPickaxe);
+                    int xp = blockState.getExpDrop(serverLevel, pos, serverLevel.getBlockEntity(pos), null, currentPickaxe);
                     if (serverLevel.destroyBlock(pos, false, robot)) {
                         for (ItemStack drop : drops) {
                             ItemStack leftover = robot.insertIntoStorage(drop);
@@ -168,8 +176,16 @@ public class RobotMineStoneGoal extends Goal {
                                 Block.popResource(serverLevel, pos, leftover);
                             }
                         }
-                        currentPickaxe.hurtAndBreak(1, serverLevel, null, item ->
-                                robot.getInventory().setStackInSlot(RobotEntity.SLOT_PICKAXE, ItemStack.EMPTY));
+                        if (xp > 0) {
+                            robot.addXp(xp);
+                        }
+                        robot.onBlockBrokenByRobot();
+                        if (currentPickaxe.isDamageableItem()) {
+                            currentPickaxe.hurtAndBreak(1, serverLevel, null, item ->
+                                    robot.getInventory().setStackInSlot(RobotEntity.SLOT_PICKAXE, ItemStack.EMPTY));
+                        } else if (currentPickaxe.getItem() instanceof HammerXItem) {
+                            currentPickaxe.getItem().mineBlock(currentPickaxe, serverLevel, blockState, pos, robot);
+                        }
                     }
                 }
                 breakTicks = 0;
@@ -580,6 +596,22 @@ public class RobotMineStoneGoal extends Goal {
             baseY = y;
         }
         return new BlockPos(blockPos.getX(), baseY, blockPos.getZ());
+    }
+
+    private static boolean isPickaxeTool(ItemStack tool) {
+        return !tool.isEmpty() && (tool.getItem() instanceof PickaxeItem || tool.is(ItemTags.PICKAXES));
+    }
+
+    private static float getMiningSpeedMultiplier(int tier) {
+        int rate = switch (tier) {
+            case 1 -> 50;
+            case 2 -> 100;
+            case 3 -> 150;
+            case 4 -> 200;
+            case 5 -> 225;
+            default -> 0;
+        };
+        return 1.0F + rate / 100.0F;
     }
 
     private boolean isTargetBlock(Level level, BlockPos pos, BlockState state) {

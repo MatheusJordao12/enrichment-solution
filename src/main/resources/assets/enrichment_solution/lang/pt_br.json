@@ -331,5 +331,11 @@
   "gui.enrichment_solution.robot.tool_config.dig_chunks": "Cavar Chunks",
   "gui.enrichment_solution.robot.open_storage": "Abrir Armazenamento Expandido (%s slots)",
   "gui.enrichment_solution.robot.close_storage": "Voltar",
-  "gui.enrichment_solution.robot.slots_count": "%s Slots"
+  "gui.enrichment_solution.robot.slots_count": "%s Slots",
+  "item.enrichment_solution.mining_upgrade_tier_1": "Melhoria de Mineração Nível 1",
+  "item.enrichment_solution.mining_upgrade_tier_2": "Melhoria de Mineração Nível 2",
+  "item.enrichment_solution.mining_upgrade_tier_3": "Melhoria de Mineração Nível 3",
+  "item.enrichment_solution.mining_upgrade_tier_4": "Melhoria de Mineração Nível 4",
+  "item.enrichment_solution.mining_upgrade_tier_5": "Melhoria de Mineração Nível 5",
+  "tooltip.enrichment_solution.robot.xp_tank": "XP: %s / %s"
 }
