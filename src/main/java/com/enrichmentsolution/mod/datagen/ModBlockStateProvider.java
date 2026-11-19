@@ -59,9 +59,9 @@ public class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.UNSTABLE_OLD_URANIUM_ORE.get());
         simpleBlock(ModBlocks.DEEPSLATE_UNSTABLE_OLD_URANIUM_ORE.get());
 
-        // Reactor casing (uses vanilla netherite_block texture)
+        // Reactor casing (uses reactor_casing.png for item/inventory/fallback; CTM handles in-world)
         simpleBlock(ModBlocks.REACTOR_CASING.get(),
-                models().cubeAll("reactor_casing", mcLoc("block/netherite_block")));
+                cubeAll(ModBlocks.REACTOR_CASING.get()));
 
         // Reactor core (active=false / active=true)
         ModelFile reactorOff = models().cubeAll("reactor_core", mcLoc("block/deepslate_emerald_ore"));

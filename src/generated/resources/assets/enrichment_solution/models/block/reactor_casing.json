@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "minecraft:block/netherite_block"
+    "all": "enrichment_solution:block/reactor_casing"
   }
 }
