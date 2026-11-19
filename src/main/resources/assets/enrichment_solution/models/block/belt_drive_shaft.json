@@ -1,0 +1,33 @@
+{
+  "textures": {
+    "shaft": "enrichment_solution:block/belt_shaft",
+    "particle": "enrichment_solution:block/belt_shaft"
+  },
+  "elements": [
+    {
+      "from": [3, 5.25, 5],
+      "to": [16, 10.75, 10.75],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "east": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "west": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "up": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "down": {"uv": [0, 0, 16, 16], "texture": "#shaft"}
+      }
+    },
+    {
+      "from": [3, 0.75, 10],
+      "to": [16, 6.25, 15.75],
+      "rotation": {"angle": -45, "axis": "x", "origin": [0, -0.5, 5]},
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "east": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "west": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "up": {"uv": [0, 0, 16, 16], "texture": "#shaft"},
+        "down": {"uv": [0, 0, 16, 16], "texture": "#shaft"}
+      }
+    }
+  ]
+}

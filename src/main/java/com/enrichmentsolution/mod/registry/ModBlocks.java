@@ -1,8 +1,10 @@
 package com.enrichmentsolution.mod.registry;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
+import com.enrichmentsolution.mod.common.block.BeltDriveBlock;
 import com.enrichmentsolution.mod.common.block.CableTier;
 import com.enrichmentsolution.mod.common.block.CondenserBlock;
+import com.enrichmentsolution.mod.common.block.ConveyorBeltBlock;
 import com.enrichmentsolution.mod.common.block.DistillationTowerBlock;
 import com.enrichmentsolution.mod.common.block.EnergyCableBlock;
 import com.enrichmentsolution.mod.common.block.EnergyCellBlock;
@@ -288,6 +290,22 @@ public final class ModBlocks {
                     .sound(SoundType.METAL)
                     .noOcclusion()
                     .lightLevel(state -> state.getValue(FluidPumpBlock.LIT) ? 10 : 0)));
+
+    public static final DeferredBlock<Block> BELT_DRIVE = registerBlock("belt_drive",
+            () -> new BeltDriveBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
+
+    public static final DeferredBlock<Block> CONVEYOR_BELT = registerBlock("conveyor_belt",
+            () -> new ConveyorBeltBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.0F, 5.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
 
     public static final DeferredBlock<LiquidBlock> CRUDE_OIL_BLOCK = BLOCKS.register("crude_oil_block",
             () -> new LiquidBlock(ModFluids.CRUDE_OIL.get(), BlockBehaviour.Properties.ofFullCopy(Blocks.WATER)

@@ -21,6 +21,8 @@
     "enrichment_solution:geothermal_generator",
     "enrichment_solution:condenser",
     "enrichment_solution:fluid_pump",
+    "enrichment_solution:belt_drive",
+    "enrichment_solution:conveyor_belt",
     "enrichment_solution:steel_ore",
     "enrichment_solution:deepslate_steel_ore",
     "enrichment_solution:uranium_ore",

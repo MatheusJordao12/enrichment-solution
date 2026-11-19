@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "AAA",
+    "SRS",
+    "AAA"
+  ],
+  "result": {
+    "count": 4,
+    "id": "enrichment_solution:conveyor_belt"
+  }
+}

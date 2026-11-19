@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=east,active=false": {
+      "model": "enrichment_solution:block/belt_drive"
+    },
+    "facing=east,active=true": {
+      "model": "enrichment_solution:block/belt_drive"
+    },
+    "facing=south,active=false": {
+      "model": "enrichment_solution:block/belt_drive",
+      "y": 90
+    },
+    "facing=south,active=true": {
+      "model": "enrichment_solution:block/belt_drive",
+      "y": 90
+    },
+    "facing=west,active=false": {
+      "model": "enrichment_solution:block/belt_drive",
+      "y": 180
+    },
+    "facing=west,active=true": {
+      "model": "enrichment_solution:block/belt_drive",
+      "y": 180
+    },
+    "facing=north,active=false": {
+      "model": "enrichment_solution:block/belt_drive",
+      "y": 270
+    },
+    "facing=north,active=true": {
+      "model": "enrichment_solution:block/belt_drive",
+      "y": 270
+    }
+  }
+}

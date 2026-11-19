@@ -64,6 +64,8 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.GEOTHERMAL_GENERATOR.get());
                         output.accept(ModBlocks.CONDENSER.get());
                         output.accept(ModBlocks.FLUID_PUMP.get());
+                        output.accept(ModBlocks.BELT_DRIVE.get());
+                        output.accept(ModBlocks.CONVEYOR_BELT.get());
                         output.accept(ModBlocks.REACTOR_CASING.get());
                         output.accept(ModBlocks.REACTOR_CORE.get());
                         output.accept(ModItems.RAW_URANIUM.get());

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "B": {
+      "item": "enrichment_solution:basic_circuit"
+    },
+    "C": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "E": {
+      "item": "enrichment_solution:energy_cable"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SAS",
+    "BCB",
+    "SES"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:belt_drive"
+  }
+}

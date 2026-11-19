@@ -176,6 +176,12 @@ public class EnrichmentSolutionMod {
                 (be, side) -> be.getFluidHandler(side)
         );
 
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.BELT_DRIVE.get(),
+                (be, side) -> be.getEnergyStorage(side)
+        );
+
         event.registerItem(
                 Capabilities.EnergyStorage.ITEM,
                 (stack, ctx) -> new net.neoforged.neoforge.energy.ComponentEnergyStorage(

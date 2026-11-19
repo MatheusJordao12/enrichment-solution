@@ -159,6 +159,28 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy("has_machine_casing", has(ModBlocks.MACHINE_CASING.get()))
                 .save(output);
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.BELT_DRIVE.get())
+                .pattern("SAS")
+                .pattern("BCB")
+                .pattern("SES")
+                .define('S', ModItems.STEEL_INGOT.get())
+                .define('A', ModItems.ALUMINIUM_INGOT.get())
+                .define('B', ModItems.BASIC_CIRCUIT.get())
+                .define('C', ModBlocks.MACHINE_CASING.get())
+                .define('E', ModBlocks.ENERGY_CABLE.get())
+                .unlockedBy("has_basic_circuit", has(ModItems.BASIC_CIRCUIT.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.CONVEYOR_BELT.get(), 4)
+                .pattern("AAA")
+                .pattern("SRS")
+                .pattern("AAA")
+                .define('A', ModItems.ALUMINIUM_INGOT.get())
+                .define('S', ModItems.STEEL_INGOT.get())
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_steel_ingot", has(ModItems.STEEL_INGOT.get()))
+                .save(output);
+
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.ROBOT_CHARGER.get())
                 .pattern("ACA")
                 .pattern("SMS")

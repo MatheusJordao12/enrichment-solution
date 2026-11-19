@@ -1,0 +1,7 @@
+{
+  "parent": "enrichment_solution:block/conveyor_belt_single",
+  "textures": {
+    "belt": "enrichment_solution:block/conveyor_belt_active",
+    "particle": "enrichment_solution:block/conveyor_belt_active"
+  }
+}

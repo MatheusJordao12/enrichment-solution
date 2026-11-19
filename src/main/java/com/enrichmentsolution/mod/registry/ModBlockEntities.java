@@ -1,7 +1,9 @@
 package com.enrichmentsolution.mod.registry;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
+import com.enrichmentsolution.mod.common.block.entity.BeltDriveBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.CondenserBlockEntity;
+import com.enrichmentsolution.mod.common.block.entity.ConveyorBeltBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.EnergyCableBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.EnergyCellBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.EnrichmentChamberBlockEntity;
@@ -124,6 +126,16 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FluidPumpBlockEntity>> FLUID_PUMP =
             BLOCK_ENTITIES.register("fluid_pump", () -> BlockEntityType.Builder
                     .of(FluidPumpBlockEntity::new, ModBlocks.FLUID_PUMP.get())
+                    .build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BeltDriveBlockEntity>> BELT_DRIVE =
+            BLOCK_ENTITIES.register("belt_drive", () -> BlockEntityType.Builder
+                    .of(BeltDriveBlockEntity::new, ModBlocks.BELT_DRIVE.get())
+                    .build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ConveyorBeltBlockEntity>> CONVEYOR_BELT =
+            BLOCK_ENTITIES.register("conveyor_belt", () -> BlockEntityType.Builder
+                    .of(ConveyorBeltBlockEntity::new, ModBlocks.CONVEYOR_BELT.get())
                     .build(null));
 
     public static void register(IEventBus eventBus) {

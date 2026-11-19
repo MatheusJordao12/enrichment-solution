@@ -46,6 +46,8 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.GEOTHERMAL_GENERATOR.get());
         dropSelf(ModBlocks.CONDENSER.get());
         dropSelf(ModBlocks.FLUID_PUMP.get());
+        dropSelf(ModBlocks.BELT_DRIVE.get());
+        dropSelf(ModBlocks.CONVEYOR_BELT.get());
 
         // Energy cables
         dropSelf(ModBlocks.ENERGY_CABLE.get());

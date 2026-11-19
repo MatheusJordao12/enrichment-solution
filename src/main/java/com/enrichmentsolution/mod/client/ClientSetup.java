@@ -4,6 +4,7 @@ import com.enrichmentsolution.mod.EnrichmentSolutionMod;
 import com.enrichmentsolution.mod.client.ctm.CtmRegistry;
 import com.enrichmentsolution.mod.client.model.RobotModel;
 import com.enrichmentsolution.mod.client.render.GogglesLayer;
+import com.enrichmentsolution.mod.client.renderer.BeltDriveRenderer;
 import com.enrichmentsolution.mod.client.renderer.EnrichmentChamberRenderer;
 import com.enrichmentsolution.mod.client.renderer.PcbPrinterRenderer;
 import com.enrichmentsolution.mod.client.renderer.RobotRenderer;
@@ -84,6 +85,7 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(ModBlockEntities.SOLAR_PANEL.get(), SolarPanelRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ENRICHMENT_CHAMBER.get(), EnrichmentChamberRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PCB_PRINTER.get(), PcbPrinterRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.BELT_DRIVE.get(), BeltDriveRenderer::new);
         event.registerEntityRenderer(ModEntities.ROBOT.get(), RobotRenderer::new);
     }
 
@@ -109,6 +111,7 @@ public final class ClientSetup {
         event.register(SolarPanelRenderer.ADVANCED_RIGHT_MODEL);
         event.register(PcbPrinterRenderer.PEN_MODEL);
         event.register(PcbPrinterRenderer.PCB_MODEL);
+        event.register(BeltDriveRenderer.SHAFT_MODEL);
     }
 
     @SubscribeEvent
