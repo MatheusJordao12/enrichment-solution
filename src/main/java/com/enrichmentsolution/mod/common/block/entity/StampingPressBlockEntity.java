@@ -5,6 +5,7 @@ import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.StampingPressBlock;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.StampingPressMenu;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipeCache;
@@ -41,12 +42,6 @@ public class StampingPressBlockEntity extends AbstractMachineBlockEntity impleme
     public static final int SLOT_OUTPUT = 4;
     public static final int TOTAL_SLOTS = INPUT_SLOTS + 1;
 
-    public static final int ENERGY_CAPACITY = 100_000;
-    public static final int MAX_RECEIVE = 2_000;
-
-    /** GUI fallback used while no stamping recipe matches the input slots. */
-    private static final int DEFAULT_PROCESS_TICKS = 80;
-
     private final MachineRecipeCache recipes = new MachineRecipeCache(MachineRecipeKind.STAMPING);
 
     private int progress = 0;
@@ -55,7 +50,15 @@ public class StampingPressBlockEntity extends AbstractMachineBlockEntity impleme
     private final SideConfigHolder sideConfig = SideConfigHolder.allInput();
 
     public StampingPressBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.STAMPING_PRESS.get(), pos, blockState, ENERGY_CAPACITY, MAX_RECEIVE, 0, TOTAL_SLOTS);
+        super(
+                ModBlockEntities.STAMPING_PRESS.get(),
+                pos,
+                blockState,
+                ModServerConfig.get(ModServerConfig.STAMPING_PRESS_ENERGY_CAPACITY),
+                ModServerConfig.get(ModServerConfig.STAMPING_PRESS_MAX_RECEIVE),
+                0,
+                TOTAL_SLOTS
+        );
     }
 
     @Override
@@ -88,14 +91,18 @@ public class StampingPressBlockEntity extends AbstractMachineBlockEntity impleme
         boolean wasLit = state.getValue(StampingPressBlock.LIT);
         boolean isWorking = false;
 
+        int energyCost = recipe == null
+                ? 0
+                : ModServerConfig.scaleEnergy(recipe.energyPerTick(), ModServerConfig.STAMPING_PRESS_ENERGY_MULTIPLIER);
         if (recipe != null
                 && MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput())
-                && energyStorage.getEnergyStored() >= recipe.energyPerTick()) {
-            energyStorage.consumeInternal(recipe.energyPerTick(), false);
+                && energyStorage.getEnergyStored() >= energyCost) {
+            energyStorage.consumeInternal(energyCost, false);
             progress++;
             isWorking = true;
 
-            if (progress >= recipe.ticks()) {
+            int targetTicks = ModServerConfig.scaleTicks(recipe.ticks(), ModServerConfig.STAMPING_PRESS_TIME_MULTIPLIER);
+            if (progress >= targetTicks) {
                 completeOperation(recipe);
                 progress = 0;
             }
@@ -159,7 +166,9 @@ public class StampingPressBlockEntity extends AbstractMachineBlockEntity impleme
                 case StampingPressMenu.DATA_MAX_ENERGY_HIGH -> (energyStorage.getMaxEnergyStored() >>> 16) & 0xFFFF;
                 case StampingPressMenu.DATA_PROGRESS -> progress;
                 case StampingPressMenu.DATA_MAX_PROGRESS ->
-                        activeRecipe == null ? DEFAULT_PROCESS_TICKS : activeRecipe.ticks();
+                        activeRecipe == null
+                                ? ModServerConfig.get(ModServerConfig.STAMPING_PRESS_DEFAULT_PROCESS_TICKS)
+                                : ModServerConfig.scaleTicks(activeRecipe.ticks(), ModServerConfig.STAMPING_PRESS_TIME_MULTIPLIER);
                 default -> 0;
             };
         }

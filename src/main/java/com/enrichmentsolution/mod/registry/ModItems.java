@@ -107,6 +107,15 @@ public final class ModItems {
     public static final DeferredItem<Item> CONFIGURATOR = ITEMS.register("configurator",
             () -> new com.enrichmentsolution.mod.common.item.ConfiguratorItem(new Item.Properties().stacksTo(1)));
 
+    public static final DeferredItem<Item> PLUTONIUM_EXTRACTOR = ITEMS.register("plutonium_extractor",
+            () -> new com.enrichmentsolution.mod.common.item.PlutoniumExtractorItem(new Item.Properties().stacksTo(1)));
+
+    public static final DeferredItem<Item> ISOLATED_BACKPACK = ITEMS.register("isolated_backpack",
+            () -> new com.enrichmentsolution.mod.common.item.IsolatedBackpackItem(new Item.Properties().stacksTo(1)));
+
+    public static final DeferredItem<Item> HAMMER_X = ITEMS.register("hammer_x",
+            () -> new com.enrichmentsolution.mod.common.item.HammerXItem(new Item.Properties().stacksTo(1)));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

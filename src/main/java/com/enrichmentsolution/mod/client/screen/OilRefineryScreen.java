@@ -43,6 +43,25 @@ public class OilRefineryScreen extends AbstractContainerScreen<OilRefineryMenu> 
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         guiGraphics.drawString(font, title, titleLabelX, titleLabelY - 1, 0xC8F0D0, false);
         guiGraphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xA8B8AE, false);
+
+        int towerCount = menu.getTowerCount();
+        Component status;
+        int color;
+        if (towerCount <= 0) {
+            status = Component.translatable("gui.enrichment_solution.oil_refinery.no_tower");
+            color = 0xFF5555;
+        } else if (towerCount == 1) {
+            status = Component.translatable("gui.enrichment_solution.oil_refinery.speed_1x");
+            color = 0x55FF55;
+        } else if (towerCount == 2) {
+            status = Component.translatable("gui.enrichment_solution.oil_refinery.speed_1_5x");
+            color = 0x55FF55;
+        } else {
+            status = Component.translatable("gui.enrichment_solution.oil_refinery.speed_2x");
+            color = 0x55FFFF;
+        }
+        int statusX = ARROW_X + (ARROW_WIDTH - font.width(status)) / 2;
+        guiGraphics.drawString(font, status, statusX, ARROW_Y + ARROW_HEIGHT + 4, color, false);
     }
 
     @Override

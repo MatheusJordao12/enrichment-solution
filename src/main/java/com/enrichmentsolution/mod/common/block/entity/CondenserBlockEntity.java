@@ -4,6 +4,7 @@ import com.enrichmentsolution.mod.common.block.CondenserBlock;
 import com.enrichmentsolution.mod.common.block.RelativeSide;
 import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.CondenserMenu;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModFluids;
@@ -36,11 +37,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CondenserBlockEntity extends BlockEntity implements com.enrichmentsolution.mod.common.block.ISideConfigurableBlockEntity, MenuProvider {
 
-    public static final int TANK_CAPACITY = 16_000;
-    public static final int MAX_CONDENSE_PER_TICK = 50;
-    public static final int MAX_PUSH_PER_TICK = 200;
-
-    private final FluidTank gasInputTank = new FluidTank(TANK_CAPACITY,
+    private final FluidTank gasInputTank = new FluidTank(ModServerConfig.get(ModServerConfig.CONDENSER_TANK_CAPACITY),
             stack -> stack.getFluid().isSame(ModFluids.GASEOUS_ISOBUTANE.get())) {
         @Override
         protected void onContentsChanged() {
@@ -48,7 +45,7 @@ public class CondenserBlockEntity extends BlockEntity implements com.enrichments
         }
     };
 
-    private final FluidTank waterTank = new FluidTank(TANK_CAPACITY,
+    private final FluidTank waterTank = new FluidTank(ModServerConfig.get(ModServerConfig.CONDENSER_TANK_CAPACITY),
             stack -> stack.getFluid().isSame(Fluids.WATER)) {
         @Override
         protected void onContentsChanged() {
@@ -56,7 +53,7 @@ public class CondenserBlockEntity extends BlockEntity implements com.enrichments
         }
     };
 
-    private final FluidTank liquidOutputTank = new FluidTank(TANK_CAPACITY,
+    private final FluidTank liquidOutputTank = new FluidTank(ModServerConfig.get(ModServerConfig.CONDENSER_TANK_CAPACITY),
             stack -> stack.getFluid().isSame(ModFluids.LIQUID_ISOBUTANE.get())) {
         @Override
         protected void onContentsChanged() {
@@ -93,7 +90,7 @@ public class CondenserBlockEntity extends BlockEntity implements com.enrichments
 
         @Override
         public int getTankCapacity(int tank) {
-            return TANK_CAPACITY;
+            return ModServerConfig.get(ModServerConfig.CONDENSER_TANK_CAPACITY);
         }
 
         @Override
@@ -178,12 +175,16 @@ public class CondenserBlockEntity extends BlockEntity implements com.enrichments
         int liquidSpace = be.liquidOutputTank.getSpace();
         int waterAvail = be.waterTank.getFluidAmount();
 
-        int canCondense = Math.min(MAX_CONDENSE_PER_TICK, Math.min(gasAvail, liquidSpace));
-        int maxByWater = waterAvail * 5;
+        int gasPerWater = ModServerConfig.get(ModServerConfig.CONDENSER_GAS_PER_WATER_MB);
+        int canCondense = Math.min(
+                ModServerConfig.get(ModServerConfig.CONDENSER_MAX_CONDENSE_PER_TICK),
+                Math.min(gasAvail, liquidSpace)
+        );
+        int maxByWater = waterAvail * gasPerWater;
         int toCondense = Math.min(canCondense, maxByWater);
 
         if (toCondense > 0) {
-            int waterToConsume = Math.max(1, (toCondense + 4) / 5);
+            int waterToConsume = Math.max(1, (toCondense + gasPerWater - 1) / gasPerWater);
             be.gasInputTank.drain(toCondense, IFluidHandler.FluidAction.EXECUTE);
             be.waterTank.drain(waterToConsume, IFluidHandler.FluidAction.EXECUTE);
             be.liquidOutputTank.fill(
@@ -210,7 +211,10 @@ public class CondenserBlockEntity extends BlockEntity implements com.enrichments
                 BlockPos neighborPos = pos.relative(dir);
                 IFluidHandler target = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
                 if (target != null) {
-                    int toPush = Math.min(MAX_PUSH_PER_TICK, be.liquidOutputTank.getFluidAmount());
+                    int toPush = Math.min(
+                            ModServerConfig.get(ModServerConfig.CONDENSER_MAX_PUSH_PER_TICK),
+                            be.liquidOutputTank.getFluidAmount()
+                    );
                     FluidStack pushStack = new FluidStack(ModFluids.LIQUID_ISOBUTANE.get(), toPush);
                     int accepted = target.fill(pushStack, IFluidHandler.FluidAction.EXECUTE);
                     if (accepted > 0) {

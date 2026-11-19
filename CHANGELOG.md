@@ -4,7 +4,7 @@ All notable changes to Enrichment Solution. Format based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses semantic versioning with a
 pre-release suffix while in beta.
 
-## [0.2.0-beta] — unreleased
+## [0.2.0-beta] — 2026-11-17
 
 Public beta target. Adds the full mid-game tech tree on top of the 0.1.0 alpha.
 
@@ -46,6 +46,14 @@ Public beta target. Adds the full mid-game tech tree on top of the 0.1.0 alpha.
   push / pull / none per side.
 - Fluid temperature and thermal multiplier travel with the fluid itself (data components), so hot
   water cools down along a pipe run according to the pipe tier.
+- **Machine recipes are now datapack driven** (`data/enrichment_solution/recipe/{enrichment,pcb,pressing,refining}`).
+  Each recipe carries its own `energy_per_tick` and `ticks`, so balance can be changed by a datapack
+  without recompiling; the PCB Printer remembers the pending recipe id across save/load and aborts
+  safely if the recipe disappears after a `/reload`.
+- JEI reads the same recipe source as the machines (the level `RecipeManager`) instead of a second
+  hardcoded list.
+- Conduit routing is cached per level and invalidated only when the network topology or a side
+  configuration changes; the per-tick BFS is gone.
 - Version bumped to `0.2.0-beta`.
 
 ### Fixed
@@ -57,12 +65,12 @@ Public beta target. Adds the full mid-game tech tree on top of the 0.1.0 alpha.
 
 ### Known issues
 
-- Machine processing recipes are still hardcoded in the BlockEntities (datapack recipes pending); only
-  crafting recipes are JSON today.
-- Reactor Core structure validation is a placeholder (`isStructureValid` always returns `true`).
-- Energy and time costs are compile-time constants; no server config yet.
-- Balance and TPS stress testing are still in progress.
-- `pt_br` is missing the configurator and conduit-mode keys.
+- Reactor Core structure validation is still a placeholder (`isStructureValid` always returns `true`).
+- Energy and time costs are per-recipe, but the machines' internal buffers/rates are still
+  compile-time constants (no server config yet).
+- Recipe JSONs are hand written; datagen (`runData`) is not wired yet.
+- No automated GameTests yet; balance and TPS stress testing are still in progress.
+- JEI has no category yet for the Heat Exchanger / Geothermal Generator rates.
 
 ## [0.1.0] — initial alpha
 

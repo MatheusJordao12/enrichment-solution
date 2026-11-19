@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:pressed_aluminium"
+    },
+    "C": {
+      "item": "minecraft:chest"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "LAL",
+    "SCS",
+    "LAL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:isolated_backpack"
+  }
+}

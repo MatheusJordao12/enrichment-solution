@@ -6,6 +6,7 @@ import com.enrichmentsolution.mod.common.block.RelativeSide;
 import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.EnrichmentChamberMenu;
 import com.enrichmentsolution.mod.common.menu.QuadEnrichmentMenu;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
@@ -47,13 +48,6 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
 
     public static final int SLOT_INPUT = 0;
     public static final int SLOT_OUTPUT = 1;
-
-    private static final int ENERGY_CAPACITY = 50_000;
-    private static final int MAX_RECEIVE = 2_000;
-
-    /** GUI fallbacks used while no recipe matches the current input (the progress bar is empty in that case). */
-    private static final int DEFAULT_PROCESS_TIME = 100;
-    private static final int DEFAULT_QUAD_PROCESS_TIME = 50;
 
     private final MachineRecipeCache recipes = new MachineRecipeCache(MachineRecipeKind.ENRICHMENT);
 
@@ -135,7 +129,15 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
     };
 
     public EnrichmentChamberBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.ENRICHMENT_CHAMBER.get(), pos, blockState, ENERGY_CAPACITY, MAX_RECEIVE, 0, 8);
+        super(
+                ModBlockEntities.ENRICHMENT_CHAMBER.get(),
+                pos,
+                blockState,
+                ModServerConfig.get(ModServerConfig.ENRICHMENT_ENERGY_CAPACITY),
+                ModServerConfig.get(ModServerConfig.ENRICHMENT_MAX_RECEIVE),
+                0,
+                8
+        );
     }
 
     @Override
@@ -214,12 +216,14 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
         boolean isWorking = false;
         RecipeHolder<MachineRecipe> holder = findSingleRecipe(itemHandler.getStackInSlot(SLOT_INPUT));
         MachineRecipe recipe = holder == null ? null : holder.value();
-        if (canProcessSingle(recipe) && energyStorage.getEnergyStored() >= recipe.energyPerTick()) {
-            energyStorage.consumeInternal(recipe.energyPerTick(), false);
+        int energyCost = recipe == null ? 0 : ModServerConfig.scaleEnergy(recipe.energyPerTick(), ModServerConfig.ENRICHMENT_ENERGY_MULTIPLIER);
+        if (canProcessSingle(recipe) && energyStorage.getEnergyStored() >= energyCost) {
+            energyStorage.consumeInternal(energyCost, false);
             progress++;
             isWorking = true;
 
-            if (progress >= recipe.ticks()) {
+            int targetTicks = ModServerConfig.scaleTicks(recipe.ticks(), ModServerConfig.ENRICHMENT_TIME_MULTIPLIER);
+            if (progress >= targetTicks) {
                 processSingle(recipe);
                 progress = 0;
             }
@@ -246,8 +250,9 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
             RecipeHolder<MachineRecipe> holder = findChannelRecipe(ch);
             MachineRecipe recipe = holder == null ? null : holder.value();
             boolean canProcess = canProcessChannel(ch, recipe);
-            if (canProcess && energyStorage.getEnergyStored() >= recipe.energyPerTick()) {
-                energyStorage.consumeInternal(recipe.energyPerTick(), false);
+            int energyCost = recipe == null ? 0 : ModServerConfig.scaleEnergy(recipe.energyPerTick(), ModServerConfig.ENRICHMENT_ENERGY_MULTIPLIER);
+            if (canProcess && energyStorage.getEnergyStored() >= energyCost) {
+                energyStorage.consumeInternal(energyCost, false);
                 quadProgress[ch]++;
                 anyWorking = true;
                 dirty = true;
@@ -273,7 +278,8 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
 
     /** The quad multiblock runs every channel twice as fast as a single chamber. */
     private static int quadTicks(MachineRecipe recipe) {
-        return Math.max(1, recipe.ticks() / 2);
+        int scaled = ModServerConfig.scaleTicks(recipe.ticks(), ModServerConfig.ENRICHMENT_TIME_MULTIPLIER);
+        return Math.max(1, scaled / 2);
     }
 
     private static boolean isSingleInputRecipe(MachineRecipe recipe) {
@@ -441,7 +447,9 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
     /** Operation time of the recipe currently matching the single input slot, for the GUI. */
     public int getMaxProgress() {
         RecipeHolder<MachineRecipe> holder = findSingleRecipe(itemHandler.getStackInSlot(SLOT_INPUT));
-        return holder == null ? DEFAULT_PROCESS_TIME : holder.value().ticks();
+        return holder == null
+                ? ModServerConfig.get(ModServerConfig.ENRICHMENT_DEFAULT_PROCESS_TIME)
+                : ModServerConfig.scaleTicks(holder.value().ticks(), ModServerConfig.ENRICHMENT_TIME_MULTIPLIER);
     }
 
     /** Operation time of the quad channels, for the GUI. */
@@ -454,7 +462,7 @@ public class EnrichmentChamberBlockEntity extends AbstractMachineBlockEntity imp
                 }
             }
         }
-        return DEFAULT_QUAD_PROCESS_TIME;
+        return ModServerConfig.get(ModServerConfig.ENRICHMENT_DEFAULT_QUAD_PROCESS_TIME);
     }
 
     @Override

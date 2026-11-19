@@ -5,11 +5,13 @@ import com.enrichmentsolution.mod.common.block.RelativeSide;
 import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.OilRefineryMenu;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipeCache;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipeKind;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
+import com.enrichmentsolution.mod.registry.ModBlocks;
 import com.enrichmentsolution.mod.registry.ModFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,15 +42,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implements com.enrichmentsolution.mod.common.block.ISideConfigurableBlockEntity, MenuProvider {
 
-    public static final int TANK_CAPACITY = 16_000;
-
-    private static final int ENERGY_CAPACITY = 50_000;
-    private static final int MAX_RECEIVE = 2_000;
-    private static final int AUTO_PUSH_RATE = 100;
-
-    /** GUI fallback used while no refining recipe matches the tanks. */
-    private static final int DEFAULT_PROCESS_TIME = 25;
-
     private final MachineRecipeCache recipes = new MachineRecipeCache(MachineRecipeKind.REFINING);
 
     private int progress = 0;
@@ -64,7 +57,7 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
             SideConfigMode.INPUT
     );
 
-    private final FluidTank inputTank = new FluidTank(TANK_CAPACITY,
+    private final FluidTank inputTank = new FluidTank(ModServerConfig.get(ModServerConfig.OIL_REFINERY_TANK_CAPACITY),
             stack -> isValidInputFluid(stack.getFluid())) {
         @Override
         protected void onContentsChanged() {
@@ -72,7 +65,7 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
         }
     };
 
-    private final FluidTank outputTank = new FluidTank(TANK_CAPACITY,
+    private final FluidTank outputTank = new FluidTank(ModServerConfig.get(ModServerConfig.OIL_REFINERY_TANK_CAPACITY),
             stack -> isValidOutputFluid(stack.getFluid())) {
         @Override
         protected void onContentsChanged() {
@@ -140,8 +133,7 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
             int outCap = outputTank.getCapacity();
             return switch (index) {
                 case OilRefineryMenu.DATA_PROGRESS -> progress;
-                case OilRefineryMenu.DATA_MAX_PROGRESS ->
-                        activeRecipe == null ? DEFAULT_PROCESS_TIME : activeRecipe.ticks();
+                case OilRefineryMenu.DATA_MAX_PROGRESS -> getScaledTargetTicks(getDistillationTowerCount());
                 case OilRefineryMenu.DATA_ENERGY_LOW -> energy & 0xFFFF;
                 case OilRefineryMenu.DATA_ENERGY_HIGH -> (energy >>> 16) & 0xFFFF;
                 case OilRefineryMenu.DATA_MAX_ENERGY_LOW -> maxEnergy & 0xFFFF;
@@ -154,6 +146,7 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
                 case OilRefineryMenu.DATA_OUTPUT_FLUID_HIGH -> (outFluid >>> 16) & 0xFFFF;
                 case OilRefineryMenu.DATA_OUTPUT_CAP_LOW -> outCap & 0xFFFF;
                 case OilRefineryMenu.DATA_OUTPUT_CAP_HIGH -> (outCap >>> 16) & 0xFFFF;
+                case OilRefineryMenu.DATA_TOWER_COUNT -> getDistillationTowerCount();
                 default -> {
                     if (index >= OilRefineryMenu.DATA_SIDE_BASE
                             && index < OilRefineryMenu.DATA_SIDE_BASE + RelativeSide.values().length) {
@@ -178,7 +171,15 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
     };
 
     public OilRefineryBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.OIL_REFINERY.get(), pos, blockState, ENERGY_CAPACITY, MAX_RECEIVE, 0, 0);
+        super(
+                ModBlockEntities.OIL_REFINERY.get(),
+                pos,
+                blockState,
+                ModServerConfig.get(ModServerConfig.OIL_REFINERY_ENERGY_CAPACITY),
+                ModServerConfig.get(ModServerConfig.OIL_REFINERY_MAX_RECEIVE),
+                0,
+                0
+        );
     }
 
     private Direction getFacing() {
@@ -221,21 +222,79 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
         return new OilRefineryMenu(containerId, playerInventory, this, data);
     }
 
+    /**
+     * Checks the 4 horizontal neighbors of this refinery for {@link ModBlocks#DISTILLATION_TOWER}
+     * and returns the tallest consecutive vertical stack height (0..3).
+     */
+    public int getDistillationTowerCount() {
+        if (level == null) {
+            return 0;
+        }
+        int maxStack = 0;
+        Block towerBlock = ModBlocks.DISTILLATION_TOWER.get();
+        for (Direction dir : Direction.Plane.HORIZONTAL) {
+            BlockPos basePos = worldPosition.relative(dir);
+            int stack = 0;
+            for (int dy = 0; dy < 3; dy++) {
+                if (level.getBlockState(basePos.above(dy)).is(towerBlock)) {
+                    stack++;
+                } else {
+                    break;
+                }
+            }
+            if (stack > maxStack) {
+                maxStack = stack;
+            }
+        }
+        return maxStack;
+    }
+
+    private static float getTowerSpeedMultiplier(int towerCount) {
+        return switch (towerCount) {
+            case 2 -> 1.5f;
+            case 3 -> 2.0f;
+            default -> 1.0f;
+        };
+    }
+
+    private static float getTowerEnergyMultiplier(int towerCount) {
+        return switch (towerCount) {
+            case 2 -> 1.25f;
+            case 3 -> 1.75f;
+            default -> 1.0f;
+        };
+    }
+
+    private int getScaledTargetTicks(int towerCount) {
+        int baseTicks = activeRecipe == null
+                ? ModServerConfig.get(ModServerConfig.OIL_REFINERY_DEFAULT_PROCESS_TIME)
+                : ModServerConfig.scaleTicks(activeRecipe.ticks(), ModServerConfig.OIL_REFINERY_TIME_MULTIPLIER);
+        return Math.max(1, Math.round(baseTicks / getTowerSpeedMultiplier(towerCount)));
+    }
+
     @Override
     protected void tickServer(Level level, BlockPos pos, BlockState state) {
-        activeRecipe = findRecipe();
+        int towerCount = getDistillationTowerCount();
+        activeRecipe = towerCount > 0 ? findRecipe() : null;
         boolean isWorking = false;
-        if (activeRecipe != null && energyStorage.getEnergyStored() >= activeRecipe.energyPerTick()) {
-            energyStorage.consumeInternal(activeRecipe.energyPerTick(), false);
+        int energyCost = 0;
+        if (activeRecipe != null && towerCount > 0) {
+            int baseEnergy = ModServerConfig.scaleEnergy(activeRecipe.energyPerTick(), ModServerConfig.OIL_REFINERY_ENERGY_MULTIPLIER);
+            energyCost = Math.round(baseEnergy * getTowerEnergyMultiplier(towerCount));
+        }
+
+        if (towerCount > 0 && activeRecipe != null && energyStorage.getEnergyStored() >= energyCost) {
+            energyStorage.consumeInternal(energyCost, false);
             progress++;
             isWorking = true;
 
-            if (progress >= activeRecipe.ticks()) {
+            int targetTicks = getScaledTargetTicks(towerCount);
+            if (progress >= targetTicks) {
                 process(activeRecipe);
                 progress = 0;
             }
             setChanged();
-        } else if (progress > 0 && activeRecipe == null) {
+        } else if (progress > 0 && (towerCount == 0 || activeRecipe == null)) {
             progress = 0;
             setChanged();
         }
@@ -319,7 +378,10 @@ public class OilRefineryBlockEntity extends AbstractMachineBlockEntity implement
             if (target == null) {
                 continue;
             }
-            FluidStack toSend = outputTank.drain(AUTO_PUSH_RATE, IFluidHandler.FluidAction.SIMULATE);
+            FluidStack toSend = outputTank.drain(
+                    ModServerConfig.get(ModServerConfig.OIL_REFINERY_AUTO_PUSH_RATE),
+                    IFluidHandler.FluidAction.SIMULATE
+            );
             if (!toSend.isEmpty()) {
                 int accepted = target.fill(toSend, IFluidHandler.FluidAction.EXECUTE);
                 if (accepted > 0) {

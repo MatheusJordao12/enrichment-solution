@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "enrichment_solution:block/crude_oil_block"
+    }
+  }
+}

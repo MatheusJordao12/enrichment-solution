@@ -1,0 +1,14 @@
+{
+  "type": "enrichment_solution:stamping",
+  "energy_per_tick": 25,
+  "item_inputs": [
+    {
+      "item": "enrichment_solution:aluminium_ingot"
+    }
+  ],
+  "item_output": {
+    "count": 1,
+    "id": "enrichment_solution:pressed_aluminium"
+  },
+  "ticks": 80
+}

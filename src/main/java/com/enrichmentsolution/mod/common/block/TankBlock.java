@@ -3,10 +3,15 @@ package com.enrichmentsolution.mod.common.block;
 import com.enrichmentsolution.mod.common.block.entity.TankBlockEntity;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -17,6 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
  * Structural block for the Geothermal Multiblock Tank (up to 20x20x20, 200 buckets per block).
  */
@@ -26,6 +33,15 @@ public class TankBlock extends BaseEntityBlock {
 
     public TankBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+        tooltipComponents.add(Component.translatable("tooltip.enrichment_solution.tank_block.storage")
+                .withStyle(ChatFormatting.GRAY));
+        tooltipComponents.add(Component.translatable("tooltip.enrichment_solution.tank_block.temp")
+                .withStyle(ChatFormatting.GOLD));
     }
 
     @Override

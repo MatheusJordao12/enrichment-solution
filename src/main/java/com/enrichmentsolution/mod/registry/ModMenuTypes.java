@@ -7,6 +7,7 @@ import com.enrichmentsolution.mod.common.menu.EnrichmentChamberMenu;
 import com.enrichmentsolution.mod.common.menu.FluidPumpMenu;
 import com.enrichmentsolution.mod.common.menu.GeothermalGeneratorMenu;
 import com.enrichmentsolution.mod.common.menu.HeatExchangerMenu;
+import com.enrichmentsolution.mod.common.menu.IsolatedBackpackMenu;
 import com.enrichmentsolution.mod.common.menu.OilRefineryMenu;
 import com.enrichmentsolution.mod.common.menu.PcbPrinterMenu;
 import com.enrichmentsolution.mod.common.menu.QuadEnrichmentMenu;
@@ -64,6 +65,9 @@ public final class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<FluidPumpMenu>> FLUID_PUMP =
             MENUS.register("fluid_pump", () -> IMenuTypeExtension.create(FluidPumpMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<IsolatedBackpackMenu>> ISOLATED_BACKPACK =
+            MENUS.register("isolated_backpack", () -> IMenuTypeExtension.create(IsolatedBackpackMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);

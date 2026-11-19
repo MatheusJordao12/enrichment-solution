@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "P": {
+      "item": "enrichment_solution:basic_fluid_pipe"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "AGA",
+    "SPS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:distillation_tower"
+  }
+}

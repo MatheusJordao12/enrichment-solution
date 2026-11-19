@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_machine_casing": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:machine_casing"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "enrichment_solution:robot_charger"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_machine_casing"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "enrichment_solution:robot_charger"
+    ]
+  }
+}

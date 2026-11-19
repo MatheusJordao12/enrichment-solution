@@ -1,0 +1,33 @@
+{
+  "parent": "enrichment_solution:first_circuit",
+  "criteria": {
+    "get": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:advanced_circuit"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.enrichment_solution.advanced_circuit.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "enrichment_solution:advanced_circuit"
+    },
+    "title": {
+      "translate": "advancement.enrichment_solution.advanced_circuit.title"
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

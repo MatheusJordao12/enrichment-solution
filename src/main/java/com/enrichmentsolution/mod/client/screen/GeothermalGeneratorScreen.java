@@ -1,7 +1,7 @@
 package com.enrichmentsolution.mod.client.screen;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
-import com.enrichmentsolution.mod.common.block.entity.GeothermalGeneratorBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.GeothermalGeneratorMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -85,7 +85,8 @@ public class GeothermalGeneratorScreen extends AbstractContainerScreen<Geotherma
 
         // Turbine flow arrow
         if (menu.isGenerating()) {
-            int arrowWidth = Math.max(1, menu.getFlowRate() * ARROW_WIDTH / GeothermalGeneratorBlockEntity.MAX_PROCESS_MB_PER_TICK);
+            int maxFlow = Math.max(1, ModServerConfig.get(ModServerConfig.GEOTHERMAL_MAX_PROCESS_MB_PER_TICK));
+            int arrowWidth = Math.max(1, menu.getFlowRate() * ARROW_WIDTH / maxFlow);
             arrowWidth = Math.min(arrowWidth, ARROW_WIDTH);
             guiGraphics.blit(
                     TEXTURE,

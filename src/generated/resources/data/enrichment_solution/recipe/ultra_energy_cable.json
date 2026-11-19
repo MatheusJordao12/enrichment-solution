@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "enrichment_solution:ultra_circuit"
+    },
+    "P": {
+      "item": "enrichment_solution:ultimate_energy_cable"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PCP",
+    "PPP"
+  ],
+  "result": {
+    "count": 8,
+    "id": "enrichment_solution:ultra_energy_cable"
+  }
+}

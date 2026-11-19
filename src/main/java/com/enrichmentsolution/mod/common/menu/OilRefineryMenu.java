@@ -38,7 +38,8 @@ public class OilRefineryMenu extends AbstractContainerMenu implements ISideConfi
     public static final int DATA_OUTPUT_CAP_LOW = 12;
     public static final int DATA_OUTPUT_CAP_HIGH = 13;
     public static final int DATA_SIDE_BASE = 14;
-    public static final int DATA_COUNT = 20;
+    public static final int DATA_TOWER_COUNT = 20;
+    public static final int DATA_COUNT = 21;
 
     public static final int BUTTON_SIDE_BASE = 100;
 
@@ -116,6 +117,10 @@ public class OilRefineryMenu extends AbstractContainerMenu implements ISideConfi
 
     public int getOutputFluidCapacity() {
         return combine32(DATA_OUTPUT_CAP_LOW, DATA_OUTPUT_CAP_HIGH);
+    }
+
+    public int getTowerCount() {
+        return data.get(DATA_TOWER_COUNT);
     }
 
     private int combine32(int lowIdx, int highIdx) {

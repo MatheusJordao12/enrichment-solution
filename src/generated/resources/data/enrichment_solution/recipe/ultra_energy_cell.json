@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "enrichment_solution:ultra_energy_cable"
+    },
+    "E": {
+      "item": "enrichment_solution:ultimate_energy_cell"
+    },
+    "O": {
+      "item": "enrichment_solution:enriched_uranium"
+    },
+    "P": {
+      "item": "enrichment_solution:oxidated_plutonium_ingot"
+    }
+  },
+  "pattern": [
+    "POP",
+    "CEC",
+    "POP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:ultra_energy_cell"
+  }
+}

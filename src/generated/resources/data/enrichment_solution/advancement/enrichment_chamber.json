@@ -1,0 +1,33 @@
+{
+  "parent": "enrichment_solution:root",
+  "criteria": {
+    "get": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:enrichment_chamber"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.enrichment_solution.enrichment_chamber.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "enrichment_solution:enrichment_chamber"
+    },
+    "title": {
+      "translate": "advancement.enrichment_solution.enrichment_chamber.title"
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -5,6 +5,7 @@ import com.enrichmentsolution.mod.common.block.RelativeSide;
 import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.GeothermalGeneratorMenu;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModFluids;
@@ -38,13 +39,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity implements com.enrichmentsolution.mod.common.block.ISideConfigurableBlockEntity, MenuProvider {
 
-    public static final int ENERGY_CAPACITY = 200_000;
-    public static final int MAX_EXTRACT = 2_000;
-    public static final int TANK_CAPACITY = 16_000;
-    public static final int MAX_PROCESS_MB_PER_TICK = 50;
-    public static final int FE_PER_MB = 20;
-
-    private final FluidTank inputTank = new FluidTank(TANK_CAPACITY,
+    private final FluidTank inputTank = new FluidTank(ModServerConfig.get(ModServerConfig.GEOTHERMAL_TANK_CAPACITY),
             stack -> stack.getFluid() == ModFluids.GASEOUS_ISOBUTANE.get()) {
         @Override
         protected void onContentsChanged() {
@@ -52,7 +47,7 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity i
         }
     };
 
-    private final FluidTank outputTank = new FluidTank(TANK_CAPACITY,
+    private final FluidTank outputTank = new FluidTank(ModServerConfig.get(ModServerConfig.GEOTHERMAL_TANK_CAPACITY),
             stack -> stack.getFluid() == ModFluids.GASEOUS_ISOBUTANE.get()) {
         @Override
         protected void onContentsChanged() {
@@ -77,7 +72,7 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity i
 
         @Override
         public int getTankCapacity(int tank) {
-            return TANK_CAPACITY;
+            return ModServerConfig.get(ModServerConfig.GEOTHERMAL_TANK_CAPACITY);
         }
 
         @Override
@@ -114,7 +109,15 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity i
     );
 
     public GeothermalGeneratorBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.GEOTHERMAL_GENERATOR.get(), pos, blockState, ENERGY_CAPACITY, 0, MAX_EXTRACT, 0);
+        super(
+                ModBlockEntities.GEOTHERMAL_GENERATOR.get(),
+                pos,
+                blockState,
+                ModServerConfig.get(ModServerConfig.GEOTHERMAL_ENERGY_CAPACITY),
+                0,
+                ModServerConfig.get(ModServerConfig.GEOTHERMAL_MAX_EXTRACT),
+                0
+        );
     }
 
     public SideConfigMode getRelativeSideMode(RelativeSide side) {
@@ -152,16 +155,18 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity i
         int availableGas = inputTank.getFluidAmount();
         int outputSpace = outputTank.getSpace();
         int energySpace = energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored();
-        int maxByEnergy = energySpace / FE_PER_MB;
+        int fePerMb = ModServerConfig.get(ModServerConfig.GEOTHERMAL_FE_PER_MB);
+        int maxProcessMb = ModServerConfig.get(ModServerConfig.GEOTHERMAL_MAX_PROCESS_MB_PER_TICK);
+        int maxByEnergy = energySpace / fePerMb;
 
-        int toProcess = Math.min(MAX_PROCESS_MB_PER_TICK, Math.min(availableGas, Math.min(outputSpace, maxByEnergy)));
+        int toProcess = Math.min(maxProcessMb, Math.min(availableGas, Math.min(outputSpace, maxByEnergy)));
 
         if (toProcess > 0) {
             FluidStack drained = inputTank.drain(toProcess, IFluidHandler.FluidAction.EXECUTE);
             int actual = drained.getAmount();
             if (actual > 0) {
                 outputTank.fill(new FluidStack(ModFluids.GASEOUS_ISOBUTANE.get(), actual), IFluidHandler.FluidAction.EXECUTE);
-                int generated = actual * FE_PER_MB;
+                int generated = actual * fePerMb;
                 energyStorage.generateInternal(generated, false);
                 lastGeneration = generated;
                 lastFlowRate = actual;
@@ -199,7 +204,7 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity i
             }
             IEnergyStorage receiver = level.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, direction.getOpposite());
             if (receiver != null && receiver.canReceive()) {
-                int extractable = energyStorage.extractEnergy(MAX_EXTRACT, true);
+                int extractable = energyStorage.extractEnergy(ModServerConfig.get(ModServerConfig.GEOTHERMAL_MAX_EXTRACT), true);
                 if (extractable <= 0) {
                     return;
                 }
@@ -230,7 +235,7 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity i
             }
             IFluidHandler target = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, direction.getOpposite());
             if (target != null) {
-                int toSend = Math.min(MAX_PROCESS_MB_PER_TICK, outputTank.getFluidAmount());
+                int toSend = Math.min(ModServerConfig.get(ModServerConfig.GEOTHERMAL_MAX_PROCESS_MB_PER_TICK), outputTank.getFluidAmount());
                 FluidStack simulatedDrain = outputTank.drain(toSend, IFluidHandler.FluidAction.SIMULATE);
                 if (!simulatedDrain.isEmpty()) {
                     int accepted = target.fill(simulatedDrain, IFluidHandler.FluidAction.EXECUTE);
@@ -274,7 +279,7 @@ public class GeothermalGeneratorBlockEntity extends AbstractMachineBlockEntity i
                 case GeothermalGeneratorMenu.DATA_MAX_ENERGY_HIGH -> (max >>> 16) & 0xFFFF;
                 case GeothermalGeneratorMenu.DATA_INPUT_GAS -> inputTank.getFluidAmount();
                 case GeothermalGeneratorMenu.DATA_OUTPUT_GAS -> outputTank.getFluidAmount();
-                case GeothermalGeneratorMenu.DATA_MAX_TANK -> TANK_CAPACITY;
+                case GeothermalGeneratorMenu.DATA_MAX_TANK -> ModServerConfig.get(ModServerConfig.GEOTHERMAL_TANK_CAPACITY);
                 case GeothermalGeneratorMenu.DATA_GENERATION -> lastGeneration;
                 case GeothermalGeneratorMenu.DATA_FLOW_RATE -> lastFlowRate;
                 default -> {

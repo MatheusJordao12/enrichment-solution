@@ -1,0 +1,33 @@
+{
+  "parent": "enrichment_solution:heat_exchanger",
+  "criteria": {
+    "get": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:geothermal_generator"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.enrichment_solution.geothermal_generator.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "enrichment_solution:geothermal_generator"
+    },
+    "title": {
+      "translate": "advancement.enrichment_solution.geothermal_generator.title"
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "enrichment_solution:block/unstable_old_uranium_ore"
+    }
+  }
+}

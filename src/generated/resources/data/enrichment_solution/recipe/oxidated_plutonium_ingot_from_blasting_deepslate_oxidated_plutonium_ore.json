@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.7,
+  "ingredient": {
+    "item": "enrichment_solution:deepslate_oxidated_plutonium_ore"
+  },
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:oxidated_plutonium_ingot"
+  }
+}

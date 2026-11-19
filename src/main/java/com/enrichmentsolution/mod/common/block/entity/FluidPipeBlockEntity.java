@@ -3,8 +3,10 @@ package com.enrichmentsolution.mod.common.block.entity;
 import com.enrichmentsolution.mod.common.block.FluidConduitTier;
 import com.enrichmentsolution.mod.common.block.FluidPipeBlock;
 import com.enrichmentsolution.mod.common.block.FluidPipeTier;
+import com.enrichmentsolution.mod.common.block.entity.network.ConduitLink;
 import com.enrichmentsolution.mod.common.block.entity.network.ConduitNetworkCache;
 import com.enrichmentsolution.mod.common.block.entity.network.FluidDeliveryTarget;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.fluid.ThermalFluidHelper;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModDataComponents;
@@ -39,9 +41,6 @@ import java.util.Set;
  * Fluid sits in the pulling pipe and is delivered through the network, losing heat per pipe block on the way.
  */
 public class FluidPipeBlockEntity extends BlockEntity implements com.enrichmentsolution.mod.common.block.IConduitConfigurable {
-
-    private static final int MAX_NETWORK_SCAN = 256;
-    private static final int EMPTY_UNLOCK_TICKS = 40;
 
     /** Pre-computed routes of every pipe of every loaded level, shared by all pipe block entities. */
     private static final ConduitNetworkCache<FluidDeliveryTarget> NETWORK_CACHE = new ConduitNetworkCache<>();
@@ -171,7 +170,7 @@ public class FluidPipeBlockEntity extends BlockEntity implements com.enrichments
         if (blockEntity.fluidTank.isEmpty()) {
             if (blockEntity.lockedFluid != Fluids.EMPTY) {
                 blockEntity.emptyTicks++;
-                if (blockEntity.emptyTicks >= EMPTY_UNLOCK_TICKS) {
+                if (blockEntity.emptyTicks >= ModServerConfig.get(ModServerConfig.FLUID_PIPE_EMPTY_UNLOCK_TICKS)) {
                     blockEntity.lockedFluid = Fluids.EMPTY;
                     blockEntity.emptyTicks = 0;
                     blockEntity.setChanged();
@@ -187,43 +186,37 @@ public class FluidPipeBlockEntity extends BlockEntity implements com.enrichments
      * Actively draws fluid from adjacent non-pipe IFluidHandler providers up to this tier's transfer rate.
      */
     private void pullFluidFromAdjacentSources(Level level, BlockPos pos) {
-        int remainingSpace = fluidTank.getCapacity() - fluidTank.getFluidAmount();
-        if (remainingSpace <= 0) {
+        if (fluidTank.getCapacity() - fluidTank.getFluidAmount() <= 0) {
             return;
         }
-
-        for (Direction dir : Direction.values()) {
-            BlockPos neighborPos = pos.relative(dir);
-            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
-            if (neighborBe == null || neighborBe instanceof FluidPipeBlockEntity || !conduitConfig.canPull(dir)) {
-                continue;
-            }
-            IFluidHandler source = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
-            if (source == null) {
-                continue;
-            }
-
-            int toPull = Math.min(transferRate, fluidTank.getCapacity() - fluidTank.getFluidAmount());
-            if (toPull <= 0) {
-                return;
-            }
-
-            FluidStack simulated;
-            if (fluidTank.isEmpty()) {
-                simulated = source.drain(toPull, IFluidHandler.FluidAction.SIMULATE);
-            } else {
-                FluidStack request = fluidTank.getFluid().copyWithAmount(toPull);
-                simulated = source.drain(request, IFluidHandler.FluidAction.SIMULATE);
-            }
-
-            if (!simulated.isEmpty()) {
-                int accepted = fluidTank.fill(simulated, IFluidHandler.FluidAction.EXECUTE);
-                if (accepted > 0) {
-                    lastSourcePos = neighborPos;
-                    source.drain(simulated.copyWithAmount(accepted), IFluidHandler.FluidAction.EXECUTE);
+        ConduitLink.pullFromAdjacent(
+                level,
+                pos,
+                FluidPipeBlockEntity.class,
+                conduitConfig,
+                Capabilities.FluidHandler.BLOCK,
+                (neighborPos, dir, source) -> {
+                    int toPull = Math.min(transferRate, fluidTank.getCapacity() - fluidTank.getFluidAmount());
+                    if (toPull <= 0) {
+                        return false;
+                    }
+                    FluidStack simulated;
+                    if (fluidTank.isEmpty()) {
+                        simulated = source.drain(toPull, IFluidHandler.FluidAction.SIMULATE);
+                    } else {
+                        FluidStack request = fluidTank.getFluid().copyWithAmount(toPull);
+                        simulated = source.drain(request, IFluidHandler.FluidAction.SIMULATE);
+                    }
+                    if (!simulated.isEmpty()) {
+                        int accepted = fluidTank.fill(simulated, IFluidHandler.FluidAction.EXECUTE);
+                        if (accepted > 0) {
+                            lastSourcePos = neighborPos;
+                            source.drain(simulated.copyWithAmount(accepted), IFluidHandler.FluidAction.EXECUTE);
+                        }
+                    }
+                    return fluidTank.getCapacity() - fluidTank.getFluidAmount() > 0;
                 }
-            }
-        }
+        );
     }
 
     /**
@@ -303,69 +296,40 @@ public class FluidPipeBlockEntity extends BlockEntity implements com.enrichments
      */
     private void distributeFluidAlongNetwork(Level level, BlockPos startPos) {
         List<FluidDeliveryTarget> targets = NETWORK_CACHE.routes(level, startPos, () -> scanNetwork(level, startPos));
-        for (FluidDeliveryTarget target : targets) {
-            if (fluidTank.isEmpty()) {
-                return;
-            }
-            int maxPush = Math.min(transferRate, fluidTank.getFluidAmount());
-            if (maxPush <= 0) {
-                return;
-            }
-
-            IFluidHandler receiver = level.getCapability(Capabilities.FluidHandler.BLOCK, target.pos(), target.accessSide());
-            if (receiver == null) {
-                continue;
-            }
-
-            FluidStack toSend = applyHeatLoss(fluidTank.getFluid().copyWithAmount(maxPush), target.heatRetention());
-            int accepted = receiver.fill(toSend, IFluidHandler.FluidAction.EXECUTE);
-            if (accepted > 0) {
-                fluidTank.drain(accepted, IFluidHandler.FluidAction.EXECUTE);
-            }
-        }
+        ConduitLink.distribute(
+                level,
+                targets,
+                FluidDeliveryTarget::pos,
+                FluidDeliveryTarget::accessSide,
+                Capabilities.FluidHandler.BLOCK,
+                () -> !fluidTank.isEmpty(),
+                (target, receiver) -> {
+                    int maxPush = Math.min(transferRate, fluidTank.getFluidAmount());
+                    if (maxPush <= 0) {
+                        return;
+                    }
+                    FluidStack toSend = applyHeatLoss(fluidTank.getFluid().copyWithAmount(maxPush), target.heatRetention());
+                    int accepted = receiver.fill(toSend, IFluidHandler.FluidAction.EXECUTE);
+                    if (accepted > 0) {
+                        fluidTank.drain(accepted, IFluidHandler.FluidAction.EXECUTE);
+                    }
+                }
+        );
     }
 
     /**
      * Walks the connected pipe network once and records every reachable non-pipe fluid handler.
-     * The heat retained is the product of every pipe tier along the path, so a longer run (or a
-     * worse tier) delivers colder fluid. Targets whose exit side is closed by the side
-     * configuration of the last pipe on the path are left out. The fluid capability itself is
-     * resolved on delivery, so changing a machine face keeps working without rebuilding.
      */
     private List<FluidDeliveryTarget> scanNetwork(Level level, BlockPos startPos) {
-        List<FluidDeliveryTarget> targets = new ArrayList<>();
-        Map<BlockPos, Double> retainedByPos = new HashMap<>();
-        Set<BlockPos> visited = new HashSet<>();
-        Queue<BlockPos> queue = new ArrayDeque<>();
-
-        retainedByPos.put(startPos, heatRetention);
-        visited.add(startPos);
-        queue.add(startPos);
-
-        while (!queue.isEmpty() && visited.size() <= MAX_NETWORK_SCAN) {
-            BlockPos current = queue.poll();
-            double currentRetention = retainedByPos.getOrDefault(current, heatRetention);
-            if (!(level.getBlockEntity(current) instanceof FluidPipeBlockEntity currentPipe)) {
-                continue;
-            }
-            for (Direction dir : Direction.values()) {
-                BlockPos neighborPos = current.relative(dir);
-                BlockEntity neighborBe = level.getBlockEntity(neighborPos);
-                if (neighborBe instanceof FluidPipeBlockEntity pipe) {
-                    if (visited.add(neighborPos)) {
-                        retainedByPos.put(neighborPos, currentRetention * pipe.heatRetention);
-                        queue.add(neighborPos);
-                    }
-                    continue;
-                }
-
-                if (neighborBe == null || !currentPipe.conduitConfig.canPush(dir)) {
-                    continue;
-                }
-                targets.add(new FluidDeliveryTarget(neighborPos, dir.getOpposite(), currentRetention));
-            }
-        }
-        return targets;
+        return ConduitLink.scanNetwork(
+                level,
+                startPos,
+                FluidPipeBlockEntity.class,
+                FluidPipeBlockEntity::getConduitConfig,
+                heatRetention,
+                (retention, pipe) -> retention * pipe.heatRetention,
+                FluidDeliveryTarget::new
+        );
     }
 
     @Override

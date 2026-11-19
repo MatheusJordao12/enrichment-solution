@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "III",
+    "RRR",
+    "III"
+  ],
+  "result": {
+    "count": 6,
+    "id": "enrichment_solution:energy_cable"
+  }
+}

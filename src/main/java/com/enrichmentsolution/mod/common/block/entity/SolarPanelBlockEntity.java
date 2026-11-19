@@ -5,6 +5,7 @@ import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.SolarPanelBlock;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.SolarPanelMenu;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -36,19 +37,20 @@ public class SolarPanelBlockEntity extends AbstractMachineBlockEntity implements
 
     public static final int UPGRADE_ANIMATION_TICKS = 32;
 
-    private static final int ENERGY_CAPACITY = 150_000;
-    private static final int MAX_EXTRACT = 1_000;
-    private static final int FE_PER_TICK_CLEAR = 60;
-    private static final int FE_PER_TICK_RAIN = 15;
-    private static final int ADV_FE_PER_TICK_CLEAR = 150;
-    private static final int ADV_FE_PER_TICK_RAIN = 40;
-
     private int lastGeneration = 0;
     private long upgradeAnimStartTick = -1L;
     private final SideConfigHolder sideConfig = SideConfigHolder.allOutput();
 
     public SolarPanelBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.SOLAR_PANEL.get(), pos, blockState, ENERGY_CAPACITY, 0, MAX_EXTRACT, 0);
+        super(
+                ModBlockEntities.SOLAR_PANEL.get(),
+                pos,
+                blockState,
+                ModServerConfig.get(ModServerConfig.SOLAR_ENERGY_CAPACITY),
+                0,
+                ModServerConfig.get(ModServerConfig.SOLAR_MAX_EXTRACT),
+                0
+        );
     }
 
     private Direction getFacing() {
@@ -120,9 +122,9 @@ public class SolarPanelBlockEntity extends AbstractMachineBlockEntity implements
         }
         boolean advanced = isAdvanced();
         if (level.isRaining()) {
-            return advanced ? ADV_FE_PER_TICK_RAIN : FE_PER_TICK_RAIN;
+            return ModServerConfig.get(advanced ? ModServerConfig.SOLAR_ADV_FE_PER_TICK_RAIN : ModServerConfig.SOLAR_FE_PER_TICK_RAIN);
         }
-        return advanced ? ADV_FE_PER_TICK_CLEAR : FE_PER_TICK_CLEAR;
+        return ModServerConfig.get(advanced ? ModServerConfig.SOLAR_ADV_FE_PER_TICK_CLEAR : ModServerConfig.SOLAR_FE_PER_TICK_CLEAR);
     }
 
     private void pushEnergyToNeighbors(Level level, BlockPos pos) {
@@ -141,7 +143,7 @@ public class SolarPanelBlockEntity extends AbstractMachineBlockEntity implements
             }
             IEnergyStorage receiver = level.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, direction.getOpposite());
             if (receiver != null && receiver.canReceive()) {
-                int extractable = energyStorage.extractEnergy(MAX_EXTRACT, true);
+                int extractable = energyStorage.extractEnergy(ModServerConfig.get(ModServerConfig.SOLAR_MAX_EXTRACT), true);
                 int accepted = receiver.receiveEnergy(extractable, false);
                 if (accepted > 0) {
                     energyStorage.extractEnergy(accepted, false);

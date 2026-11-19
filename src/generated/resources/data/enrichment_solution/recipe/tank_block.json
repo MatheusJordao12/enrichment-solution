@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "G G",
+    "SGS"
+  ],
+  "result": {
+    "count": 4,
+    "id": "enrichment_solution:tank_block"
+  }
+}

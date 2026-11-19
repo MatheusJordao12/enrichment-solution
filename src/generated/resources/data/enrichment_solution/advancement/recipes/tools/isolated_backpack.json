@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_pressed_aluminium": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:pressed_aluminium"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "enrichment_solution:isolated_backpack"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_pressed_aluminium"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "enrichment_solution:isolated_backpack"
+    ]
+  }
+}

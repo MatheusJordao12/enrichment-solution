@@ -1,0 +1,136 @@
+{
+  "variants": {
+    "facing=east,lit=false,quad_role=master": {
+      "model": "enrichment_solution:block/quad_enrichment_chamber_off",
+      "y": 90
+    },
+    "facing=east,lit=false,quad_role=none": {
+      "model": "enrichment_solution:block/enrichment_chamber",
+      "y": 90
+    },
+    "facing=east,lit=false,quad_role=right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=east,lit=false,quad_role=top_left": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=east,lit=false,quad_role=top_right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=east,lit=true,quad_role=master": {
+      "model": "enrichment_solution:block/quad_enrichment_chamber",
+      "y": 90
+    },
+    "facing=east,lit=true,quad_role=none": {
+      "model": "enrichment_solution:block/enrichment_chamber_on",
+      "y": 90
+    },
+    "facing=east,lit=true,quad_role=right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=east,lit=true,quad_role=top_left": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=east,lit=true,quad_role=top_right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=north,lit=false,quad_role=master": {
+      "model": "enrichment_solution:block/quad_enrichment_chamber_off"
+    },
+    "facing=north,lit=false,quad_role=none": {
+      "model": "enrichment_solution:block/enrichment_chamber"
+    },
+    "facing=north,lit=false,quad_role=right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=north,lit=false,quad_role=top_left": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=north,lit=false,quad_role=top_right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=north,lit=true,quad_role=master": {
+      "model": "enrichment_solution:block/quad_enrichment_chamber"
+    },
+    "facing=north,lit=true,quad_role=none": {
+      "model": "enrichment_solution:block/enrichment_chamber_on"
+    },
+    "facing=north,lit=true,quad_role=right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=north,lit=true,quad_role=top_left": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=north,lit=true,quad_role=top_right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=south,lit=false,quad_role=master": {
+      "model": "enrichment_solution:block/quad_enrichment_chamber_off",
+      "y": 180
+    },
+    "facing=south,lit=false,quad_role=none": {
+      "model": "enrichment_solution:block/enrichment_chamber",
+      "y": 180
+    },
+    "facing=south,lit=false,quad_role=right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=south,lit=false,quad_role=top_left": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=south,lit=false,quad_role=top_right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=south,lit=true,quad_role=master": {
+      "model": "enrichment_solution:block/quad_enrichment_chamber",
+      "y": 180
+    },
+    "facing=south,lit=true,quad_role=none": {
+      "model": "enrichment_solution:block/enrichment_chamber_on",
+      "y": 180
+    },
+    "facing=south,lit=true,quad_role=right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=south,lit=true,quad_role=top_left": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=south,lit=true,quad_role=top_right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=west,lit=false,quad_role=master": {
+      "model": "enrichment_solution:block/quad_enrichment_chamber_off",
+      "y": 270
+    },
+    "facing=west,lit=false,quad_role=none": {
+      "model": "enrichment_solution:block/enrichment_chamber",
+      "y": 270
+    },
+    "facing=west,lit=false,quad_role=right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=west,lit=false,quad_role=top_left": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=west,lit=false,quad_role=top_right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=west,lit=true,quad_role=master": {
+      "model": "enrichment_solution:block/quad_enrichment_chamber",
+      "y": 270
+    },
+    "facing=west,lit=true,quad_role=none": {
+      "model": "enrichment_solution:block/enrichment_chamber_on",
+      "y": 270
+    },
+    "facing=west,lit=true,quad_role=right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=west,lit=true,quad_role=top_left": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    },
+    "facing=west,lit=true,quad_role=top_right": {
+      "model": "enrichment_solution:block/quad_enrichment_empty"
+    }
+  }
+}

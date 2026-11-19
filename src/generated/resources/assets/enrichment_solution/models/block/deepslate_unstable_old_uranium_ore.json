@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "enrichment_solution:block/deepslate_unstable_old_uranium_ore"
+  }
+}

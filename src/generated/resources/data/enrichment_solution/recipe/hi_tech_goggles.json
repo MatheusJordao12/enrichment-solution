@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:advanced_circuit"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "GCG",
+    "ACA",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:hi_tech_goggles"
+  }
+}

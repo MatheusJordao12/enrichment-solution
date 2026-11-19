@@ -1,0 +1,14 @@
+{
+  "type": "enrichment_solution:enrichment",
+  "energy_per_tick": 40,
+  "item_inputs": [
+    {
+      "item": "enrichment_solution:raw_uranium"
+    }
+  ],
+  "item_output": {
+    "count": 1,
+    "id": "enrichment_solution:enriched_uranium"
+  },
+  "ticks": 100
+}

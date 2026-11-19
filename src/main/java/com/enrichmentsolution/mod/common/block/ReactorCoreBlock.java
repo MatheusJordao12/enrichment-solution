@@ -4,10 +4,14 @@ import com.enrichmentsolution.mod.common.block.entity.ReactorCoreBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -21,6 +25,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class ReactorCoreBlock extends BaseEntityBlock {
 
     public static final MapCodec<ReactorCoreBlock> CODEC = simpleCodec(ReactorCoreBlock::new);
@@ -29,6 +35,15 @@ public class ReactorCoreBlock extends BaseEntityBlock {
     public ReactorCoreBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(ACTIVE, false));
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+        tooltipComponents.add(Component.translatable("tooltip.enrichment_solution.reactor_core.generation")
+                .withStyle(ChatFormatting.GREEN));
+        tooltipComponents.add(Component.translatable("tooltip.enrichment_solution.reactor_core.heat")
+                .withStyle(ChatFormatting.GRAY));
     }
 
     @Override

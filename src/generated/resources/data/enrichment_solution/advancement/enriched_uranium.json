@@ -1,0 +1,33 @@
+{
+  "parent": "enrichment_solution:enrichment_chamber",
+  "criteria": {
+    "get": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:enriched_uranium"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.enrichment_solution.enriched_uranium.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "enrichment_solution:enriched_uranium"
+    },
+    "title": {
+      "translate": "advancement.enrichment_solution.enriched_uranium.title"
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

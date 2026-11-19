@@ -2,6 +2,7 @@ package com.enrichmentsolution.mod.common.block.entity;
 
 import com.enrichmentsolution.mod.common.block.ReactorCoreBlock;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.core.BlockPos;
@@ -25,17 +26,19 @@ public class ReactorCoreBlockEntity extends AbstractMachineBlockEntity {
 
     public static final int SLOT_FUEL = 0;
 
-    private static final int ENERGY_CAPACITY = 1_000_000;
-    private static final int MAX_EXTRACT = 10_000;
-    private static final int FE_PER_TICK = 512;
-    private static final int FUEL_BURN_TIME = 1200; // 60 seconds per Enriched Uranium
-    private static final int MAX_HEAT = 1000;
-
     private int burnTime = 0;
     private int heat = 0;
 
     public ReactorCoreBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.REACTOR_CORE.get(), pos, blockState, ENERGY_CAPACITY, 0, MAX_EXTRACT, 1);
+        super(
+                ModBlockEntities.REACTOR_CORE.get(),
+                pos,
+                blockState,
+                ModServerConfig.get(ModServerConfig.REACTOR_ENERGY_CAPACITY),
+                0,
+                ModServerConfig.get(ModServerConfig.REACTOR_MAX_EXTRACT),
+                1
+        );
     }
 
     @Override
@@ -45,14 +48,14 @@ public class ReactorCoreBlockEntity extends AbstractMachineBlockEntity {
         if (isStructureValid(level, pos)) {
             if (burnTime <= 0 && hasFuel()) {
                 itemHandler.extractItem(SLOT_FUEL, 1, false);
-                burnTime = FUEL_BURN_TIME;
+                burnTime = ModServerConfig.get(ModServerConfig.REACTOR_FUEL_BURN_TIME);
                 setChanged();
             }
 
             if (burnTime > 0) {
                 burnTime--;
-                energyStorage.generateInternal(FE_PER_TICK, false);
-                heat = Math.min(MAX_HEAT, heat + 1);
+                energyStorage.generateInternal(ModServerConfig.get(ModServerConfig.REACTOR_FE_PER_TICK), false);
+                heat = Math.min(getMaxHeat(), heat + 1);
                 active = true;
                 setChanged();
             } else if (heat > 0) {
@@ -96,7 +99,7 @@ public class ReactorCoreBlockEntity extends AbstractMachineBlockEntity {
             }
             IEnergyStorage receiver = level.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, direction.getOpposite());
             if (receiver != null && receiver.canReceive()) {
-                int extractable = energyStorage.extractEnergy(MAX_EXTRACT, true);
+                int extractable = energyStorage.extractEnergy(ModServerConfig.get(ModServerConfig.REACTOR_MAX_EXTRACT), true);
                 int accepted = receiver.receiveEnergy(extractable, false);
                 if (accepted > 0) {
                     energyStorage.extractEnergy(accepted, false);
@@ -110,7 +113,7 @@ public class ReactorCoreBlockEntity extends AbstractMachineBlockEntity {
     }
 
     public int getMaxHeat() {
-        return MAX_HEAT;
+        return ModServerConfig.get(ModServerConfig.REACTOR_MAX_HEAT);
     }
 
     public int getBurnTime() {

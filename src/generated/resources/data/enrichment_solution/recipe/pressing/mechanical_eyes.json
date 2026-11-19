@@ -1,0 +1,23 @@
+{
+  "type": "enrichment_solution:stamping",
+  "energy_per_tick": 25,
+  "item_inputs": [
+    {
+      "item": "enrichment_solution:pressed_aluminium"
+    },
+    {
+      "item": "minecraft:glowstone_dust"
+    },
+    {
+      "item": "enrichment_solution:robot_circuit"
+    },
+    {
+      "item": "minecraft:glass_pane"
+    }
+  ],
+  "item_output": {
+    "count": 1,
+    "id": "enrichment_solution:mechanical_eyes"
+  },
+  "ticks": 80
+}

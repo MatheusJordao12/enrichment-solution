@@ -1,0 +1,33 @@
+{
+  "parent": "enrichment_solution:first_circuit",
+  "criteria": {
+    "get": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:hi_tech_goggles"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.enrichment_solution.hi_tech_goggles.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "enrichment_solution:hi_tech_goggles"
+    },
+    "title": {
+      "translate": "advancement.enrichment_solution.hi_tech_goggles.title"
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

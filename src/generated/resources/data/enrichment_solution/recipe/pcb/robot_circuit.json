@@ -1,0 +1,23 @@
+{
+  "type": "enrichment_solution:pcb_printing",
+  "energy_per_tick": 20,
+  "item_inputs": [
+    {
+      "count": 2,
+      "item": "enrichment_solution:steel_ingot"
+    },
+    {
+      "count": 2,
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    {
+      "count": 2,
+      "item": "minecraft:redstone"
+    }
+  ],
+  "item_output": {
+    "count": 1,
+    "id": "enrichment_solution:robot_circuit"
+  },
+  "ticks": 100
+}

@@ -6,6 +6,7 @@ import com.enrichmentsolution.mod.common.block.RelativeSide;
 import com.enrichmentsolution.mod.common.block.SideConfigHolder;
 import com.enrichmentsolution.mod.common.block.SideConfigMode;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.PcbPrinterMenu;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipe;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipeCache;
@@ -47,12 +48,6 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
     public static final int SLOT_OUTPUT = 3;
     public static final int TOTAL_SLOTS = 4;
 
-    public static final int ENERGY_CAPACITY = 100;
-    public static final int MAX_RECEIVE = 2_000;
-
-    /** GUI fallback used while no printing recipe is pending. */
-    private static final int DEFAULT_PRINT_TICKS = 100;
-
     /** Legacy saves stored the bare recipe key, without namespace or folder. */
     private static final String LEGACY_RECIPE_PREFIX = "pcb/";
 
@@ -65,7 +60,15 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
     private final SideConfigHolder sideConfig = SideConfigHolder.allInput();
 
     public PcbPrinterBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.PCB_PRINTER.get(), pos, blockState, ENERGY_CAPACITY, MAX_RECEIVE, 0, TOTAL_SLOTS);
+        super(
+                ModBlockEntities.PCB_PRINTER.get(),
+                pos,
+                blockState,
+                ModServerConfig.get(ModServerConfig.PCB_PRINTER_ENERGY_CAPACITY),
+                ModServerConfig.get(ModServerConfig.PCB_PRINTER_MAX_RECEIVE),
+                0,
+                TOTAL_SLOTS
+        );
     }
 
     @Override
@@ -106,7 +109,8 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
             return false;
         }
         MachineRecipe recipe = holder.value();
-        if (energyStorage.getEnergyStored() < recipe.energyPerTick()) {
+        int energyCost = ModServerConfig.scaleEnergy(recipe.energyPerTick(), ModServerConfig.PCB_PRINTER_ENERGY_MULTIPLIER);
+        if (energyStorage.getEnergyStored() < energyCost) {
             return false;
         }
         return MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput());
@@ -144,7 +148,7 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
         if (!MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput())) {
             return false;
         }
-        if (energyStorage.getEnergyStored() < recipe.energyPerTick()) {
+        if (energyStorage.getEnergyStored() < ModServerConfig.scaleEnergy(recipe.energyPerTick(), ModServerConfig.PCB_PRINTER_ENERGY_MULTIPLIER)) {
             return false;
         }
         int[] matchedSlots = MachineRecipeMatcher.matchSlots(recipe, itemHandler::getStackInSlot, INPUT_SLOTS);
@@ -180,12 +184,14 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
         if (!MachineRecipeMatcher.canAcceptOutput(itemHandler.getStackInSlot(SLOT_OUTPUT), recipe.itemOutput())) {
             return;
         }
-        if (energyStorage.getEnergyStored() < recipe.energyPerTick()) {
+        int energyCost = ModServerConfig.scaleEnergy(recipe.energyPerTick(), ModServerConfig.PCB_PRINTER_ENERGY_MULTIPLIER);
+        if (energyStorage.getEnergyStored() < energyCost) {
             return;
         }
-        energyStorage.consumeInternal(recipe.energyPerTick(), false);
+        energyStorage.consumeInternal(energyCost, false);
         progress++;
-        if (progress >= recipe.ticks()) {
+        int targetTicks = ModServerConfig.scaleTicks(recipe.ticks(), ModServerConfig.PCB_PRINTER_TIME_MULTIPLIER);
+        if (progress >= targetTicks) {
             itemHandler.insertItem(SLOT_OUTPUT, recipe.itemOutput().copy(), false);
             printing = false;
             progress = 0;
@@ -260,7 +266,9 @@ public class PcbPrinterBlockEntity extends AbstractMachineBlockEntity implements
                 case PcbPrinterMenu.DATA_PROGRESS -> progress;
                 case PcbPrinterMenu.DATA_MAX_PROGRESS -> {
                     MachineRecipe pending = getPendingRecipe();
-                    yield pending == null ? DEFAULT_PRINT_TICKS : pending.ticks();
+                    yield pending == null
+                            ? ModServerConfig.get(ModServerConfig.PCB_PRINTER_DEFAULT_PRINT_TICKS)
+                            : ModServerConfig.scaleTicks(pending.ticks(), ModServerConfig.PCB_PRINTER_TIME_MULTIPLIER);
                 }
                 case PcbPrinterMenu.DATA_PRINTING -> printing ? 1 : 0;
                 case PcbPrinterMenu.DATA_CAN_START -> canStartPrinting() ? 1 : 0;

@@ -29,6 +29,11 @@ public final class ModDataComponents {
                     .persistent(Codec.DOUBLE)
                     .networkSynchronized(ByteBufCodecs.DOUBLE));
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> EXTRACTOR_FILLED =
+            DATA_COMPONENTS.registerComponentType("extractor_filled", builder -> builder
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL));
+
     public static void register(IEventBus eventBus) {
         DATA_COMPONENTS.register(eventBus);
     }

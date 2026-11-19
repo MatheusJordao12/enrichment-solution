@@ -46,7 +46,9 @@ public class EnrichmentJeiPlugin implements IModPlugin {
                 new PcbPrintingCategory(guiHelper),
                 new EnrichmentCategory(guiHelper),
                 new RefiningCategory(guiHelper),
-                new PressingCategory(guiHelper));
+                new PressingCategory(guiHelper),
+                new HeatExchangerCategory(guiHelper),
+                new GeothermalCategory(guiHelper));
     }
 
     @Override
@@ -60,6 +62,16 @@ public class EnrichmentJeiPlugin implements IModPlugin {
         registration.addRecipes(RefiningCategory.TYPE, recipesOf(manager, MachineRecipeKind.REFINING));
         registration.addRecipes(PressingCategory.TYPE, recipesOf(manager, MachineRecipeKind.STAMPING));
         registration.addRecipes(PcbPrintingCategory.TYPE, recipesOf(manager, MachineRecipeKind.PCB_PRINTING));
+        registration.addRecipes(HeatExchangerCategory.TYPE, List.of(
+                new HeatExchangerCategory.HeatExchangerRecipe("1x", 5, 1),
+                new HeatExchangerCategory.HeatExchangerRecipe("2.25x", 11, 1),
+                new HeatExchangerCategory.HeatExchangerRecipe("3x", 15, 1),
+                new HeatExchangerCategory.HeatExchangerRecipe("10x+", 50, 1)
+        ));
+        registration.addRecipes(GeothermalCategory.TYPE, List.of(
+                new GeothermalCategory.GeothermalRecipe(1, 20, false),
+                new GeothermalCategory.GeothermalRecipe(50, 1_000, true)
+        ));
     }
 
     /** Same source as the machines: the recipe manager of the current level. */
@@ -76,5 +88,8 @@ public class EnrichmentJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.ENRICHMENT_CHAMBER.get()), EnrichmentCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.OIL_REFINERY.get()), RefiningCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.STAMPING_PRESS.get()), PressingCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.HEAT_EXCHANGER.get()), HeatExchangerCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.TANK_BLOCK.get()), HeatExchangerCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.GEOTHERMAL_GENERATOR.get()), GeothermalCategory.TYPE);
     }
 }

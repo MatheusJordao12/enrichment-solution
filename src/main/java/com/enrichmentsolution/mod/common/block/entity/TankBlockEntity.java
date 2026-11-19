@@ -1,6 +1,8 @@
 package com.enrichmentsolution.mod.common.block.entity;
 
 import com.enrichmentsolution.mod.common.block.TankBlock;
+import com.enrichmentsolution.mod.common.block.entity.network.MultiblockNetwork;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.menu.TankMenu;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -45,14 +47,11 @@ import java.util.Set;
  */
 public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
-    public static final int CAPACITY_PER_BLOCK = 200_000; // 200 buckets
-    public static final int MAX_SPAN = 20;
-
     private BlockPos masterPos;
     private int blockCount = 1;
     private final List<BlockPos> members = new ArrayList<>();
 
-    private final FluidTank fluidTank = new FluidTank(CAPACITY_PER_BLOCK,
+    private final FluidTank fluidTank = new FluidTank(ModServerConfig.get(ModServerConfig.TANK_CAPACITY_PER_BLOCK),
             stack -> stack.getFluid() == Fluids.WATER) {
         @Override
         protected void onContentsChanged() {
@@ -93,13 +92,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
 
     @Nullable
     public TankBlockEntity getMasterEntity() {
-        if (isMaster()) {
-            return this;
-        }
-        if (level != null && level.getBlockEntity(masterPos) instanceof TankBlockEntity master) {
-            return master;
-        }
-        return this;
+        return MultiblockNetwork.resolveMaster(level, worldPosition, masterPos, TankBlockEntity.class, this);
     }
 
     public FluidTank getMasterTank() {
@@ -170,60 +163,13 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public static void rebuildNetwork(Level level, BlockPos seedPos, @Nullable BlockPos ignoredPos) {
-        if (level.isClientSide) {
-            return;
-        }
-        if (seedPos.equals(ignoredPos) || !(level.getBlockState(seedPos).getBlock() instanceof TankBlock)) {
-            return;
-        }
-
-        Set<BlockPos> visited = new HashSet<>();
-        Queue<BlockPos> queue = new ArrayDeque<>();
-        List<BlockPos> component = new ArrayList<>();
-
-        visited.add(seedPos);
-        queue.add(seedPos);
-
-        int minX = seedPos.getX(), maxX = seedPos.getX();
-        int minY = seedPos.getY(), maxY = seedPos.getY();
-        int minZ = seedPos.getZ(), maxZ = seedPos.getZ();
-
-        while (!queue.isEmpty()) {
-            BlockPos current = queue.poll();
-            component.add(current);
-
-            for (Direction dir : Direction.values()) {
-                BlockPos next = current.relative(dir);
-                if (next.equals(ignoredPos) || visited.contains(next)) {
-                    continue;
-                }
-                if (!(level.getBlockState(next).getBlock() instanceof TankBlock)) {
-                    continue;
-                }
-                int nMinX = Math.min(minX, next.getX());
-                int nMaxX = Math.max(maxX, next.getX());
-                int nMinY = Math.min(minY, next.getY());
-                int nMaxY = Math.max(maxY, next.getY());
-                int nMinZ = Math.min(minZ, next.getZ());
-                int nMaxZ = Math.max(maxZ, next.getZ());
-                if (nMaxX - nMinX + 1 > MAX_SPAN || nMaxY - nMinY + 1 > MAX_SPAN || nMaxZ - nMinZ + 1 > MAX_SPAN) {
-                    continue;
-                }
-                minX = nMinX; maxX = nMaxX;
-                minY = nMinY; maxY = nMaxY;
-                minZ = nMinZ; maxZ = nMaxZ;
-                visited.add(next);
-                queue.add(next);
-            }
-        }
-
+        int maxSpan = ModServerConfig.get(ModServerConfig.TANK_MAX_SPAN);
+        List<BlockPos> component = MultiblockNetwork.discoverComponent(
+                level, seedPos, ignoredPos, maxSpan, state -> state.getBlock() instanceof TankBlock);
         if (component.isEmpty()) {
             return;
         }
 
-        component.sort(Comparator.<BlockPos>comparingInt(BlockPos::getY)
-                .thenComparingInt(BlockPos::getX)
-                .thenComparingInt(BlockPos::getZ));
         BlockPos newMasterPos = component.get(0);
 
         int totalWater = 0;
@@ -235,7 +181,8 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
             }
         }
 
-        int newCapacity = component.size() * CAPACITY_PER_BLOCK;
+        int capacityPerBlock = ModServerConfig.get(ModServerConfig.TANK_CAPACITY_PER_BLOCK);
+        int newCapacity = component.size() * capacityPerBlock;
         int clampedWater = Math.min(totalWater, newCapacity);
 
         for (BlockPos pos : component) {
@@ -252,7 +199,7 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
                 } else {
                     be.blockCount = 1;
                     be.members.clear();
-                    be.fluidTank.setCapacity(CAPACITY_PER_BLOCK);
+                    be.fluidTank.setCapacity(capacityPerBlock);
                     be.fluidTank.setFluid(FluidStack.EMPTY);
                 }
                 be.setChanged();
@@ -261,54 +208,32 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public static void onBlockBroken(Level level, BlockPos brokenPos, int previousWaterAmount) {
-        List<BlockPos> neighborTanks = new ArrayList<>();
-        for (Direction dir : Direction.values()) {
-            BlockPos adj = brokenPos.relative(dir);
-            if (level.getBlockState(adj).getBlock() instanceof TankBlock) {
-                neighborTanks.add(adj);
-            }
-        }
-        if (neighborTanks.isEmpty()) {
-            return;
-        }
-        Set<BlockPos> processed = new HashSet<>();
-        for (BlockPos neighbor : neighborTanks) {
-            if (processed.contains(neighbor)) {
-                continue;
-            }
-            rebuildNetwork(level, neighbor, brokenPos);
-            if (level.getBlockEntity(neighbor) instanceof TankBlockEntity be) {
-                TankBlockEntity master = be.getMasterEntity();
-                if (master != null) {
-                    processed.addAll(master.members);
-                    if (previousWaterAmount > 0 && master.fluidTank.getFluidAmount() == 0) {
+        final int[] remainingWater = {previousWaterAmount};
+        MultiblockNetwork.handleBlockBroken(
+                level,
+                brokenPos,
+                state -> state.getBlock() instanceof TankBlock,
+                TankBlockEntity.class,
+                TankBlockEntity::rebuildNetwork,
+                TankBlockEntity::getMasterEntity,
+                master -> master.members,
+                master -> {
+                    if (remainingWater[0] > 0 && master.fluidTank.getFluidAmount() == 0) {
                         master.fluidTank.fill(new FluidStack(Fluids.WATER,
-                                Math.min(previousWaterAmount, master.fluidTank.getCapacity())), IFluidHandler.FluidAction.EXECUTE);
-                        previousWaterAmount = 0;
+                                Math.min(remainingWater[0], master.fluidTank.getCapacity())), IFluidHandler.FluidAction.EXECUTE);
+                        remainingWater[0] = 0;
                     }
                 }
-            }
-        }
+        );
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.put("MasterPos", NbtUtils.writeBlockPos(masterPos));
-        tag.putInt("BlockCount", blockCount);
+        MultiblockNetwork.saveMembers(tag, masterPos, blockCount, members);
         tag.putDouble("Temperature", temperature);
         tag.putDouble("Multiplier", multiplier);
         fluidTank.writeToNBT(registries, tag);
-
-        ListTag memberList = new ListTag();
-        for (BlockPos m : members) {
-            CompoundTag entry = new CompoundTag();
-            entry.putInt("X", m.getX());
-            entry.putInt("Y", m.getY());
-            entry.putInt("Z", m.getZ());
-            memberList.add(entry);
-        }
-        tag.put("Members", memberList);
     }
 
     @Override
@@ -324,20 +249,9 @@ public class TankBlockEntity extends BlockEntity implements MenuProvider {
         if (tag.contains("Multiplier")) {
             this.multiplier = tag.getDouble("Multiplier");
         }
-        this.fluidTank.setCapacity(this.blockCount * CAPACITY_PER_BLOCK);
+        this.fluidTank.setCapacity(this.blockCount * ModServerConfig.get(ModServerConfig.TANK_CAPACITY_PER_BLOCK));
         this.fluidTank.readFromNBT(registries, tag);
-
-        this.members.clear();
-        if (tag.contains("Members", Tag.TAG_LIST)) {
-            ListTag memberList = tag.getList("Members", Tag.TAG_COMPOUND);
-            for (int i = 0; i < memberList.size(); i++) {
-                CompoundTag entry = memberList.getCompound(i);
-                this.members.add(new BlockPos(entry.getInt("X"), entry.getInt("Y"), entry.getInt("Z")));
-            }
-        }
-        if (this.members.isEmpty()) {
-            this.members.add(worldPosition);
-        }
+        MultiblockNetwork.loadMembers(tag, worldPosition, this.members);
     }
 
     private final ContainerData data = new ContainerData() {

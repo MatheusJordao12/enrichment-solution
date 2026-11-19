@@ -1,0 +1,168 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_core"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_arm",
+        "x": 90
+      },
+      "when": {
+        "down": "pipe"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_machine",
+        "x": 90
+      },
+      "when": {
+        "down": "machine"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_pump",
+        "x": 90
+      },
+      "when": {
+        "down": "pump"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_arm",
+        "x": 270
+      },
+      "when": {
+        "up": "pipe"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_machine",
+        "x": 270
+      },
+      "when": {
+        "up": "machine"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_pump",
+        "x": 270
+      },
+      "when": {
+        "up": "pump"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_arm"
+      },
+      "when": {
+        "north": "pipe"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_machine"
+      },
+      "when": {
+        "north": "machine"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_pump"
+      },
+      "when": {
+        "north": "pump"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_arm",
+        "y": 180
+      },
+      "when": {
+        "south": "pipe"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_machine",
+        "y": 180
+      },
+      "when": {
+        "south": "machine"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_pump",
+        "y": 180
+      },
+      "when": {
+        "south": "pump"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_arm",
+        "y": 270
+      },
+      "when": {
+        "west": "pipe"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_machine",
+        "y": 270
+      },
+      "when": {
+        "west": "machine"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_pump",
+        "y": 270
+      },
+      "when": {
+        "west": "pump"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_arm",
+        "y": 90
+      },
+      "when": {
+        "east": "pipe"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_machine",
+        "y": 90
+      },
+      "when": {
+        "east": "machine"
+      }
+    },
+    {
+      "apply": {
+        "model": "enrichment_solution:block/cryogenic_thermal_pipe_pump",
+        "y": 90
+      },
+      "when": {
+        "east": "pump"
+      }
+    }
+  ]
+}

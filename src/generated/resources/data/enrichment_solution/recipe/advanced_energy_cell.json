@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "C": {
+      "item": "enrichment_solution:advanced_energy_cable"
+    },
+    "E": {
+      "item": "enrichment_solution:energy_cell"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "ARA",
+    "CEC",
+    "ARA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:advanced_energy_cell"
+  }
+}

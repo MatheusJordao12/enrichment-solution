@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "C": {
+      "item": "enrichment_solution:energy_cable"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "ARA",
+    "DSD",
+    "ACA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:auto_recharger_upgrade_template"
+  }
+}

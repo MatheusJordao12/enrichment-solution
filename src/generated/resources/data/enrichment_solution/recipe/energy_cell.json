@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "enrichment_solution:energy_cable"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SRS",
+    "CMC",
+    "SRS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:energy_cell"
+  }
+}

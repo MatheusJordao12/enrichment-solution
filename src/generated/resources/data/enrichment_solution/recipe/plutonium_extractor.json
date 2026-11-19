@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:pressed_aluminium"
+    },
+    "C": {
+      "item": "enrichment_solution:ultimate_circuit"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    " S ",
+    "ACA",
+    " R "
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:plutonium_extractor"
+  }
+}

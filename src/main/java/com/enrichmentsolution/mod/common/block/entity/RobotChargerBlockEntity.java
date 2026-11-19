@@ -1,6 +1,7 @@
 package com.enrichmentsolution.mod.common.block.entity;
 
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.entity.RobotEntity;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -16,12 +17,16 @@ import java.util.List;
  */
 public class RobotChargerBlockEntity extends AbstractMachineBlockEntity {
 
-    public static final int ENERGY_CAPACITY = 500_000;
-    public static final int MAX_RECEIVE = 5_000;
-    public static final int CHARGE_RATE_PER_TICK = 5_000;
-
     public RobotChargerBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.ROBOT_CHARGER.get(), pos, blockState, ENERGY_CAPACITY, MAX_RECEIVE, 0, 0);
+        super(
+                ModBlockEntities.ROBOT_CHARGER.get(),
+                pos,
+                blockState,
+                ModServerConfig.get(ModServerConfig.ROBOT_CHARGER_ENERGY_CAPACITY),
+                ModServerConfig.get(ModServerConfig.ROBOT_CHARGER_MAX_RECEIVE),
+                0,
+                0
+        );
     }
 
     public int getEnergyStored() {
@@ -48,7 +53,10 @@ public class RobotChargerBlockEntity extends AbstractMachineBlockEntity {
                 break;
             }
             int needed = robot.getMaxEnergyStored() - robot.getEnergyStored();
-            int toTransfer = Math.min(CHARGE_RATE_PER_TICK, Math.min(available, needed));
+            int toTransfer = Math.min(
+                    ModServerConfig.get(ModServerConfig.ROBOT_CHARGER_CHARGE_RATE_PER_TICK),
+                    Math.min(available, needed)
+            );
             if (toTransfer > 0) {
                 int accepted = robot.chargeEnergy(toTransfer);
                 if (accepted > 0) {

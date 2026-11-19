@@ -17,7 +17,7 @@ autonomous mining robot.
 | Loader | NeoForge `21.1.x` (built against `21.1.266`) |
 | Java | 21 |
 | Side | Client **and** server (works on dedicated servers) |
-| JEI | Optional — adds four recipe categories |
+| JEI | Optional — adds six recipe categories |
 
 No other mod is required. Everything is registered under the `enrichment_solution` namespace.
 
@@ -146,9 +146,24 @@ input / output / disabled) from its screen or with the Configurator.
 
 ## JEI integration
 
-When JEI is installed, four categories are added: **Enrichment**, **PCB Printing**, **Oil Refining**
-and **Stamping**. Each page shows the exact FE/t, duration and total FE of the operation, and the
-machine appears as a recipe catalyst.
+When JEI is installed, six categories are added: **Enrichment**, **PCB Printing**, **Oil Refining**,
+**Stamping**, **Heat Exchanger** (mB/t boil rates by thermal multiplier) and **Geothermal Generator**
+(FE/mB conversion rate and closed-loop exhaust). Each page shows the exact rates/costs and lists the
+corresponding blocks as recipe catalysts.
+
+## Mod compatibility
+
+- **JEI** (optional, client-side): Isolated in `compat/jei/` behind `@JeiPlugin`, so it is only
+  loaded when JEI is installed.
+- **Jade** (optional): All machines, energy cells, tanks and conduits expose standard NeoForge
+  block capabilities (`EnergyStorage`, `FluidHandler`, `ItemHandler`), allowing Jade to inspect
+  stored energy, fluids and inventories without extra dependencies.
+- **Oculus / Iris** (optional): Renderers and overlays use standard vanilla/NeoForge rendering
+  pipelines with no custom core shader dependencies.
+- **Create** (optional): Interoperates via standard NeoForge fluid and item block capabilities
+  (pipes, pumps, tanks and machines).
+- **Dedicated servers**: Client-only setup, configs, screens and HUDs are gated behind
+  `Dist.CLIENT` and `@EventBusSubscriber(value = Dist.CLIENT)`.
 
 ---
 

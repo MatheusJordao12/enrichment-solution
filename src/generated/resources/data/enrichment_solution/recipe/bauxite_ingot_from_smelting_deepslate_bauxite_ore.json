@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 200,
+  "experience": 0.7,
+  "ingredient": {
+    "item": "enrichment_solution:deepslate_bauxite_ore"
+  },
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:bauxite_ingot"
+  }
+}

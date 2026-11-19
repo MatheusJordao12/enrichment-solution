@@ -5,9 +5,14 @@ import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -29,6 +34,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -114,6 +120,29 @@ public class FluidPipeBlock extends BaseEntityBlock {
 
     public FluidConduitTier getTier() {
         return tier;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+        tooltipComponents.add(Component.translatable(
+                "tooltip.enrichment_solution.fluid_pipe.transfer",
+                String.format("%,d", tier.getTransferRate()),
+                String.format("%,d", tier.getCapacity())
+        ).withStyle(ChatFormatting.GRAY));
+        tooltipComponents.add(Component.translatable(
+                "tooltip.enrichment_solution.fluid_pipe.retention",
+                formatRetention(tier.getHeatRetention())
+        ).withStyle(tier.losesHeat() ? ChatFormatting.GOLD : ChatFormatting.AQUA));
+    }
+
+    private static String formatRetention(double retention) {
+        double pct = retention * 100.0D;
+        if (Math.abs(pct - Math.rint(pct)) < 1e-4) {
+            return String.format("%.0f", pct);
+        }
+        String formatted = String.format(java.util.Locale.ROOT, "%.2f", pct);
+        return formatted.endsWith("0") ? formatted.substring(0, formatted.length() - 1) : formatted;
     }
 
     @Override

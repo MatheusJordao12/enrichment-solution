@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_raw_oxidated_plutonium": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:raw_oxidated_plutonium"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "enrichment_solution:oxidated_plutonium_ingot_from_blasting_raw_oxidated_plutonium"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_raw_oxidated_plutonium"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "enrichment_solution:oxidated_plutonium_ingot_from_blasting_raw_oxidated_plutonium"
+    ]
+  }
+}

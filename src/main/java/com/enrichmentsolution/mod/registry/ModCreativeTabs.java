@@ -1,6 +1,7 @@
 package com.enrichmentsolution.mod.registry;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
+import com.enrichmentsolution.mod.common.item.HammerXItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -56,6 +57,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.TANK_WATER_INPUT.get());
                         output.accept(ModBlocks.TANK_WATER_OUTPUT.get());
                         output.accept(ModBlocks.OIL_REFINERY.get());
+                        output.accept(ModBlocks.DISTILLATION_TOWER.get());
                         output.accept(ModBlocks.HEAT_EXCHANGER.get());
                         output.accept(ModBlocks.GEOTHERMAL_GENERATOR.get());
                         output.accept(ModBlocks.CONDENSER.get());
@@ -73,6 +75,13 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.ULTIMATE_CIRCUIT.get());
                         output.accept(ModItems.ULTRA_CIRCUIT.get());
                         output.accept(ModItems.HI_TECH_GOGGLES.get());
+                        output.accept(ModItems.CONFIGURATOR.get());
+                        output.accept(ModItems.PLUTONIUM_EXTRACTOR.get());
+                        output.accept(ModItems.ISOLATED_BACKPACK.get());
+                        output.accept(ModItems.HAMMER_X.get());
+                        ItemStack chargedHammer = new ItemStack(ModItems.HAMMER_X.get());
+                        HammerXItem.setStoredEnergy(chargedHammer, HammerXItem.ENERGY_CAPACITY);
+                        output.accept(chargedHammer);
                         output.accept(ModItems.WHEEL.get());
                         output.accept(ModItems.ROBOT_CASING.get());
                         output.accept(ModItems.PRESSED_ALUMINIUM.get());

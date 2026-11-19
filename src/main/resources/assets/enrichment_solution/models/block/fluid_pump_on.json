@@ -1,8 +1,0 @@
-{
-  "parent": "enrichment_solution:block/fluid_pump_base",
-  "textures": {
-    "top": "enrichment_solution:block/fluid_pump_top",
-    "front": "enrichment_solution:block/fluid_pump_front_on",
-    "side": "enrichment_solution:block/fluid_pump_side"
-  }
-}

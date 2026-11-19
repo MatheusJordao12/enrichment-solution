@@ -1,21 +1,24 @@
 package com.enrichmentsolution.mod.common.block;
 
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
+
 /**
  * Insulated fluid pipe tiers. Same transfer mechanics as {@link FluidPipeTier},
  * but with progressively better heat retention (the last one loses nothing at all).
  */
 public enum ThermalPipeTier implements FluidConduitTier {
-    ISOLATED("isolated", 2_000, 500, 0.9950D),
-    REINFORCED("reinforced", 8_000, 2_000, 0.9975D),
-    VACUUM("vacuum", 32_000, 8_000, 0.9990D),
-    CRYOGENIC("cryogenic", 128_000, 32_000, 1.0D);
+    ISOLATED("isolated", ModServerConfig.THERMAL_PIPE_ISOLATED_CAPACITY, ModServerConfig.THERMAL_PIPE_ISOLATED_TRANSFER, ModServerConfig.THERMAL_PIPE_ISOLATED_RETENTION),
+    REINFORCED("reinforced", ModServerConfig.THERMAL_PIPE_REINFORCED_CAPACITY, ModServerConfig.THERMAL_PIPE_REINFORCED_TRANSFER, ModServerConfig.THERMAL_PIPE_REINFORCED_RETENTION),
+    VACUUM("vacuum", ModServerConfig.THERMAL_PIPE_VACUUM_CAPACITY, ModServerConfig.THERMAL_PIPE_VACUUM_TRANSFER, ModServerConfig.THERMAL_PIPE_VACUUM_RETENTION),
+    CRYOGENIC("cryogenic", ModServerConfig.THERMAL_PIPE_CRYOGENIC_CAPACITY, ModServerConfig.THERMAL_PIPE_CRYOGENIC_TRANSFER, ModServerConfig.THERMAL_PIPE_CRYOGENIC_RETENTION);
 
     private final String serializedName;
-    private final int capacity;
-    private final int transferRate;
-    private final double heatRetention;
+    private final ModConfigSpec.IntValue capacity;
+    private final ModConfigSpec.IntValue transferRate;
+    private final ModConfigSpec.DoubleValue heatRetention;
 
-    ThermalPipeTier(String serializedName, int capacity, int transferRate, double heatRetention) {
+    ThermalPipeTier(String serializedName, ModConfigSpec.IntValue capacity, ModConfigSpec.IntValue transferRate, ModConfigSpec.DoubleValue heatRetention) {
         this.serializedName = serializedName;
         this.capacity = capacity;
         this.transferRate = transferRate;
@@ -24,17 +27,17 @@ public enum ThermalPipeTier implements FluidConduitTier {
 
     @Override
     public int getCapacity() {
-        return capacity;
+        return ModServerConfig.get(capacity);
     }
 
     @Override
     public int getTransferRate() {
-        return transferRate;
+        return ModServerConfig.get(transferRate);
     }
 
     @Override
     public double getHeatRetention() {
-        return heatRetention;
+        return ModServerConfig.get(heatRetention);
     }
 
     @Override

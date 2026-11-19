@@ -13,6 +13,7 @@ import com.enrichmentsolution.mod.client.screen.EnrichmentChamberScreen;
 import com.enrichmentsolution.mod.client.screen.FluidPumpScreen;
 import com.enrichmentsolution.mod.client.screen.GeothermalGeneratorScreen;
 import com.enrichmentsolution.mod.client.screen.HeatExchangerScreen;
+import com.enrichmentsolution.mod.client.screen.IsolatedBackpackScreen;
 import com.enrichmentsolution.mod.client.screen.OilRefineryScreen;
 import com.enrichmentsolution.mod.client.screen.PcbPrinterScreen;
 import com.enrichmentsolution.mod.client.screen.QuadEnrichmentScreen;
@@ -20,13 +21,16 @@ import com.enrichmentsolution.mod.client.screen.RobotScreen;
 import com.enrichmentsolution.mod.client.screen.SolarPanelScreen;
 import com.enrichmentsolution.mod.client.screen.StampingPressScreen;
 import com.enrichmentsolution.mod.client.screen.TankScreen;
+import com.enrichmentsolution.mod.common.item.PlutoniumExtractorItem;
 import com.enrichmentsolution.mod.common.network.ModNetwork;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModEntities;
 import com.enrichmentsolution.mod.registry.ModMenuTypes;
 import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -46,6 +50,11 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         ModNetwork.setInspectSink(InspectHud::accept);
+        event.enqueueWork(() -> ItemProperties.register(
+                ModItems.PLUTONIUM_EXTRACTOR.get(),
+                ResourceLocation.fromNamespaceAndPath(EnrichmentSolutionMod.MOD_ID, "filled"),
+                (stack, level, entity, seed) -> PlutoniumExtractorItem.isFilled(stack) ? 1.0F : 0.0F
+        ));
     }
 
     @SubscribeEvent
@@ -63,6 +72,7 @@ public final class ClientSetup {
         event.register(ModMenuTypes.GEOTHERMAL_GENERATOR.get(), GeothermalGeneratorScreen::new);
         event.register(ModMenuTypes.CONDENSER.get(), CondenserScreen::new);
         event.register(ModMenuTypes.FLUID_PUMP.get(), FluidPumpScreen::new);
+        event.register(ModMenuTypes.ISOLATED_BACKPACK.get(), IsolatedBackpackScreen::new);
     }
 
     @SubscribeEvent

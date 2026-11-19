@@ -8,13 +8,14 @@ import com.enrichmentsolution.mod.common.entity.goal.RobotMineStoneGoal;
 import com.enrichmentsolution.mod.common.entity.goal.RobotPickupItemGoal;
 import com.enrichmentsolution.mod.common.entity.goal.RobotStayHostileTargetGoal;
 import com.enrichmentsolution.mod.common.entity.goal.RobotStayPatrolGoal;
-import com.enrichmentsolution.mod.common.item.EnergyCellBlockItem;
+import com.enrichmentsolution.mod.common.entity.robot.RobotAnimationController;
+import com.enrichmentsolution.mod.common.entity.robot.RobotEnergyManager;
+import com.enrichmentsolution.mod.common.entity.robot.RobotInventoryHelper;
+import com.enrichmentsolution.mod.common.entity.robot.RobotPatrolState;
 import com.enrichmentsolution.mod.common.item.RobotItem;
 import com.enrichmentsolution.mod.common.menu.RobotMenu;
-import com.enrichmentsolution.mod.registry.ModDataComponents;
 import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -22,11 +23,9 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -46,22 +45,19 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FallingBlock;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Companion Robot entity with modular energy, inventory/scaffolding, patrol, and animation helpers.
+ */
 public class RobotEntity extends PathfinderMob {
 
     public static final int SLOT_PICKAXE = 0;
@@ -117,50 +113,10 @@ public class RobotEntity extends PathfinderMob {
     public final AnimationState flyAnimationState = new AnimationState();
     public final AnimationState dockAnimationState = new AnimationState();
 
-    private boolean wasHoldingSword = false;
-    private boolean wasPowered = false;
-    private boolean hasPatrolAnchor = false;
-    private int patrolAnchorChunkX = 0;
-    private int patrolAnchorChunkZ = 0;
-    @Nullable
-    private BlockPos chargerPos = null;
-    private boolean rechargeCancelled = false;
-
-    private final ItemStackHandler inventory = new ItemStackHandler(TOTAL_SLOTS) {
-        @Override
-        public boolean isItemValid(int slot, ItemStack stack) {
-            if (slot == SLOT_PICKAXE) {
-                return isValidTool(stack);
-            }
-            if (slot >= SLOT_CELL_START && slot < TOTAL_SLOTS) {
-                return stack.getItem() instanceof EnergyCellBlockItem;
-            }
-            return true;
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
-            super.onContentsChanged(slot);
-            if (!RobotEntity.this.level().isClientSide) {
-                if (slot == SLOT_PICKAXE) {
-                    boolean nowHasSword = inventory.getStackInSlot(SLOT_PICKAXE).is(ItemTags.SWORDS);
-                    if (isPowered()) {
-                        if (nowHasSword && !wasHoldingSword) {
-                            setDetransformTicks(0);
-                            setTransformTicks(TRANSFORM_DURATION);
-                        } else if (!nowHasSword && wasHoldingSword) {
-                            setTransformTicks(0);
-                            setDetransformTicks(TRANSFORM_DURATION);
-                        }
-                    }
-                    wasHoldingSword = nowHasSword;
-                    RobotEntity.this.syncMainHandPickaxe();
-                } else if (slot >= SLOT_CELL_START && slot < TOTAL_SLOTS) {
-                    RobotEntity.this.syncEnergyData();
-                }
-            }
-        }
-    };
+    private final RobotEnergyManager energyManager = new RobotEnergyManager();
+    private final RobotInventoryHelper inventoryHelper = new RobotInventoryHelper();
+    private final RobotPatrolState patrolState = new RobotPatrolState();
+    private final ItemStackHandler inventory = inventoryHelper.createInventory(this);
 
     public RobotEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -200,28 +156,12 @@ public class RobotEntity extends PathfinderMob {
         this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.15D, true) {
             @Override
             public boolean canUse() {
-                if (!RobotEntity.this.isPowered() || !RobotEntity.this.hasSword()
-                        || RobotEntity.this.isTransforming() || RobotEntity.this.isFlying()) {
-                    return false;
-                }
-                if (!RobotEntity.this.isFollowOwner() && RobotEntity.this.getTarget() != null
-                        && !RobotEntity.this.isWithinPatrolArea(RobotEntity.this.getTarget().blockPosition())) {
-                    return false;
-                }
-                return super.canUse();
+                return canPerformMelee() && super.canUse();
             }
 
             @Override
             public boolean canContinueToUse() {
-                if (!RobotEntity.this.isPowered() || !RobotEntity.this.hasSword()
-                        || RobotEntity.this.isTransforming() || RobotEntity.this.isFlying()) {
-                    return false;
-                }
-                if (!RobotEntity.this.isFollowOwner() && RobotEntity.this.getTarget() != null
-                        && !RobotEntity.this.isWithinPatrolArea(RobotEntity.this.getTarget().blockPosition())) {
-                    return false;
-                }
-                return super.canContinueToUse();
+                return canPerformMelee() && super.canContinueToUse();
             }
         });
         this.goalSelector.addGoal(3, new RobotFollowOwnerGoal(this, 1.05D, 6.0F, 2.5F));
@@ -231,23 +171,23 @@ public class RobotEntity extends PathfinderMob {
         this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F) {
             @Override
             public boolean canUse() {
-                return RobotEntity.this.isPowered() && !RobotEntity.this.isTransforming() && super.canUse();
+                return isPowered() && !isTransforming() && super.canUse();
             }
 
             @Override
             public boolean canContinueToUse() {
-                return RobotEntity.this.isPowered() && !RobotEntity.this.isTransforming() && super.canContinueToUse();
+                return isPowered() && !isTransforming() && super.canContinueToUse();
             }
         });
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this) {
             @Override
             public boolean canUse() {
-                return RobotEntity.this.isPowered() && !RobotEntity.this.isTransforming() && super.canUse();
+                return isPowered() && !isTransforming() && super.canUse();
             }
 
             @Override
             public boolean canContinueToUse() {
-                return RobotEntity.this.isPowered() && !RobotEntity.this.isTransforming() && super.canContinueToUse();
+                return isPowered() && !isTransforming() && super.canContinueToUse();
             }
         });
 
@@ -256,11 +196,11 @@ public class RobotEntity extends PathfinderMob {
         this.targetSelector.addGoal(3, new HurtByTargetGoal(this) {
             @Override
             public boolean canUse() {
-                if (!RobotEntity.this.isPowered() || !RobotEntity.this.hasSword() || RobotEntity.this.isTransforming()) {
+                if (!isPowered() || !hasSword() || isTransforming()) {
                     return false;
                 }
                 LivingEntity attacker = this.mob.getLastHurtByMob();
-                if (attacker != null && attacker.getUUID().equals(RobotEntity.this.getOwnerUUID())) {
+                if (attacker != null && attacker.getUUID().equals(getOwnerUUID())) {
                     return false;
                 }
                 return super.canUse();
@@ -268,106 +208,37 @@ public class RobotEntity extends PathfinderMob {
 
             @Override
             public boolean canContinueToUse() {
-                return RobotEntity.this.isPowered() && RobotEntity.this.hasSword() && !RobotEntity.this.isTransforming() && super.canContinueToUse();
+                return isPowered() && hasSword() && !isTransforming() && super.canContinueToUse();
             }
         });
+    }
+
+    private boolean canPerformMelee() {
+        if (!isPowered() || !hasSword() || isTransforming() || isFlying()) {
+            return false;
+        }
+        return isFollowOwner() || getTarget() == null || isWithinPatrolArea(getTarget().blockPosition());
     }
 
     @Override
     public void tick() {
         super.tick();
         if (!this.level().isClientSide) {
-            int transform = getTransformTicks();
-            if (transform > 0) {
-                setTransformTicks(transform - 1);
-            }
-            int detransform = getDetransformTicks();
-            if (detransform > 0) {
-                setDetransformTicks(detransform - 1);
-            }
-            int boot = getBootTicks();
-            if (boot > 0) {
-                setBootTicks(boot - 1);
-            }
-            int powerOff = getPowerOffTicks();
-            if (powerOff > 0) {
-                setPowerOffTicks(powerOff - 1);
-            }
-            if (transform > 0 || detransform > 0 || boot > 0 || !isPowered()) {
-                this.getNavigation().stop();
-                this.setTarget(null);
-                setMining(false);
-                if (isFlying()) {
-                    setFlying(false);
-                    setNoGravity(false);
-                }
-            }
-            if (!isFollowOwner() && !hasPatrolAnchor) {
+            RobotAnimationController.tickServerTimers(this);
+            if (!isFollowOwner() && !patrolState.hasPatrolAnchor()) {
                 setPatrolAnchor(this.blockPosition());
             }
         } else {
-            if (isFlying()) {
-                flyAnimationState.startIfStopped(this.tickCount);
-            } else {
-                flyAnimationState.stop();
-            }
-            if (isDocked()) {
-                dockAnimationState.startIfStopped(this.tickCount);
-            } else {
-                dockAnimationState.stop();
-            }
-            if (getBootTicks() > 0 && !summonBootAnimationState.isStarted()) {
-                powerOffAnimationState.stop();
-                summonBootAnimationState.start(this.tickCount);
-            } else if (getBootTicks() <= 0 && summonBootAnimationState.isStarted()) {
-                summonBootAnimationState.stop();
-            }
-
-            if (getTransformTicks() > 0 && !combatTransformAnimationState.isStarted()) {
-                powerOffAnimationState.stop();
-                detransformAnimationState.stop();
-                combatTransformAnimationState.start(this.tickCount);
-            } else if (getTransformTicks() <= 0 && combatTransformAnimationState.isStarted()) {
-                combatTransformAnimationState.stop();
-            }
-
-            if (getDetransformTicks() > 0 && !detransformAnimationState.isStarted()) {
-                powerOffAnimationState.stop();
-                combatTransformAnimationState.stop();
-                detransformAnimationState.start(this.tickCount);
-            } else if (getDetransformTicks() <= 0 && detransformAnimationState.isStarted()) {
-                detransformAnimationState.stop();
-            }
-
-            if (getPowerOffTicks() > 0 && !powerOffAnimationState.isStarted()) {
-                summonBootAnimationState.stop();
-                combatTransformAnimationState.stop();
-                detransformAnimationState.stop();
-                powerOffAnimationState.start(this.tickCount);
-            } else if (isPowered() && powerOffAnimationState.isStarted()) {
-                powerOffAnimationState.stop();
-            }
-
-            if (isMining() && isPowered() && !isTransforming()) {
-                mineAnimationState.startIfStopped(this.tickCount);
-            } else {
-                mineAnimationState.stop();
-            }
+            RobotAnimationController.tickClientAnimations(this);
         }
     }
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (this.level().isClientSide) {
+        if (this.level().isClientSide || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return super.hurt(source, amount);
         }
-        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            return super.hurt(source, amount);
-        }
-        if (this.isInvulnerableTo(source)) {
-            return false;
-        }
-        if (this.invulnerableTime > 10) {
+        if (this.isInvulnerableTo(source) || this.invulnerableTime > 10) {
             return false;
         }
 
@@ -442,35 +313,13 @@ public class RobotEntity extends PathfinderMob {
             if (!player.getAbilities().instabuild) {
                 held.shrink(1);
             }
-            this.playSound(net.minecraft.sounds.SoundEvents.ANVIL_USE, 0.7F, 1.2F);
+            this.playSound(SoundEvents.ANVIL_USE, 0.7F, 1.2F);
             player.displayClientMessage(Component.translatable("message.enrichment_solution.robot.auto_recharger_installed"), true);
             return InteractionResult.CONSUME;
         }
 
         if (player.isShiftKeyDown()) {
-            if (isRecharging()) {
-                setRechargeCancelled(true);
-                setRecharging(false);
-                this.getNavigation().stop();
-                player.displayClientMessage(Component.translatable("message.enrichment_solution.robot.recharge_cancelled"), true);
-                return InteractionResult.CONSUME;
-            }
-            ItemStack robotItem = new ItemStack(ModItems.ROBOT.get());
-            CompoundTag tag = new CompoundTag();
-            tag.put(RobotItem.TAG_INVENTORY, inventory.serializeNBT(this.registryAccess()));
-            tag.putBoolean(RobotItem.TAG_AUTO_RECHARGER, hasAutoRecharger());
-            if (chargerPos != null) {
-                tag.putInt(RobotItem.TAG_CHARGER_X, chargerPos.getX());
-                tag.putInt(RobotItem.TAG_CHARGER_Y, chargerPos.getY());
-                tag.putInt(RobotItem.TAG_CHARGER_Z, chargerPos.getZ());
-            }
-            robotItem.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-
-            if (!player.getInventory().add(robotItem)) {
-                this.spawnAtLocation(robotItem);
-            }
-            this.discard();
-            return InteractionResult.CONSUME;
+            return handleShiftInteract(player);
         }
 
         player.openMenu(new SimpleMenuProvider(
@@ -481,16 +330,37 @@ public class RobotEntity extends PathfinderMob {
         return InteractionResult.CONSUME;
     }
 
+    private InteractionResult handleShiftInteract(Player player) {
+        if (isRecharging()) {
+            setRechargeCancelled(true);
+            setRecharging(false);
+            this.getNavigation().stop();
+            player.displayClientMessage(Component.translatable("message.enrichment_solution.robot.recharge_cancelled"), true);
+            return InteractionResult.CONSUME;
+        }
+        ItemStack robotItem = new ItemStack(ModItems.ROBOT.get());
+        CompoundTag tag = new CompoundTag();
+        tag.put(RobotItem.TAG_INVENTORY, inventory.serializeNBT(this.registryAccess()));
+        tag.putBoolean(RobotItem.TAG_AUTO_RECHARGER, hasAutoRecharger());
+        BlockPos chargerPos = energyManager.getChargerPos();
+        if (chargerPos != null) {
+            tag.putInt(RobotItem.TAG_CHARGER_X, chargerPos.getX());
+            tag.putInt(RobotItem.TAG_CHARGER_Y, chargerPos.getY());
+            tag.putInt(RobotItem.TAG_CHARGER_Z, chargerPos.getZ());
+        }
+        robotItem.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+
+        if (!player.getInventory().add(robotItem)) {
+            this.spawnAtLocation(robotItem);
+        }
+        this.discard();
+        return InteractionResult.CONSUME;
+    }
+
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource damageSource, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, damageSource, recentlyHit);
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (!stack.isEmpty()) {
-                Containers.dropItemStack(level, this.getX(), this.getY(), this.getZ(), stack.copy());
-                inventory.setStackInSlot(i, ItemStack.EMPTY);
-            }
-        }
+        RobotInventoryHelper.dropAllItems(level, this, inventory);
     }
 
     @Override
@@ -502,14 +372,8 @@ public class RobotEntity extends PathfinderMob {
         }
         compound.putBoolean("FollowOwner", isFollowOwner());
         compound.putBoolean("AutoRecharger", hasAutoRecharger());
-        if (chargerPos != null) {
-            compound.putInt("ChargerX", chargerPos.getX());
-            compound.putInt("ChargerY", chargerPos.getY());
-            compound.putInt("ChargerZ", chargerPos.getZ());
-        }
-        compound.putBoolean("HasPatrolAnchor", hasPatrolAnchor);
-        compound.putInt("PatrolAnchorChunkX", patrolAnchorChunkX);
-        compound.putInt("PatrolAnchorChunkZ", patrolAnchorChunkZ);
+        energyManager.save(compound);
+        patrolState.save(compound);
         compound.put("Inventory", inventory.serializeNBT(this.registryAccess()));
     }
 
@@ -525,27 +389,10 @@ public class RobotEntity extends PathfinderMob {
         if (compound.contains("AutoRecharger")) {
             setAutoRecharger(compound.getBoolean("AutoRecharger"));
         }
-        if (compound.contains("ChargerX") && compound.contains("ChargerY") && compound.contains("ChargerZ")) {
-            setChargerPos(new BlockPos(compound.getInt("ChargerX"), compound.getInt("ChargerY"), compound.getInt("ChargerZ")));
-        }
-        if (compound.contains("HasPatrolAnchor")) {
-            hasPatrolAnchor = compound.getBoolean("HasPatrolAnchor");
-            patrolAnchorChunkX = compound.getInt("PatrolAnchorChunkX");
-            patrolAnchorChunkZ = compound.getInt("PatrolAnchorChunkZ");
-        }
+        energyManager.load(compound);
+        patrolState.load(compound);
         if (compound.contains("Inventory")) {
-            inventory.deserializeNBT(this.registryAccess(), compound.getCompound("Inventory"));
-            if (inventory.getSlots() != TOTAL_SLOTS) {
-                ItemStack[] preserved = new ItemStack[Math.min(inventory.getSlots(), TOTAL_SLOTS)];
-                for (int i = 0; i < preserved.length; i++) {
-                    preserved[i] = inventory.getStackInSlot(i);
-                }
-                inventory.setSize(TOTAL_SLOTS);
-                for (int i = 0; i < preserved.length; i++) {
-                    inventory.setStackInSlot(i, preserved[i]);
-                }
-            }
-            wasHoldingSword = inventory.getStackInSlot(SLOT_PICKAXE).is(ItemTags.SWORDS);
+            inventoryHelper.deserializeInventory(this, inventory, compound.getCompound("Inventory"));
             if (!this.level().isClientSide) {
                 syncMainHandPickaxe();
                 syncEnergyData();
@@ -567,17 +414,15 @@ public class RobotEntity extends PathfinderMob {
     }
 
     public static boolean isValidTool(ItemStack stack) {
-        return stack.is(ItemTags.PICKAXES) || stack.is(ItemTags.SWORDS);
+        return RobotInventoryHelper.isValidTool(stack);
     }
 
     public ItemStack getTool() {
-        ItemStack stack = inventory.getStackInSlot(SLOT_PICKAXE);
-        return isValidTool(stack) ? stack : ItemStack.EMPTY;
+        return RobotInventoryHelper.getTool(inventory);
     }
 
     public ItemStack getPickaxe() {
-        ItemStack stack = inventory.getStackInSlot(SLOT_PICKAXE);
-        return stack.is(ItemTags.PICKAXES) ? stack : ItemStack.EMPTY;
+        return RobotInventoryHelper.getPickaxe(inventory);
     }
 
     public boolean hasPickaxe() {
@@ -611,39 +456,23 @@ public class RobotEntity extends PathfinderMob {
     }
 
     public void setPatrolAnchor(BlockPos pos) {
-        ChunkPos chunkPos = new ChunkPos(pos);
-        this.patrolAnchorChunkX = chunkPos.x;
-        this.patrolAnchorChunkZ = chunkPos.z;
-        this.hasPatrolAnchor = true;
+        patrolState.setPatrolAnchor(pos);
     }
 
     public boolean isWithinPatrolArea(BlockPos pos) {
-        return isWithinPatrolArea(pos.getX() + 0.5D, pos.getZ() + 0.5D);
+        return patrolState.isWithinPatrolArea(pos.getX() + 0.5D, pos.getZ() + 0.5D);
     }
 
     public boolean isWithinPatrolArea(double x, double z) {
-        if (!hasPatrolAnchor) {
-            return true;
-        }
-        int cx = SectionPos.blockToSectionCoord(x);
-        int cz = SectionPos.blockToSectionCoord(z);
-        return Math.abs(cx - patrolAnchorChunkX) <= 1 && Math.abs(cz - patrolAnchorChunkZ) <= 1;
+        return patrolState.isWithinPatrolArea(x, z);
     }
 
     public AABB getPatrolAreaBox() {
-        int anchorX = hasPatrolAnchor ? patrolAnchorChunkX : SectionPos.blockToSectionCoord(this.getX());
-        int anchorZ = hasPatrolAnchor ? patrolAnchorChunkZ : SectionPos.blockToSectionCoord(this.getZ());
-        double minX = (anchorX - 1) * 16.0D;
-        double maxX = (anchorX + 2) * 16.0D;
-        double minZ = (anchorZ - 1) * 16.0D;
-        double maxZ = (anchorZ + 2) * 16.0D;
-        return new AABB(minX, this.getY() - 16.0D, minZ, maxX, this.getY() + 24.0D, maxZ);
+        return patrolState.getPatrolAreaBox(this.getX(), this.getY(), this.getZ());
     }
 
     public BlockPos getPatrolAnchorCenterPos() {
-        int anchorX = hasPatrolAnchor ? patrolAnchorChunkX : SectionPos.blockToSectionCoord(this.getX());
-        int anchorZ = hasPatrolAnchor ? patrolAnchorChunkZ : SectionPos.blockToSectionCoord(this.getZ());
-        return new BlockPos(anchorX * 16 + 8, (int) Math.round(this.getY()), anchorZ * 16 + 8);
+        return patrolState.getPatrolAnchorCenterPos(this.getX(), this.getY(), this.getZ());
     }
 
     public int getTransformTicks() {
@@ -698,28 +527,14 @@ public class RobotEntity extends PathfinderMob {
         if (this.level().isClientSide) {
             return this.entityData.get(DATA_ENERGY);
         }
-        int total = 0;
-        for (int i = SLOT_CELL_START; i < TOTAL_SLOTS; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.getItem() instanceof EnergyCellBlockItem) {
-                total += stack.getOrDefault(ModDataComponents.STORED_ENERGY.get(), 0);
-            }
-        }
-        return total;
+        return energyManager.getEnergyStored(inventory);
     }
 
     public int getMaxEnergyStored() {
         if (this.level().isClientSide) {
             return this.entityData.get(DATA_MAX_ENERGY);
         }
-        int total = 0;
-        for (int i = SLOT_CELL_START; i < TOTAL_SLOTS; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.getItem() instanceof EnergyCellBlockItem cellItem) {
-                total += cellItem.getTier().getCapacity();
-            }
-        }
-        return total;
+        return energyManager.getMaxEnergyStored(inventory);
     }
 
     public boolean isPowered() {
@@ -734,15 +549,9 @@ public class RobotEntity extends PathfinderMob {
         int max = getMaxEnergyStored();
         this.entityData.set(DATA_ENERGY, stored);
         this.entityData.set(DATA_MAX_ENERGY, max);
-        if (max > 0 && stored > max * 0.10D) {
-            this.rechargeCancelled = false;
-        }
 
-        boolean nowPowered = stored > 0;
-        boolean prevPowered = wasPowered;
-        wasPowered = nowPowered;
-
-        if (prevPowered && !nowPowered) {
+        int transition = energyManager.updatePowerTransition(stored, max);
+        if (transition < 0) {
             setTransformTicks(0);
             setDetransformTicks(0);
             setBootTicks(0);
@@ -750,7 +559,7 @@ public class RobotEntity extends PathfinderMob {
             setMining(false);
             this.getNavigation().stop();
             this.setTarget(null);
-        } else if (!prevPowered && nowPowered) {
+        } else if (transition > 0) {
             setPowerOffTicks(0);
             triggerWakeSequence();
         }
@@ -758,7 +567,7 @@ public class RobotEntity extends PathfinderMob {
 
     private void triggerWakeSequence() {
         if (hasSword()) {
-            this.wasHoldingSword = true;
+            inventoryHelper.setWasHoldingSword(true);
             setTransformTicks(TRANSFORM_DURATION);
         } else {
             setBootTicks(BOOT_DURATION);
@@ -766,57 +575,11 @@ public class RobotEntity extends PathfinderMob {
     }
 
     public void consumeEnergy(int amount) {
-        if (amount <= 0 || this.level().isClientSide) {
-            return;
-        }
-        int remaining = amount;
-        for (int i = SLOT_CELL_START; i < TOTAL_SLOTS && remaining > 0; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (!(stack.getItem() instanceof EnergyCellBlockItem)) {
-                continue;
-            }
-            int cellEnergy = stack.getOrDefault(ModDataComponents.STORED_ENERGY.get(), 0);
-            if (cellEnergy <= 0) {
-                continue;
-            }
-            int take = Math.min(cellEnergy, remaining);
-            int updated = cellEnergy - take;
-            if (updated > 0) {
-                stack.set(ModDataComponents.STORED_ENERGY.get(), updated);
-            } else {
-                stack.remove(ModDataComponents.STORED_ENERGY.get());
-            }
-            remaining -= take;
-        }
-        syncEnergyData();
+        energyManager.consumeEnergy(this, inventory, amount);
     }
 
     public int chargeEnergy(int amount) {
-        if (amount <= 0 || this.level().isClientSide) {
-            return 0;
-        }
-        int remaining = amount;
-        int accepted = 0;
-        for (int i = SLOT_CELL_START; i < TOTAL_SLOTS && remaining > 0; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (!(stack.getItem() instanceof EnergyCellBlockItem cellItem)) {
-                continue;
-            }
-            int current = stack.getOrDefault(ModDataComponents.STORED_ENERGY.get(), 0);
-            int cap = cellItem.getTier().getCapacity();
-            int space = cap - current;
-            if (space <= 0) {
-                continue;
-            }
-            int add = Math.min(space, remaining);
-            stack.set(ModDataComponents.STORED_ENERGY.get(), current + add);
-            remaining -= add;
-            accepted += add;
-        }
-        if (accepted > 0) {
-            syncEnergyData();
-        }
-        return accepted;
+        return energyManager.chargeEnergy(this, inventory, amount);
     }
 
     public boolean hasAutoRecharger() {
@@ -844,24 +607,24 @@ public class RobotEntity extends PathfinderMob {
     }
 
     public boolean isRechargeCancelled() {
-        return rechargeCancelled;
+        return energyManager.isRechargeCancelled();
     }
 
     public void setRechargeCancelled(boolean cancelled) {
-        this.rechargeCancelled = cancelled;
+        energyManager.setRechargeCancelled(cancelled);
     }
 
     public boolean hasChargerPos() {
-        return chargerPos != null;
+        return energyManager.getChargerPos() != null;
     }
 
     @Nullable
     public BlockPos getChargerPos() {
-        return chargerPos;
+        return energyManager.getChargerPos();
     }
 
     public void setChargerPos(@Nullable BlockPos pos) {
-        this.chargerPos = pos;
+        energyManager.setChargerPos(pos);
     }
 
     public void startSummonBoot() {
@@ -879,91 +642,19 @@ public class RobotEntity extends PathfinderMob {
     }
 
     public boolean hasStorageSpaceFor(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return false;
-        }
-        ItemStack remaining = stack.copy();
-        for (int i = SLOT_STORAGE_START; i < TOTAL_SLOTS; i++) {
-            remaining = inventory.insertItem(i, remaining, true);
-            if (remaining.isEmpty()) {
-                return true;
-            }
-        }
-        return remaining.getCount() < stack.getCount();
+        return RobotInventoryHelper.hasStorageSpaceFor(inventory, stack);
     }
 
     public boolean hasAnyStorageSlotFree() {
-        for (int i = SLOT_STORAGE_START; i < TOTAL_SLOTS; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
-                return true;
-            }
-        }
-        return false;
+        return RobotInventoryHelper.hasAnyStorageSlotFree(inventory);
     }
 
     public ItemStack insertIntoStorage(ItemStack stack) {
-        ItemStack remaining = stack.copy();
-        for (int i = SLOT_STORAGE_START; i < TOTAL_SLOTS; i++) {
-            remaining = inventory.insertItem(i, remaining, false);
-            if (remaining.isEmpty()) {
-                return ItemStack.EMPTY;
-            }
-        }
-        return remaining;
+        return RobotInventoryHelper.insertIntoStorage(inventory, stack);
     }
 
-    public boolean tryPlaceScaffoldBlock(net.minecraft.core.BlockPos pos) {
-        if (!(this.level() instanceof ServerLevel serverLevel)) {
-            return false;
-        }
-        BlockState existing = serverLevel.getBlockState(pos);
-        if (!existing.canBeReplaced()) {
-            return false;
-        }
-        int slot = findScaffoldSlot();
-        if (slot < 0) {
-            return false;
-        }
-        ItemStack stack = inventory.getStackInSlot(slot);
-        if (!(stack.getItem() instanceof BlockItem blockItem)) {
-            return false;
-        }
-        BlockState placeState = blockItem.getBlock().defaultBlockState();
-        if (serverLevel.setBlock(pos, placeState, Block.UPDATE_ALL)) {
-            inventory.extractItem(slot, 1, false);
-            SoundType soundType = placeState.getSoundType(serverLevel, pos, this);
-            serverLevel.playSound(null, pos, soundType.getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS,
-                    (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
-            return true;
-        }
-        return false;
-    }
-
-    private int findScaffoldSlot() {
-        int fallback = -1;
-        for (int i = SLOT_STORAGE_START; i < TOTAL_SLOTS; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem blockItem)) {
-                continue;
-            }
-            Block block = blockItem.getBlock();
-            if (block instanceof BaseEntityBlock || block instanceof FallingBlock) {
-                continue;
-            }
-            BlockState state = block.defaultBlockState();
-            if (!state.isCollisionShapeFullBlock(this.level(), this.blockPosition())) {
-                continue;
-            }
-            if (block == Blocks.COBBLESTONE || block == Blocks.COBBLED_DEEPSLATE
-                    || block == Blocks.DIRT || block == Blocks.STONE) {
-                return i;
-            }
-            if (fallback < 0) {
-                fallback = i;
-            }
-        }
-        return fallback;
+    public boolean tryPlaceScaffoldBlock(BlockPos pos) {
+        return RobotInventoryHelper.tryPlaceScaffoldBlock(this, inventory, pos);
     }
 
     public void triggerPickupAnimation() {

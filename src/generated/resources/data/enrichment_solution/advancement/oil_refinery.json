@@ -1,0 +1,33 @@
+{
+  "parent": "enrichment_solution:root",
+  "criteria": {
+    "get": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:oil_refinery"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancement.enrichment_solution.oil_refinery.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "enrichment_solution:oil_refinery"
+    },
+    "title": {
+      "translate": "advancement.enrichment_solution.oil_refinery.title"
+    }
+  },
+  "requirements": [
+    [
+      "get"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

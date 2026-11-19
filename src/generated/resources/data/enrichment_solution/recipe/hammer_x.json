@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "enrichment_solution:ultra_circuit"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SDS",
+    "SCS",
+    " S "
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:hammer_x"
+  }
+}

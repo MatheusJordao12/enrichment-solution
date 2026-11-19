@@ -1,10 +1,10 @@
 package com.enrichmentsolution.mod;
 
-import com.enrichmentsolution.mod.client.config.ModClientConfig;
-import com.enrichmentsolution.mod.client.screen.AnimationSolutionScreen;
+import com.enrichmentsolution.mod.common.config.ModServerConfig;
 import com.enrichmentsolution.mod.common.entity.RobotEntity;
 import com.enrichmentsolution.mod.common.network.ModNetwork;
 import com.enrichmentsolution.mod.common.recipe.MachineRecipes;
+import com.enrichmentsolution.mod.datagen.ModDataGenerators;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModBlocks;
 import com.enrichmentsolution.mod.registry.ModCreativeTabs;
@@ -14,15 +14,12 @@ import com.enrichmentsolution.mod.registry.ModFluids;
 import com.enrichmentsolution.mod.registry.ModItems;
 import com.enrichmentsolution.mod.registry.ModMenuTypes;
 import com.mojang.logging.LogUtils;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import org.slf4j.Logger;
 
@@ -43,17 +40,12 @@ public class EnrichmentSolutionMod {
         ModCreativeTabs.register(modEventBus);
         MachineRecipes.register(modEventBus);
 
-        if (FMLEnvironment.dist == Dist.CLIENT) {
-            modContainer.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.SPEC);
-            modContainer.registerExtensionPoint(
-                    IConfigScreenFactory.class,
-                    (container, parent) -> new AnimationSolutionScreen(parent)
-            );
-        }
+        modContainer.registerConfig(ModConfig.Type.SERVER, ModServerConfig.SPEC);
 
         modEventBus.addListener(this::registerCapabilities);
         modEventBus.addListener(this::registerEntityAttributes);
         modEventBus.addListener(ModNetwork::register);
+        modEventBus.addListener(ModDataGenerators::gatherData);
 
         LOGGER.info("Enrichment Solution initialized.");
     }
@@ -182,6 +174,17 @@ public class EnrichmentSolutionMod {
                 Capabilities.FluidHandler.BLOCK,
                 ModBlockEntities.FLUID_PUMP.get(),
                 (be, side) -> be.getFluidHandler(side)
+        );
+
+        event.registerItem(
+                Capabilities.EnergyStorage.ITEM,
+                (stack, ctx) -> new net.neoforged.neoforge.energy.ComponentEnergyStorage(
+                        stack,
+                        com.enrichmentsolution.mod.registry.ModDataComponents.STORED_ENERGY.get(),
+                        com.enrichmentsolution.mod.common.item.HammerXItem.ENERGY_CAPACITY,
+                        com.enrichmentsolution.mod.common.item.HammerXItem.ENERGY_TRANSFER
+                ),
+                ModItems.HAMMER_X.get()
         );
     }
 

@@ -3,6 +3,7 @@ package com.enrichmentsolution.mod.registry;
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
 import com.enrichmentsolution.mod.common.block.CableTier;
 import com.enrichmentsolution.mod.common.block.CondenserBlock;
+import com.enrichmentsolution.mod.common.block.DistillationTowerBlock;
 import com.enrichmentsolution.mod.common.block.EnergyCableBlock;
 import com.enrichmentsolution.mod.common.block.EnergyCellBlock;
 import com.enrichmentsolution.mod.common.block.EnergyCellTier;
@@ -232,6 +233,14 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.METAL)
                     .lightLevel(state -> state.getValue(OilRefineryBlock.LIT) ? 10 : 0)));
+
+    public static final DeferredBlock<Block> DISTILLATION_TOWER = registerBlock("distillation_tower",
+            () -> new DistillationTowerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(4.0F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
 
     public static final DeferredBlock<Block> HEAT_EXCHANGER = registerBlock("heat_exchanger",
             () -> new HeatExchangerBlock(BlockBehaviour.Properties.of()
