@@ -1,4 +1,5 @@
 {
+  "parent": "minecraft:block/block",
   "textures": {
     "0": "enrichment_solution:block/belt_drive",
     "particle": "enrichment_solution:block/belt_drive"

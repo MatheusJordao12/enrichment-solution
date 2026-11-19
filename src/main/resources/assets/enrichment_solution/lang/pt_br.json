@@ -341,5 +341,11 @@
   "block.enrichment_solution.belt_drive": "Motor de Esteira",
   "block.enrichment_solution.conveyor_belt": "Esteira Transportadora",
   "tooltip.enrichment_solution.belt_drive.desc": "Alimenta linhas de Esteira Transportadora adjacentes usando FE para girar o eixo.",
-  "tooltip.enrichment_solution.conveyor_belt.desc": "Esteira multibloco que transporta itens quando acionada por um Motor de Esteira adjacente."
+  "tooltip.enrichment_solution.conveyor_belt.desc": "Esteira multibloco que transporta itens quando acionada por um Motor de Esteira adjacente.",
+  "gui.enrichment_solution.belt_drive.status": "Status: %s",
+  "gui.enrichment_solution.belt_drive.active": "Ativo",
+  "gui.enrichment_solution.belt_drive.inactive": "Inativo",
+  "gui.enrichment_solution.belt_drive.direction": "Direção: %s",
+  "gui.enrichment_solution.belt_drive.forward": "Frente →",
+  "gui.enrichment_solution.belt_drive.reverse": "Reverso ←"
 }

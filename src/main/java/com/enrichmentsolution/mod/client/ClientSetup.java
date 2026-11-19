@@ -9,6 +9,7 @@ import com.enrichmentsolution.mod.client.renderer.EnrichmentChamberRenderer;
 import com.enrichmentsolution.mod.client.renderer.PcbPrinterRenderer;
 import com.enrichmentsolution.mod.client.renderer.RobotRenderer;
 import com.enrichmentsolution.mod.client.renderer.SolarPanelRenderer;
+import com.enrichmentsolution.mod.client.screen.BeltDriveScreen;
 import com.enrichmentsolution.mod.client.screen.CondenserScreen;
 import com.enrichmentsolution.mod.client.screen.EnergyCellScreen;
 import com.enrichmentsolution.mod.client.screen.EnrichmentChamberScreen;
@@ -78,6 +79,7 @@ public final class ClientSetup {
         event.register(ModMenuTypes.CONDENSER.get(), CondenserScreen::new);
         event.register(ModMenuTypes.FLUID_PUMP.get(), FluidPumpScreen::new);
         event.register(ModMenuTypes.ISOLATED_BACKPACK.get(), IsolatedBackpackScreen::new);
+        event.register(ModMenuTypes.BELT_DRIVE.get(), BeltDriveScreen::new);
     }
 
     @SubscribeEvent

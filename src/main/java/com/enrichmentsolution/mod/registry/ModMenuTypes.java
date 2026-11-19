@@ -1,6 +1,7 @@
 package com.enrichmentsolution.mod.registry;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
+import com.enrichmentsolution.mod.common.menu.BeltDriveMenu;
 import com.enrichmentsolution.mod.common.menu.CondenserMenu;
 import com.enrichmentsolution.mod.common.menu.EnergyCellMenu;
 import com.enrichmentsolution.mod.common.menu.EnrichmentChamberMenu;
@@ -68,6 +69,9 @@ public final class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<IsolatedBackpackMenu>> ISOLATED_BACKPACK =
             MENUS.register("isolated_backpack", () -> IMenuTypeExtension.create(IsolatedBackpackMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<BeltDriveMenu>> BELT_DRIVE =
+            MENUS.register("belt_drive", () -> IMenuTypeExtension.create(BeltDriveMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);

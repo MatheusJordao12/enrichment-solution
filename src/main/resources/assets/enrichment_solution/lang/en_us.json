@@ -341,5 +341,11 @@
   "block.enrichment_solution.belt_drive": "Belt Drive",
   "block.enrichment_solution.conveyor_belt": "Conveyor Belt",
   "tooltip.enrichment_solution.belt_drive.desc": "Powers adjacent Conveyor Belt lines using FE to spin the drive shaft.",
-  "tooltip.enrichment_solution.conveyor_belt.desc": "Multiblock conveyor that transports items when powered by an adjacent Belt Drive."
+  "tooltip.enrichment_solution.conveyor_belt.desc": "Multiblock conveyor that transports items when powered by an adjacent Belt Drive.",
+  "gui.enrichment_solution.belt_drive.status": "Status: %s",
+  "gui.enrichment_solution.belt_drive.active": "Active",
+  "gui.enrichment_solution.belt_drive.inactive": "Inactive",
+  "gui.enrichment_solution.belt_drive.direction": "Direction: %s",
+  "gui.enrichment_solution.belt_drive.forward": "Forward →",
+  "gui.enrichment_solution.belt_drive.reverse": "Reverse ←"
 }

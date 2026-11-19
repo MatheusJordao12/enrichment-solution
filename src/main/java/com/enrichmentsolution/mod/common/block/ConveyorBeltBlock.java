@@ -1,5 +1,6 @@
 package com.enrichmentsolution.mod.common.block;
 
+import com.enrichmentsolution.mod.common.block.entity.BeltDriveBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.ConveyorBeltBlockEntity;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
@@ -212,6 +213,7 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
         visited.add(origin);
 
         boolean anyDriveActive = false;
+        boolean anyDriveReverse = false;
 
         while (!queue.isEmpty() && line.size() < MAX_LINE_LENGTH) {
             BlockPos current = queue.poll();
@@ -222,6 +224,9 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
                 BlockState adjState = level.getBlockState(adj);
                 if (adjState.getBlock() instanceof BeltDriveBlock && adjState.getValue(BeltDriveBlock.ACTIVE)) {
                     anyDriveActive = true;
+                    if (level.getBlockEntity(adj) instanceof BeltDriveBlockEntity drive && drive.isReverse()) {
+                        anyDriveReverse = true;
+                    }
                 }
             }
 
@@ -256,6 +261,9 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
                         beltState.setValue(PART, newPart).setValue(ACTIVE, anyDriveActive),
                         Block.UPDATE_ALL
                 );
+            }
+            if (level.getBlockEntity(beltPos) instanceof ConveyorBeltBlockEntity beltBe) {
+                beltBe.setReverse(anyDriveReverse);
             }
         }
     }

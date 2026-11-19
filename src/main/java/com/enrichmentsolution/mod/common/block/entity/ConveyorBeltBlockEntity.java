@@ -5,6 +5,8 @@ import com.enrichmentsolution.mod.common.block.ConveyorBeltBlock;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -26,9 +28,35 @@ public class ConveyorBeltBlockEntity extends BlockEntity {
     public static final double BELT_SPEED = 0.08D;
     private static final double CENTER_STRENGTH = 0.2D;
     private static final double MAX_CENTER_STEP = 0.05D;
+    private static final String TAG_REVERSE = "Reverse";
+
+    private boolean reverse = false;
 
     public ConveyorBeltBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.CONVEYOR_BELT.get(), pos, blockState);
+    }
+
+    public boolean isReverse() {
+        return reverse;
+    }
+
+    public void setReverse(boolean reverse) {
+        if (this.reverse != reverse) {
+            this.reverse = reverse;
+            setChanged();
+        }
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putBoolean(TAG_REVERSE, reverse);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        reverse = tag.getBoolean(TAG_REVERSE);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ConveyorBeltBlockEntity blockEntity) {
@@ -43,6 +71,7 @@ public class ConveyorBeltBlockEntity extends BlockEntity {
         }
 
         Direction facing = state.getValue(ConveyorBeltBlock.FACING);
+        Direction moveDir = reverse ? facing.getOpposite() : facing;
         BeltPart part = state.getValue(ConveyorBeltBlock.PART);
 
         AABB topBox = new AABB(
@@ -60,11 +89,14 @@ public class ConveyorBeltBlockEntity extends BlockEntity {
         }
 
         IItemHandler targetHandler = null;
-        if (part == BeltPart.END || part == BeltPart.SINGLE) {
+        boolean isOutputEnd = reverse
+                ? (part == BeltPart.START || part == BeltPart.SINGLE)
+                : (part == BeltPart.END || part == BeltPart.SINGLE);
+        if (isOutputEnd) {
             targetHandler = level.getCapability(
                     Capabilities.ItemHandler.BLOCK,
-                    pos.relative(facing),
-                    facing.getOpposite()
+                    pos.relative(moveDir),
+                    moveDir.getOpposite()
             );
         }
 
@@ -74,10 +106,10 @@ public class ConveyorBeltBlockEntity extends BlockEntity {
         for (ItemEntity item : items) {
             item.setExtendedLifetime();
 
-            double dx = facing.getStepX() * BELT_SPEED;
-            double dz = facing.getStepZ() * BELT_SPEED;
+            double dx = moveDir.getStepX() * BELT_SPEED;
+            double dz = moveDir.getStepZ() * BELT_SPEED;
 
-            if (facing.getAxis() == Direction.Axis.Z) {
+            if (moveDir.getAxis() == Direction.Axis.Z) {
                 dx += Math.clamp((centerX - item.getX()) * CENTER_STRENGTH, -MAX_CENTER_STEP, MAX_CENTER_STEP);
             } else {
                 dz += Math.clamp((centerZ - item.getZ()) * CENTER_STRENGTH, -MAX_CENTER_STEP, MAX_CENTER_STEP);
@@ -87,8 +119,8 @@ public class ConveyorBeltBlockEntity extends BlockEntity {
             item.hasImpulse = true;
 
             if (targetHandler != null) {
-                double forwardProgress = (item.getX() - centerX) * facing.getStepX()
-                        + (item.getZ() - centerZ) * facing.getStepZ();
+                double forwardProgress = (item.getX() - centerX) * moveDir.getStepX()
+                        + (item.getZ() - centerZ) * moveDir.getStepZ();
                 if (forwardProgress >= 0.0D) {
                     ItemStack remaining = ItemHandlerHelper.insertItemStacked(
                             targetHandler,

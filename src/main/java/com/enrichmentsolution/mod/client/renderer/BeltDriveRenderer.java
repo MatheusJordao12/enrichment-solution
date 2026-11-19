@@ -66,7 +66,8 @@ public class BeltDriveRenderer implements BlockEntityRenderer<BeltDriveBlockEnti
         poseStack.translate(0.5D, 0.5D, 0.5D);
         poseStack.mulPose(Axis.YP.rotationDegrees(rotY));
         if (active) {
-            float spinDeg = ((level.getGameTime() + partialTick) * 12.0F) % 360.0F;
+            float dirSign = blockEntity.isReverse() ? -1.0F : 1.0F;
+            float spinDeg = (((level.getGameTime() + partialTick) * 12.0F) % 360.0F) * dirSign;
             poseStack.mulPose(Axis.XP.rotationDegrees(spinDeg));
         }
         poseStack.translate(-0.5D, -0.5D, -0.5D);
