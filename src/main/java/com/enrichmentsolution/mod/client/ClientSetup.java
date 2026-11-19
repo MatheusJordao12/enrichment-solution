@@ -12,6 +12,7 @@ import com.enrichmentsolution.mod.client.screen.EnergyCellScreen;
 import com.enrichmentsolution.mod.client.screen.EnrichmentChamberScreen;
 import com.enrichmentsolution.mod.client.screen.FluidPumpScreen;
 import com.enrichmentsolution.mod.client.screen.GeothermalGeneratorScreen;
+import com.enrichmentsolution.mod.client.screen.GuideBookScreen;
 import com.enrichmentsolution.mod.client.screen.HeatExchangerScreen;
 import com.enrichmentsolution.mod.client.screen.OilRefineryScreen;
 import com.enrichmentsolution.mod.client.screen.PcbPrinterScreen;
@@ -20,6 +21,7 @@ import com.enrichmentsolution.mod.client.screen.RobotScreen;
 import com.enrichmentsolution.mod.client.screen.SolarPanelScreen;
 import com.enrichmentsolution.mod.client.screen.StampingPressScreen;
 import com.enrichmentsolution.mod.client.screen.TankScreen;
+import com.enrichmentsolution.mod.common.item.GuideBookItem;
 import com.enrichmentsolution.mod.common.network.ModNetwork;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
 import com.enrichmentsolution.mod.registry.ModEntities;
@@ -46,6 +48,7 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         ModNetwork.setInspectSink(InspectHud::accept);
+        GuideBookItem.setScreenOpener(() -> net.minecraft.client.Minecraft.getInstance().setScreen(new GuideBookScreen()));
     }
 
     @SubscribeEvent
