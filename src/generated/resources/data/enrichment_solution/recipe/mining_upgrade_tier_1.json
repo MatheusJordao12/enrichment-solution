@@ -3,19 +3,22 @@
   "category": "misc",
   "key": {
     "A": {
-      "item": "enrichment_solution:aluminium_ingot"
+      "item": "enrichment_solution:pressed_aluminium"
+    },
+    "C": {
+      "item": "enrichment_solution:basic_circuit"
     },
     "P": {
-      "item": "minecraft:iron_pickaxe"
+      "item": "minecraft:diamond_pickaxe"
     },
     "S": {
       "item": "enrichment_solution:steel_ingot"
     }
   },
   "pattern": [
-    "ASA",
-    "SPS",
-    "ASA"
+    "SCS",
+    "APA",
+    "SCS"
   ],
   "result": {
     "count": 1,

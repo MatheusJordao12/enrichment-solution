@@ -3,19 +3,22 @@
   "category": "misc",
   "key": {
     "C": {
-      "item": "enrichment_solution:ultimate_circuit"
+      "item": "enrichment_solution:ultra_circuit"
     },
     "E": {
-      "item": "minecraft:emerald"
+      "item": "enrichment_solution:ultimate_energy_cable"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
     },
     "U": {
       "item": "enrichment_solution:mining_upgrade_tier_3"
     }
   },
   "pattern": [
-    "ECE",
+    "NCN",
     "EUE",
-    "ECE"
+    "NCN"
   ],
   "result": {
     "count": 1,

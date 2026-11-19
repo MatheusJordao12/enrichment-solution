@@ -3,19 +3,22 @@
   "category": "misc",
   "key": {
     "C": {
-      "item": "enrichment_solution:basic_circuit"
+      "item": "enrichment_solution:advanced_circuit"
     },
-    "G": {
-      "item": "minecraft:gold_ingot"
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "E": {
+      "item": "enrichment_solution:advanced_energy_cable"
     },
     "U": {
       "item": "enrichment_solution:mining_upgrade_tier_1"
     }
   },
   "pattern": [
-    "GCG",
-    "GUG",
-    "GCG"
+    "DCD",
+    "EUE",
+    "DCD"
   ],
   "result": {
     "count": 1,

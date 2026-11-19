@@ -3,10 +3,13 @@
   "category": "misc",
   "key": {
     "C": {
-      "item": "enrichment_solution:advanced_circuit"
+      "item": "enrichment_solution:ultimate_circuit"
     },
     "D": {
-      "item": "minecraft:diamond"
+      "item": "minecraft:diamond_block"
+    },
+    "E": {
+      "item": "enrichment_solution:enriched_uranium"
     },
     "U": {
       "item": "enrichment_solution:mining_upgrade_tier_2"
@@ -14,7 +17,7 @@
   },
   "pattern": [
     "DCD",
-    "DUD",
+    "EUE",
     "DCD"
   ],
   "result": {
