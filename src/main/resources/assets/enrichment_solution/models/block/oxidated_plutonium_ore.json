@@ -3,85 +3,212 @@
   "textures": {
     "particle": "minecraft:block/stone",
     "stone": "minecraft:block/stone",
-    "core": "enrichment_solution:block/oxidated_plutonium_core"
+    "core": "enrichment_solution:block/oxidated_plutonium_core",
+    "canister": "enrichment_solution:block/oxidated_plutonium_canister"
   },
   "elements": [
     {
-      "name": "bottom_stone",
+      "name": "rock_bottom",
       "from": [0, 0, 0],
-      "to": [16, 4, 16],
+      "to": [16, 3, 16],
       "faces": {
-        "north": { "uv": [0, 12, 16, 16], "texture": "#stone" },
-        "east":  { "uv": [0, 12, 16, 16], "texture": "#stone" },
-        "south": { "uv": [0, 12, 16, 16], "texture": "#stone" },
-        "west":  { "uv": [0, 12, 16, 16], "texture": "#stone" },
+        "north": { "uv": [0, 13, 16, 16], "texture": "#stone" },
+        "east":  { "uv": [0, 13, 16, 16], "texture": "#stone" },
+        "south": { "uv": [0, 13, 16, 16], "texture": "#stone" },
+        "west":  { "uv": [0, 13, 16, 16], "texture": "#stone" },
         "up":    { "uv": [0, 0, 16, 16],  "texture": "#stone" },
         "down":  { "uv": [0, 0, 16, 16],  "texture": "#stone" }
       }
     },
     {
-      "name": "top_stone",
-      "from": [0, 12, 0],
+      "name": "rock_top",
+      "from": [0, 13, 0],
       "to": [16, 16, 16],
       "faces": {
-        "north": { "uv": [0, 0, 16, 4],  "texture": "#stone" },
-        "east":  { "uv": [0, 0, 16, 4],  "texture": "#stone" },
-        "south": { "uv": [0, 0, 16, 4],  "texture": "#stone" },
-        "west":  { "uv": [0, 0, 16, 4],  "texture": "#stone" },
+        "north": { "uv": [0, 0, 16, 3],  "texture": "#stone" },
+        "east":  { "uv": [0, 0, 16, 3],  "texture": "#stone" },
+        "south": { "uv": [0, 0, 16, 3],  "texture": "#stone" },
+        "west":  { "uv": [0, 0, 16, 3],  "texture": "#stone" },
         "up":    { "uv": [0, 0, 16, 16], "texture": "#stone" },
         "down":  { "uv": [0, 0, 16, 16], "texture": "#stone" }
       }
     },
     {
-      "name": "core_center",
-      "from": [5, 5, 5],
-      "to": [11, 11, 11],
+      "name": "rock_pillar_nw",
+      "from": [0, 3, 0],
+      "to": [5, 13, 6],
+      "faces": {
+        "north": { "uv": [11, 3, 16, 13], "texture": "#stone" },
+        "east":  { "uv": [10, 3, 16, 13], "texture": "#stone" },
+        "south": { "uv": [0, 3, 5, 13],   "texture": "#stone" },
+        "west":  { "uv": [0, 3, 6, 13],   "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_pillar_ne",
+      "from": [11, 3, 0],
+      "to": [16, 13, 5],
+      "faces": {
+        "north": { "uv": [0, 3, 5, 13],   "texture": "#stone" },
+        "east":  { "uv": [11, 3, 16, 13], "texture": "#stone" },
+        "south": { "uv": [11, 3, 16, 13], "texture": "#stone" },
+        "west":  { "uv": [0, 3, 5, 13],   "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_pillar_sw",
+      "from": [0, 3, 10],
+      "to": [6, 13, 16],
+      "faces": {
+        "north": { "uv": [10, 3, 16, 13], "texture": "#stone" },
+        "east":  { "uv": [0, 3, 6, 13],   "texture": "#stone" },
+        "south": { "uv": [0, 3, 6, 13],   "texture": "#stone" },
+        "west":  { "uv": [10, 3, 16, 13], "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_pillar_se",
+      "from": [10, 3, 11],
+      "to": [16, 13, 16],
+      "faces": {
+        "north": { "uv": [0, 3, 6, 13],   "texture": "#stone" },
+        "east":  { "uv": [0, 3, 5, 13],   "texture": "#stone" },
+        "south": { "uv": [10, 3, 16, 13], "texture": "#stone" },
+        "west":  { "uv": [11, 3, 16, 13], "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_shelf_west",
+      "from": [0, 3, 6],
+      "to": [4, 7, 10],
+      "faces": {
+        "east":  { "uv": [6, 9, 10, 13], "texture": "#stone" },
+        "west":  { "uv": [6, 9, 10, 13], "texture": "#stone" },
+        "up":    { "uv": [0, 6, 4, 10],  "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_overhang_east",
+      "from": [12, 8, 5],
+      "to": [16, 13, 11],
+      "faces": {
+        "east":  { "uv": [5, 3, 11, 8],  "texture": "#stone" },
+        "west":  { "uv": [5, 3, 11, 8],  "texture": "#stone" },
+        "down":  { "uv": [12, 5, 16, 11], "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_lip_south",
+      "from": [6, 3, 12],
+      "to": [10, 6, 16],
+      "faces": {
+        "north": { "uv": [6, 10, 10, 13], "texture": "#stone" },
+        "south": { "uv": [6, 10, 10, 13], "texture": "#stone" },
+        "up":    { "uv": [6, 12, 10, 16], "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_lip_north",
+      "from": [5, 10, 0],
+      "to": [11, 13, 3],
+      "faces": {
+        "north": { "uv": [5, 3, 11, 6],  "texture": "#stone" },
+        "south": { "uv": [5, 3, 11, 6],  "texture": "#stone" },
+        "down":  { "uv": [5, 0, 11, 3],  "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_wedge_low",
+      "from": [4, 3, 4],
+      "to": [6, 6, 6],
+      "faces": {
+        "north": { "uv": [4, 10, 6, 13], "texture": "#stone" },
+        "east":  { "uv": [4, 10, 6, 13], "texture": "#stone" },
+        "south": { "uv": [4, 10, 6, 13], "texture": "#stone" },
+        "west":  { "uv": [4, 10, 6, 13], "texture": "#stone" },
+        "up":    { "uv": [4, 4, 6, 6],   "texture": "#stone" }
+      }
+    },
+    {
+      "name": "rock_wedge_high",
+      "from": [10, 10, 10],
+      "to": [12, 13, 12],
+      "faces": {
+        "north": { "uv": [10, 3, 12, 6], "texture": "#stone" },
+        "east":  { "uv": [10, 3, 12, 6], "texture": "#stone" },
+        "south": { "uv": [10, 3, 12, 6], "texture": "#stone" },
+        "west":  { "uv": [10, 3, 12, 6], "texture": "#stone" },
+        "down":  { "uv": [10, 10, 12, 12], "texture": "#stone" }
+      }
+    },
+    {
+      "name": "canister_cap_bottom",
+      "from": [5, 3, 5],
+      "to": [11, 5, 11],
+      "faces": {
+        "north": { "uv": [2, 12, 14, 16], "texture": "#canister" },
+        "east":  { "uv": [2, 12, 14, 16], "texture": "#canister" },
+        "south": { "uv": [2, 12, 14, 16], "texture": "#canister" },
+        "west":  { "uv": [2, 12, 14, 16], "texture": "#canister" },
+        "up":    { "uv": [2, 2, 14, 14],  "texture": "#canister" },
+        "down":  { "uv": [2, 2, 14, 14],  "texture": "#canister" }
+      }
+    },
+    {
+      "name": "canister_cap_top",
+      "from": [5, 11, 5],
+      "to": [11, 13, 11],
+      "faces": {
+        "north": { "uv": [2, 0, 14, 4],  "texture": "#canister" },
+        "east":  { "uv": [2, 0, 14, 4],  "texture": "#canister" },
+        "south": { "uv": [2, 0, 14, 4],  "texture": "#canister" },
+        "west":  { "uv": [2, 0, 14, 4],  "texture": "#canister" },
+        "up":    { "uv": [2, 2, 14, 14], "texture": "#canister" },
+        "down":  { "uv": [2, 2, 14, 14], "texture": "#canister" }
+      }
+    },
+    {
+      "name": "canister_core",
+      "from": [5.5, 5, 5.5],
+      "to": [10.5, 11, 10.5],
       "faces": {
         "north": { "uv": [2, 2, 14, 14], "texture": "#core" },
         "east":  { "uv": [2, 2, 14, 14], "texture": "#core" },
         "south": { "uv": [2, 2, 14, 14], "texture": "#core" },
-        "west":  { "uv": [2, 2, 14, 14], "texture": "#core" },
-        "up":    { "uv": [2, 2, 14, 14], "texture": "#core" },
-        "down":  { "uv": [2, 2, 14, 14], "texture": "#core" }
+        "west":  { "uv": [2, 2, 14, 14], "texture": "#core" }
       }
     },
     {
-      "name": "core_x",
-      "from": [4, 6, 6],
-      "to": [12, 10, 10],
+      "name": "canister_strut_nw",
+      "from": [4.8, 5, 4.8],
+      "to": [6.2, 11, 6.2],
       "faces": {
-        "north": { "uv": [0, 4, 16, 12], "texture": "#core" },
-        "east":  { "uv": [4, 4, 12, 12], "texture": "#core" },
-        "south": { "uv": [0, 4, 16, 12], "texture": "#core" },
-        "west":  { "uv": [4, 4, 12, 12], "texture": "#core" },
-        "up":    { "uv": [0, 4, 16, 12], "texture": "#core" },
-        "down":  { "uv": [0, 4, 16, 12], "texture": "#core" }
+        "north": { "uv": [0, 4, 3, 12], "texture": "#canister" },
+        "east":  { "uv": [0, 4, 3, 12], "texture": "#canister" },
+        "south": { "uv": [0, 4, 3, 12], "texture": "#canister" },
+        "west":  { "uv": [0, 4, 3, 12], "texture": "#canister" }
       }
     },
     {
-      "name": "core_y",
-      "from": [6, 4, 6],
-      "to": [10, 12, 10],
+      "name": "canister_strut_ne",
+      "from": [9.8, 5, 4.8],
+      "to": [11.2, 11, 6.2],
       "faces": {
-        "north": { "uv": [4, 0, 12, 16], "texture": "#core" },
-        "east":  { "uv": [4, 0, 12, 16], "texture": "#core" },
-        "south": { "uv": [4, 0, 12, 16], "texture": "#core" },
-        "west":  { "uv": [4, 0, 12, 16], "texture": "#core" },
-        "up":    { "uv": [4, 4, 12, 12], "texture": "#core" },
-        "down":  { "uv": [4, 4, 12, 12], "texture": "#core" }
+        "north": { "uv": [13, 4, 16, 12], "texture": "#canister" },
+        "east":  { "uv": [13, 4, 16, 12], "texture": "#canister" },
+        "south": { "uv": [13, 4, 16, 12], "texture": "#canister" },
+        "west":  { "uv": [13, 4, 16, 12], "texture": "#canister" }
       }
     },
     {
-      "name": "core_z",
-      "from": [6, 6, 4],
-      "to": [10, 10, 12],
+      "name": "canister_strut_se",
+      "from": [9.8, 5, 9.8],
+      "to": [11.2, 11, 11.2],
       "faces": {
-        "north": { "uv": [4, 4, 12, 12], "texture": "#core" },
-        "east":  { "uv": [0, 4, 16, 12], "texture": "#core" },
-        "south": { "uv": [4, 4, 12, 12], "texture": "#core" },
-        "west":  { "uv": [0, 4, 16, 12], "texture": "#core" },
-        "up":    { "uv": [4, 0, 12, 16], "texture": "#core" },
-        "down":  { "uv": [4, 0, 12, 16], "texture": "#core" }
+        "north": { "uv": [13, 4, 16, 12], "texture": "#canister" },
+        "east":  { "uv": [13, 4, 16, 12], "texture": "#canister" },
+        "south": { "uv": [13, 4, 16, 12], "texture": "#canister" },
+        "west":  { "uv": [13, 4, 16, 12], "texture": "#canister" }
       }
     }
   ]
