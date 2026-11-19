@@ -1,0 +1,8 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "enrichment_solution:block/reactor_casing_ctm"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 package com.enrichmentsolution.mod.client;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
+import com.enrichmentsolution.mod.client.ctm.CtmRegistry;
 import com.enrichmentsolution.mod.client.model.RobotModel;
 import com.enrichmentsolution.mod.client.render.GogglesLayer;
 import com.enrichmentsolution.mod.client.renderer.EnrichmentChamberRenderer;
@@ -108,6 +109,11 @@ public final class ClientSetup {
         event.register(SolarPanelRenderer.ADVANCED_RIGHT_MODEL);
         event.register(PcbPrinterRenderer.PEN_MODEL);
         event.register(PcbPrinterRenderer.PCB_MODEL);
+    }
+
+    @SubscribeEvent
+    public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
+        CtmRegistry.onModifyBakingResult(event);
     }
 
     @SubscribeEvent
