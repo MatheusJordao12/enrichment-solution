@@ -11,7 +11,6 @@ import com.enrichmentsolution.mod.common.block.entity.GeothermalGeneratorBlockEn
 import com.enrichmentsolution.mod.common.block.entity.HeatExchangerBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.OilRefineryBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.PcbPrinterBlockEntity;
-import com.enrichmentsolution.mod.common.block.entity.ReactorCoreBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.RobotChargerBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.SolarPanelBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.StampingPressBlockEntity;
@@ -31,11 +30,6 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<EnrichmentChamberBlockEntity>> ENRICHMENT_CHAMBER =
             BLOCK_ENTITIES.register("enrichment_chamber", () -> BlockEntityType.Builder
                     .of(EnrichmentChamberBlockEntity::new, ModBlocks.ENRICHMENT_CHAMBER.get())
-                    .build(null));
-
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReactorCoreBlockEntity>> REACTOR_CORE =
-            BLOCK_ENTITIES.register("reactor_core", () -> BlockEntityType.Builder
-                    .of(ReactorCoreBlockEntity::new, ModBlocks.REACTOR_CORE.get())
                     .build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SolarPanelBlockEntity>> SOLAR_PANEL =

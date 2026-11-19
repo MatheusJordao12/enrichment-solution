@@ -72,17 +72,6 @@ public class EnrichmentSolutionMod {
 
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
-                ModBlockEntities.REACTOR_CORE.get(),
-                (be, side) -> be.getEnergyStorage(side)
-        );
-        event.registerBlockEntity(
-                Capabilities.ItemHandler.BLOCK,
-                ModBlockEntities.REACTOR_CORE.get(),
-                (be, side) -> be.getItemHandler(side)
-        );
-
-        event.registerBlockEntity(
-                Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.SOLAR_PANEL.get(),
                 (be, side) -> be.getEnergyStorage(side)
         );

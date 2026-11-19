@@ -3,8 +3,6 @@
   "values": [
     "enrichment_solution:machine_casing",
     "enrichment_solution:enrichment_chamber",
-    "enrichment_solution:reactor_casing",
-    "enrichment_solution:reactor_core",
     "enrichment_solution:solar_panel",
     "enrichment_solution:energy_cable",
     "enrichment_solution:advanced_energy_cable",
@@ -38,11 +36,6 @@
     "enrichment_solution:bauxite_ore",
     "enrichment_solution:deepslate_bauxite_ore",
     "enrichment_solution:aluminium_ore",
-    "enrichment_solution:deepslate_aluminium_ore",
-    "enrichment_solution:meteorotite_ore",
-    "enrichment_solution:unstable_old_uranium_ore",
-    "enrichment_solution:deepslate_unstable_old_uranium_ore",
-    "enrichment_solution:oxidated_plutonium_ore",
-    "enrichment_solution:deepslate_oxidated_plutonium_ore"
+    "enrichment_solution:deepslate_aluminium_ore"
   ]
 }

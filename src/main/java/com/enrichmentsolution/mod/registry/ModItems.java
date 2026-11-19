@@ -77,24 +77,6 @@ public final class ModItems {
     public static final DeferredItem<Item> ALUMINIUM_INGOT = ITEMS.register("aluminium_ingot",
             () -> new Item(new Item.Properties()));
 
-    public static final DeferredItem<Item> RAW_METEOROTITE = ITEMS.register("raw_meteorotite",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> METEOROTITE_INGOT = ITEMS.register("meteorotite_ingot",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> RAW_UNSTABLE_OLD_URANIUM = ITEMS.register("raw_unstable_old_uranium",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> UNSTABLE_OLD_URANIUM_INGOT = ITEMS.register("unstable_old_uranium_ingot",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> RAW_OXIDATED_PLUTONIUM = ITEMS.register("raw_oxidated_plutonium",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> OXIDATED_PLUTONIUM_INGOT = ITEMS.register("oxidated_plutonium_ingot",
-            () -> new Item(new Item.Properties()));
-
     public static final DeferredItem<Item> ROBOT = ITEMS.register("robot",
             () -> new RobotItem(new Item.Properties().stacksTo(1)));
 

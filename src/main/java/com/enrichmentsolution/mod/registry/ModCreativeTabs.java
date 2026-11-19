@@ -17,7 +17,7 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB =
             CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.enrichment_solution.main"))
-                    .icon(() -> new ItemStack(ModBlocks.REACTOR_CORE.get()))
+                    .icon(() -> new ItemStack(ModItems.HI_TECH_GOGGLES.get()))
                     .displayItems((parameters, output) -> {
                         output.accept(ModBlocks.MACHINE_CASING.get());
                         output.accept(ModBlocks.STEEL_ORE.get());
@@ -26,11 +26,6 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.DEEPSLATE_BAUXITE_ORE.get());
                         output.accept(ModBlocks.ALUMINIUM_ORE.get());
                         output.accept(ModBlocks.DEEPSLATE_ALUMINIUM_ORE.get());
-                        output.accept(ModBlocks.METEOROTITE_ORE.get());
-                        output.accept(ModBlocks.UNSTABLE_OLD_URANIUM_ORE.get());
-                        output.accept(ModBlocks.DEEPSLATE_UNSTABLE_OLD_URANIUM_ORE.get());
-                        output.accept(ModBlocks.OXIDATED_PLUTONIUM_ORE.get());
-                        output.accept(ModBlocks.DEEPSLATE_OXIDATED_PLUTONIUM_ORE.get());
                         output.accept(ModBlocks.ENRICHMENT_CHAMBER.get());
                         output.accept(ModBlocks.SOLAR_PANEL.get());
                         output.accept(ModBlocks.ENERGY_CABLE.get());
@@ -60,8 +55,6 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.GEOTHERMAL_GENERATOR.get());
                         output.accept(ModBlocks.CONDENSER.get());
                         output.accept(ModBlocks.FLUID_PUMP.get());
-                        output.accept(ModBlocks.REACTOR_CASING.get());
-                        output.accept(ModBlocks.REACTOR_CORE.get());
                         output.accept(ModItems.RAW_URANIUM.get());
                         output.accept(ModItems.URANIUM_INGOT.get());
                         output.accept(ModItems.ENRICHED_URANIUM.get());
@@ -83,12 +76,6 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.BAUXITE_INGOT.get());
                         output.accept(ModItems.RAW_ALUMINIUM.get());
                         output.accept(ModItems.ALUMINIUM_INGOT.get());
-                        output.accept(ModItems.RAW_METEOROTITE.get());
-                        output.accept(ModItems.METEOROTITE_INGOT.get());
-                        output.accept(ModItems.RAW_UNSTABLE_OLD_URANIUM.get());
-                        output.accept(ModItems.UNSTABLE_OLD_URANIUM_INGOT.get());
-                        output.accept(ModItems.RAW_OXIDATED_PLUTONIUM.get());
-                        output.accept(ModItems.OXIDATED_PLUTONIUM_INGOT.get());
                         output.accept(ModItems.ROBOT.get());
                         output.accept(ModItems.CRUDE_OIL_BUCKET.get());
                         output.accept(ModItems.LIQUID_ISOBUTANE_BUCKET.get());

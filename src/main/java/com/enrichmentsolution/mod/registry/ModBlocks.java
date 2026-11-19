@@ -14,9 +14,7 @@ import com.enrichmentsolution.mod.common.block.FluidPumpBlock;
 import com.enrichmentsolution.mod.common.block.GeothermalGeneratorBlock;
 import com.enrichmentsolution.mod.common.block.HeatExchangerBlock;
 import com.enrichmentsolution.mod.common.block.OilRefineryBlock;
-import com.enrichmentsolution.mod.common.block.OxidatedPlutoniumOreBlock;
 import com.enrichmentsolution.mod.common.block.PcbPrinterBlock;
-import com.enrichmentsolution.mod.common.block.ReactorCoreBlock;
 import com.enrichmentsolution.mod.common.block.RobotChargerBlock;
 import com.enrichmentsolution.mod.common.block.SolarPanelBlock;
 import com.enrichmentsolution.mod.common.block.StampingPressBlock;
@@ -91,43 +89,6 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.DEEPSLATE)));
 
-    public static final DeferredBlock<Block> METEOROTITE_ORE = registerBlock("meteorotite_ore",
-            () -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_BLACK)
-                    .strength(4.5F, 6.0F)
-                    .requiresCorrectToolForDrops()
-                    .sound(SoundType.BASALT)));
-
-    public static final DeferredBlock<Block> UNSTABLE_OLD_URANIUM_ORE = registerBlock("unstable_old_uranium_ore",
-            () -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.STONE)
-                    .strength(3.5F, 4.0F)
-                    .requiresCorrectToolForDrops()
-                    .sound(SoundType.STONE)));
-
-    public static final DeferredBlock<Block> DEEPSLATE_UNSTABLE_OLD_URANIUM_ORE = registerBlock("deepslate_unstable_old_uranium_ore",
-            () -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.DEEPSLATE)
-                    .strength(5.0F, 4.0F)
-                    .requiresCorrectToolForDrops()
-                    .sound(SoundType.DEEPSLATE)));
-
-    public static final DeferredBlock<Block> OXIDATED_PLUTONIUM_ORE = registerBlock("oxidated_plutonium_ore",
-            () -> new OxidatedPlutoniumOreBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.STONE)
-                    .strength(4.0F, 5.0F)
-                    .requiresCorrectToolForDrops()
-                    .sound(SoundType.STONE)
-                    .noOcclusion()));
-
-    public static final DeferredBlock<Block> DEEPSLATE_OXIDATED_PLUTONIUM_ORE = registerBlock("deepslate_oxidated_plutonium_ore",
-            () -> new OxidatedPlutoniumOreBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.DEEPSLATE)
-                    .strength(5.5F, 5.0F)
-                    .requiresCorrectToolForDrops()
-                    .sound(SoundType.DEEPSLATE)
-                    .noOcclusion()));
-
     public static final DeferredBlock<Block> ENRICHMENT_CHAMBER = registerBlock("enrichment_chamber",
             () -> new EnrichmentChamberBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
@@ -135,21 +96,6 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.METAL)
                     .lightLevel(state -> state.getValue(EnrichmentChamberBlock.LIT) ? 10 : 0)));
-
-    public static final DeferredBlock<Block> REACTOR_CASING = registerBlock("reactor_casing",
-            () -> new Block(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_GRAY)
-                    .strength(6.0F, 12.0F)
-                    .requiresCorrectToolForDrops()
-                    .sound(SoundType.METAL)));
-
-    public static final DeferredBlock<Block> REACTOR_CORE = registerBlock("reactor_core",
-            () -> new ReactorCoreBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_LIGHT_GREEN)
-                    .strength(6.5F, 12.0F)
-                    .requiresCorrectToolForDrops()
-                    .sound(SoundType.METAL)
-                    .lightLevel(state -> state.getValue(ReactorCoreBlock.ACTIVE) ? 14 : 2)));
 
     public static final DeferredBlock<Block> SOLAR_PANEL = registerBlock("solar_panel",
             () -> new SolarPanelBlock(BlockBehaviour.Properties.of()

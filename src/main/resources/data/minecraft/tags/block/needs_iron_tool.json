@@ -3,8 +3,6 @@
   "values": [
     "enrichment_solution:machine_casing",
     "enrichment_solution:enrichment_chamber",
-    "enrichment_solution:reactor_casing",
-    "enrichment_solution:reactor_core",
     "enrichment_solution:solar_panel",
     "enrichment_solution:energy_cell",
     "enrichment_solution:advanced_energy_cell",
