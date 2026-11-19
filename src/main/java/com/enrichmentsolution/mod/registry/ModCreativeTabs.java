@@ -32,6 +32,8 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.DEEPSLATE_UNSTABLE_OLD_URANIUM_ORE.get());
                         output.accept(ModBlocks.OXIDATED_PLUTONIUM_ORE.get());
                         output.accept(ModBlocks.DEEPSLATE_OXIDATED_PLUTONIUM_ORE.get());
+                        output.accept(ModBlocks.URANIUM_ORE.get());
+                        output.accept(ModBlocks.DEEPSLATE_URANIUM_ORE.get());
                         output.accept(ModBlocks.ENRICHMENT_CHAMBER.get());
                         output.accept(ModBlocks.SOLAR_PANEL.get());
                         output.accept(ModBlocks.ENERGY_CABLE.get());

@@ -43,6 +43,8 @@
     "enrichment_solution:unstable_old_uranium_ore",
     "enrichment_solution:deepslate_unstable_old_uranium_ore",
     "enrichment_solution:oxidated_plutonium_ore",
-    "enrichment_solution:deepslate_oxidated_plutonium_ore"
+    "enrichment_solution:deepslate_oxidated_plutonium_ore",
+    "enrichment_solution:uranium_ore",
+    "enrichment_solution:deepslate_uranium_ore"
   ]
 }
