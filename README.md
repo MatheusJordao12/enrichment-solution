@@ -1,11 +1,11 @@
 # Enrichment Solution
 
-A machinery + nuclear power mod for **Minecraft 1.21.1** on **NeoForge**, built around ore enrichment,
-circuit manufacturing, a geothermal binary-cycle power chain, industrial fluid transport and an
-autonomous mining robot.
+An industrial and geothermal tech mod for **Minecraft 1.21.1** on **NeoForge**, built around ore
+enrichment, circuit manufacturing, a closed-loop geothermal binary-cycle power chain, tiered
+energy/fluid/thermal conduits, and an autonomous mining robot.
 
-> **Status: beta (`0.2.0-beta`).** Everything listed here works in game, but balance numbers are not
-> final and dedicated-server validation is still in progress. Back up your world before updating.
+> **Release `1.0.0`** — First public release for Minecraft 1.21.1 (NeoForge), with an in-game Guide
+> Book, JEI integration, and full dedicated server support.
 
 ---
 
@@ -25,18 +25,23 @@ No other mod is required. Everything is registered under the `enrichment_solutio
 
 ## Features
 
+### In-Game Guide Book
+
+- **Enrichment Guide**: automatically delivered to every player on their first world join (and also
+  craftable). Covers ores, power generation, conduits, machines, the geothermal fluid chain, and
+  the autonomous robot.
+
 ### Ore processing and materials
 
-- Ores: **Steel**, **Bauxite**, **Aluminium**, **Meteorotite**, **Unstable Old Uranium** and
-  **Oxidated Plutonium** (stone + deepslate variants, except Meteorotite), plus raw ore items,
-  ingots, blasting/smelting recipes and world generation.
-- Machine Casings are the shared crafting base of most machines (PCB Printer, Stamping Press, Oil
-  Refinery, Heat Exchanger, Geothermal Generator, Condenser, Fluid Pump, Robot Charger and the energy
-  cells).
+- **Worldgen ores**: **Steel**, **Bauxite**, and **Aluminium** ores (stone and deepslate variants),
+  plus raw ore items, ingots, smelting/blasting recipes, and **Crude Oil** lakes and underground
+  pockets.
+- **Uranium**: Raw Uranium, Uranium Ingot, and Enriched Uranium.
+- **Machine Casings** serve as the shared crafting base for machines and energy cells.
 
 ### Enrichment Chamber
 
-Turns **Raw Uranium into Enriched Uranium**, the fuel of the reactor.
+Turns **Raw Uranium into Enriched Uranium**.
 
 - 50,000 FE buffer, accepts up to 2,000 FE/t
 - 40 FE/t over 100 ticks → **4,000 FE per operation**
@@ -44,8 +49,8 @@ Turns **Raw Uranium into Enriched Uranium**, the fuel of the reactor.
 
 **Quad Chamber:** place four Enrichment Chambers in a 2×2 (same facing) and they merge automatically
 when the last one is placed. The Quad Chamber runs **four parallel channels** at 50 ticks per
-operation, exposes 4 input + 4 output slots in a single GUI and has an **auto-sort** toggle. Opening
-any of the four blocks opens the master's GUI; breaking one unforms the whole structure.
+operation, exposes 4 input + 4 output slots in a single GUI, and has an **auto-sort** toggle.
+Opening any of the four blocks opens the master's GUI; breaking one unforms the whole structure.
 
 ### PCB Printer
 
@@ -94,9 +99,6 @@ liquid isobutane.
 - **Solar Panel** — 60 FE/t in clear weather, 15 FE/t while raining; 150,000 FE buffer, 1,000 FE/t
   output. Right-click with a **Solar Upgrade Template** to convert it into the 2-panel advanced form
   (150 FE/t clear, 40 FE/t rain) with a transformation animation.
-- **Reactor Core** — burns **Enriched Uranium** (1,200 ticks ≈ 60 s per item) for **512 FE/t**.
-  1,000,000 FE buffer, 10,000 FE/t output, heat readout in the GUI. Reactor Casing is the matching
-  structural block.
 - **Energy Cells** (Basic / Advanced / Ultimate / Ultra) — 1M / 4M / 16M / 64M FE storage with
   2,000 / 8,000 / 32,000 / 128,000 FE/t per-face transfer and per-face input/output/none buttons.
   The block item keeps its charge when broken.
@@ -105,7 +107,7 @@ liquid isobutane.
 
 **Energy Cables** — 2,000 / 8,000 / 32,000 / 128,000 FE/t throughput with internal buffers.
 
-**Fluid Pipes** — buffer, throughput and heat retention per block:
+**Fluid Pipes** — buffer, throughput, and heat retention per block:
 
 | Tier | Buffer | Throughput | Heat retained per block |
 |---|---|---|---|
@@ -114,7 +116,7 @@ liquid isobutane.
 | Ultimate | 16,000 mB | 4,000 mB/t | 98.0 % |
 | Ultra | 64,000 mB | 16,000 mB/t | 98.5 % |
 
-**Thermal Pipes** (insulated) — the same flow mechanics with much better heat retention, so hot
+**Thermal Pipes** (insulated) — the same flow mechanics with much higher heat retention, so hot
 fluids stay hot over long runs:
 
 | Tier | Buffer | Throughput | Heat retained per block |
@@ -124,30 +126,31 @@ fluids stay hot over long runs:
 | Vacuum | 32,000 mB | 8,000 mB/t | 99.9 % |
 | Cryogenic | 128,000 mB | 32,000 mB/t | 100 % |
 
-Every conduit and machine face can be configured to **push**, **pull** or **none** (machines:
+Every conduit and machine face can be configured to **push**, **pull**, or **none** (machines:
 input / output / disabled) from its screen or with the Configurator.
 
 ### Tools and gear
 
 - **Hi-Tech Goggles** (head slot) — while worn, look at a fluid pipe or energy cable within
-  **4 blocks** and a HUD appears next to the crosshair showing the fluid name, amount, temperature
+  **4 blocks** and a HUD appears next to the crosshair showing the fluid name, amount, temperature,
   and thermal multiplier, or the stored/max FE of a cable.
 - **Configurator** — right-click a cable/pipe connection to cycle push → pull → none, or a machine
   face to cycle input → output → disabled. Sneak to cycle backwards.
-- **Robot** — a companion machine with 1 tool slot, 9 storage slots and 3 energy-cell slots (it runs
-  on Energy Cell items). It follows or stays, mines stone columns with the pickaxe you give it,
-  collects the drops, defends its owner, uses a jetpack to close distance (60 FE per block) and can
-  dock at the **Robot Charger**. Installing the **Auto Recharger Upgrade Template** lets it return to
-  the charger on its own when the cells run low. Only the owner can open it.
-- **Fluids**: Crude Oil, Liquid Isobutane and Gaseous Isobutane, with buckets for the first two.
-- **Advancements** walk a new player from the first Machine Casing to the Reactor Core.
+- **Autonomous Robot & Robot Charger** — a companion machine with 1 tool slot, 9 storage slots, and
+  3 energy-cell slots (powered by Energy Cell items). It follows or stays, mines stone columns with
+  the pickaxe you give it, collects drops, defends its owner, uses a jetpack to close distance
+  (60 FE per block), and can dock at the **Robot Charger**. Installing the **Auto Recharger Upgrade
+  Template** lets it return to the charger on its own when cells run low. Only the owner can open it.
+- **Fluids**: Crude Oil, Liquid Isobutane, and Gaseous Isobutane, with buckets for the first two.
+- **Advancements & Localization**: full advancement progression and complete English (`en_us`) and
+  Brazilian Portuguese (`pt_br`) translations.
 
 ---
 
 ## JEI integration
 
-When JEI is installed, four categories are added: **Enrichment**, **PCB Printing**, **Oil Refining**
-and **Stamping**. Each page shows the exact FE/t, duration and total FE of the operation, and the
+When JEI is installed, four categories are added: **Enrichment**, **PCB Printing**, **Oil Refining**,
+and **Stamping**. Each page shows the exact FE/t, duration, and total FE of the operation, and the
 machine appears as a recipe catalyst.
 
 ---
@@ -158,7 +161,7 @@ machine appears as a recipe catalyst.
 ./gradlew build          # Windows: gradlew.bat build
 ```
 
-The jar is written to `build/libs/enrichment_solution-0.2.0-beta.jar`.
+The jar is written to `build/libs/enrichment_solution-1.0.0.jar`.
 
 Dev runs:
 
@@ -181,18 +184,7 @@ Modpacks are welcome. License: MIT (as declared in `gradle.properties`).
 
 ---
 
-## Known limitations (beta)
-
-- Machine processing recipes are still hardcoded in the BlockEntities; datapack-driven recipes are
-  planned. Only crafting recipes are datapack JSON today.
-- `isStructureValid` on the Reactor Core is a placeholder, so the core burns fuel without validating
-  a casing shell.
-- Energy/time costs are compile-time constants (no server config yet); balance is subject to change.
-- The Portuguese translation is missing a few keys (configurator and conduit mode strings).
-- Mining tags cover every machine, conduit, cell, tank part and ore. Tier requirements
-  (`needs_iron_tool`) currently cover machines and the deepslate/steel ores only.
-
 ## Reporting issues
 
 Use the issue template in `.github/ISSUE_TEMPLATE/bug_report.md` and include your NeoForge version,
-the mod version, the `latest.log` and, if possible, the steps to reproduce.
+the mod version, the `latest.log`, and, if possible, the steps to reproduce.
