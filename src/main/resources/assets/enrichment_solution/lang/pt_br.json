@@ -347,5 +347,7 @@
   "gui.enrichment_solution.belt_drive.inactive": "Inativo",
   "gui.enrichment_solution.belt_drive.direction": "Direção: %s",
   "gui.enrichment_solution.belt_drive.forward": "Frente →",
-  "gui.enrichment_solution.belt_drive.reverse": "Reverso ←"
+  "gui.enrichment_solution.belt_drive.reverse": "Reverso ←",
+  "item.enrichment_solution.lab_explorer_map": "Mapa do Laboratório Destruído",
+  "message.enrichment_solution.cartographer.lab_map": "Villager Cartógrafo: Eu achei esse mapa andando pelo mundo. Não fui até lá e esse óculos me lembrou desse mapa. Obrigado!"
 }

@@ -347,5 +347,7 @@
   "gui.enrichment_solution.belt_drive.inactive": "Inactive",
   "gui.enrichment_solution.belt_drive.direction": "Direction: %s",
   "gui.enrichment_solution.belt_drive.forward": "Forward →",
-  "gui.enrichment_solution.belt_drive.reverse": "Reverse ←"
+  "gui.enrichment_solution.belt_drive.reverse": "Reverse ←",
+  "item.enrichment_solution.lab_explorer_map": "Destroyed Laboratory Map",
+  "message.enrichment_solution.cartographer.lab_map": "Cartographer Villager: I found this map while wandering the world. I never went there, and those goggles reminded me of it. Thank you!"
 }
