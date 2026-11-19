@@ -89,6 +89,20 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.DEEPSLATE)));
 
+    public static final DeferredBlock<Block> URANIUM_ORE = registerBlock("uranium_ore",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE)
+                    .strength(3.0F, 3.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)));
+
+    public static final DeferredBlock<Block> DEEPSLATE_URANIUM_ORE = registerBlock("deepslate_uranium_ore",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DEEPSLATE)
+                    .strength(4.5F, 3.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.DEEPSLATE)));
+
     public static final DeferredBlock<Block> ENRICHMENT_CHAMBER = registerBlock("enrichment_chamber",
             () -> new EnrichmentChamberBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)

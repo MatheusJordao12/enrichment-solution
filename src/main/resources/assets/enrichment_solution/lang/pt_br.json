@@ -3,6 +3,8 @@
   "block.enrichment_solution.machine_casing": "Carcaça de Máquina",
   "block.enrichment_solution.steel_ore": "Minério de Aço",
   "block.enrichment_solution.deepslate_steel_ore": "Minério de Aço de Ardósia",
+  "block.enrichment_solution.uranium_ore": "Minério de Urânio",
+  "block.enrichment_solution.deepslate_uranium_ore": "Minério de Urânio de Ardósia",
   "block.enrichment_solution.enrichment_chamber": "Câmara de Enriquecimento",
   "block.enrichment_solution.solar_panel": "Painel Solar",
   "block.enrichment_solution.energy_cable": "Cabo de Energia Básico",

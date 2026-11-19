@@ -26,6 +26,8 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.DEEPSLATE_BAUXITE_ORE.get());
                         output.accept(ModBlocks.ALUMINIUM_ORE.get());
                         output.accept(ModBlocks.DEEPSLATE_ALUMINIUM_ORE.get());
+                        output.accept(ModBlocks.URANIUM_ORE.get());
+                        output.accept(ModBlocks.DEEPSLATE_URANIUM_ORE.get());
                         output.accept(ModBlocks.ENRICHMENT_CHAMBER.get());
                         output.accept(ModBlocks.SOLAR_PANEL.get());
                         output.accept(ModBlocks.ENERGY_CABLE.get());
