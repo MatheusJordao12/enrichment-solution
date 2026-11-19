@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "enrichment_solution:hammer_x"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_ultra_circuit": {
+      "conditions": {
+        "items": [
+          {
+            "items": "enrichment_solution:ultra_circuit"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_ultra_circuit"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "enrichment_solution:hammer_x"
+    ]
+  }
+}

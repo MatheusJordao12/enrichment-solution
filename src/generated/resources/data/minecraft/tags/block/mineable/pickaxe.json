@@ -35,6 +35,8 @@
     "enrichment_solution:cryogenic_thermal_pipe",
     "enrichment_solution:steel_ore",
     "enrichment_solution:deepslate_steel_ore",
+    "enrichment_solution:uranium_ore",
+    "enrichment_solution:deepslate_uranium_ore",
     "enrichment_solution:bauxite_ore",
     "enrichment_solution:deepslate_bauxite_ore",
     "enrichment_solution:aluminium_ore",
@@ -43,8 +45,6 @@
     "enrichment_solution:unstable_old_uranium_ore",
     "enrichment_solution:deepslate_unstable_old_uranium_ore",
     "enrichment_solution:oxidated_plutonium_ore",
-    "enrichment_solution:deepslate_oxidated_plutonium_ore",
-    "enrichment_solution:uranium_ore",
-    "enrichment_solution:deepslate_uranium_ore"
+    "enrichment_solution:deepslate_oxidated_plutonium_ore"
   ]
 }

@@ -72,6 +72,8 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         // Ores (silk touch -> block, otherwise raw ore with fortune)
         add(ModBlocks.STEEL_ORE.get(), block -> createOreDrop(block, ModItems.RAW_STEEL.get()));
         add(ModBlocks.DEEPSLATE_STEEL_ORE.get(), block -> createOreDrop(block, ModItems.RAW_STEEL.get()));
+        add(ModBlocks.URANIUM_ORE.get(), block -> createOreDrop(block, ModItems.RAW_URANIUM.get()));
+        add(ModBlocks.DEEPSLATE_URANIUM_ORE.get(), block -> createOreDrop(block, ModItems.RAW_URANIUM.get()));
         add(ModBlocks.BAUXITE_ORE.get(), block -> createOreDrop(block, ModItems.RAW_BAUXITE.get()));
         add(ModBlocks.DEEPSLATE_BAUXITE_ORE.get(), block -> createOreDrop(block, ModItems.RAW_BAUXITE.get()));
         add(ModBlocks.ALUMINIUM_ORE.get(), block -> createOreDrop(block, ModItems.RAW_ALUMINIUM.get()));

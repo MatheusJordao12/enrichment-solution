@@ -7,6 +7,7 @@
     "item": "enrichment_solution:deepslate_uranium_ore"
   },
   "result": {
+    "count": 1,
     "id": "enrichment_solution:uranium_ingot"
   }
 }

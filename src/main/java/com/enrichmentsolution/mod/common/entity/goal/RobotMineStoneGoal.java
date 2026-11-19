@@ -3,13 +3,12 @@ package com.enrichmentsolution.mod.common.entity.goal;
 import com.enrichmentsolution.mod.common.entity.RobotEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
@@ -29,6 +28,7 @@ public class RobotMineStoneGoal extends Goal {
     private static final int SEARCH_RADIUS = 12;
     private static final double MINE_RANGE_SQR = 9.0D; // 3.0 blocks from robot body center
     private static final int COLUMN_HEIGHT = 3;
+    private static final int STAIR_COLUMN_HEIGHT = 4;
     private static final int MAX_PATH_CANDIDATES = 16;
     private static final int STUCK_REROUTE_TICKS = 20;
     private static final int STUCK_SCAFFOLD_TICKS = 32;
@@ -41,6 +41,10 @@ public class RobotMineStoneGoal extends Goal {
     private BlockPos targetPos;
     @Nullable
     private BlockPos standPos;
+    @Nullable
+    private Direction staircaseDir;
+    private int activeColumnHeight = COLUMN_HEIGHT;
+    private boolean walkingStairStep = false;
     private int breakTicks;
     private int searchCooldown;
     private int stuckTicks;
@@ -56,6 +60,9 @@ public class RobotMineStoneGoal extends Goal {
         if (!robot.isPowered() || robot.isTransforming() || !robot.hasPickaxe() || !robot.hasAnyStorageSlotFree()) {
             return false;
         }
+        if (robot.hasLinkedChest() && !robot.hasEmptyStorageSlot()) {
+            return false;
+        }
         if (searchCooldown > 0) {
             searchCooldown--;
             return false;
@@ -66,10 +73,16 @@ public class RobotMineStoneGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        if (!robot.isPowered() || robot.isTransforming() || targetPos == null || !robot.hasPickaxe() || !robot.hasAnyStorageSlotFree()) {
+        if (!robot.isPowered() || robot.isTransforming() || !robot.hasPickaxe() || !robot.hasAnyStorageSlotFree()) {
             return false;
         }
-        return hasTargetStoneInColumn(targetPos);
+        if (robot.hasLinkedChest() && !robot.hasEmptyStorageSlot()) {
+            return false;
+        }
+        if (walkingStairStep) {
+            return standPos != null && robot.getBlockY() > robot.getMiningTargetY();
+        }
+        return targetPos != null && hasTargetBlockInColumn(targetPos, activeColumnHeight);
     }
 
     @Override
@@ -84,6 +97,7 @@ public class RobotMineStoneGoal extends Goal {
     public void stop() {
         targetPos = null;
         standPos = null;
+        walkingStairStep = false;
         breakTicks = 0;
         stuckTicks = 0;
         robot.setMining(false);
@@ -92,14 +106,24 @@ public class RobotMineStoneGoal extends Goal {
 
     @Override
     public void tick() {
-        if (targetPos == null || !(robot.level() instanceof ServerLevel serverLevel)) {
+        if (!(robot.level() instanceof ServerLevel serverLevel)) {
             return;
         }
 
-        List<BlockPos> columnTargets = getColumnTargets(targetPos);
+        if (walkingStairStep) {
+            tickWalkStairStep();
+            return;
+        }
+
+        if (targetPos == null) {
+            return;
+        }
+
+        List<BlockPos> columnTargets = getColumnTargets(targetPos, activeColumnHeight);
         if (columnTargets.isEmpty()) {
-            selectNextTarget();
-            moveToCurrentTarget();
+            if (selectNextTarget()) {
+                moveToCurrentTarget();
+            }
             return;
         }
 
@@ -132,7 +156,7 @@ public class RobotMineStoneGoal extends Goal {
                         break;
                     }
                     BlockState blockState = serverLevel.getBlockState(pos);
-                    if (!isTargetStone(blockState)) {
+                    if (!isTargetBlock(serverLevel, pos, blockState)) {
                         continue;
                     }
                     ItemStack currentPickaxe = robot.getPickaxe();
@@ -200,11 +224,45 @@ public class RobotMineStoneGoal extends Goal {
         }
     }
 
-    private void moveToCurrentTarget() {
-        if (targetPos == null) {
+    private void tickWalkStairStep() {
+        if (standPos == null) {
+            walkingStairStep = false;
             return;
         }
+        robot.setMining(false);
+        double distSqr = robot.distanceToSqr(standPos.getX() + 0.5D, standPos.getY(), standPos.getZ() + 0.5D);
+        if (distSqr <= 1.0D) {
+            walkingStairStep = false;
+            standPos = null;
+            if (selectNextTarget()) {
+                moveToCurrentTarget();
+            }
+            return;
+        }
+        if (robot.position().distanceToSqr(lastProgressPos) > 0.04D) {
+            lastProgressPos = robot.position();
+            stuckTicks = 0;
+        } else {
+            stuckTicks++;
+            if (stuckTicks >= 35) {
+                walkingStairStep = false;
+                standPos = null;
+                if (selectNextTarget()) {
+                    moveToCurrentTarget();
+                }
+                return;
+            }
+        }
+        if (robot.getNavigation().isDone()) {
+            moveToCurrentTarget();
+        }
+    }
+
+    private void moveToCurrentTarget() {
         BlockPos dest = standPos != null ? standPos : targetPos;
+        if (dest == null) {
+            return;
+        }
         robot.getNavigation().moveTo(dest.getX() + 0.5D, dest.getY(), dest.getZ() + 0.5D, 1.0D);
     }
 
@@ -212,22 +270,146 @@ public class RobotMineStoneGoal extends Goal {
         blacklistedColumns.put(pos, robot.level().getGameTime() + BLACKLIST_TICKS);
         targetPos = null;
         standPos = null;
+        walkingStairStep = false;
         stuckTicks = 0;
     }
 
     private boolean selectNextTarget() {
         long now = robot.level().getGameTime();
         blacklistedColumns.entrySet().removeIf(entry -> entry.getValue() <= now);
+        walkingStairStep = false;
 
+        int targetY = robot.getMiningTargetY();
+        if (robot.getBlockY() > targetY) {
+            return selectStaircaseTarget();
+        }
+
+        staircaseDir = null;
+        activeColumnHeight = COLUMN_HEIGHT;
+
+        if (robot.isDigChunks()) {
+            return selectDigChunksTarget(targetY);
+        }
+        return selectNormalTarget();
+    }
+
+    private boolean selectStaircaseTarget() {
+        Level level = robot.level();
+        BlockPos feet = robot.blockPosition();
+        if (staircaseDir == null || staircaseDir.getAxis() == Direction.Axis.Y) {
+            staircaseDir = robot.getDirection();
+            if (staircaseDir.getAxis() == Direction.Axis.Y) {
+                staircaseDir = Direction.NORTH;
+            }
+        }
+
+        BlockPos front = feet.relative(staircaseDir);
+        BlockPos stepColumnBase = front.below(); // y-1 .. y+2
+
+        // Check for drop/hole while descending (no solid block below the next step)
+        boolean hasNextFloor = level.getBlockState(front.below(2)).blocksMotion()
+                || level.getBlockState(front.below()).blocksMotion();
+        if (!hasNextFloor) {
+            // Place scaffold directly beneath where robot stands AND one in front of that placed block
+            robot.tryPlaceScaffoldBlock(feet.below());
+            robot.tryPlaceScaffoldBlock(front.below());
+
+            // Clear any blocks at front..front+2 if present, otherwise walk forward onto the bridge
+            if (hasTargetBlockInColumn(front, COLUMN_HEIGHT)) {
+                targetPos = front;
+                standPos = feet;
+                activeColumnHeight = COLUMN_HEIGHT;
+                stuckTicks = 0;
+                return true;
+            }
+            if (canRobotStandAt(level, front)) {
+                targetPos = null;
+                standPos = front;
+                walkingStairStep = true;
+                stuckTicks = 0;
+                return true;
+            }
+        }
+
+        // Mine staircase step (y-1 .. y+2 at front)
+        if (hasTargetBlockInColumn(stepColumnBase, STAIR_COLUMN_HEIGHT) && !blacklistedColumns.containsKey(stepColumnBase)) {
+            targetPos = stepColumnBase;
+            standPos = feet;
+            activeColumnHeight = STAIR_COLUMN_HEIGHT;
+            stuckTicks = 0;
+            return true;
+        }
+
+        // If the step is already clear and standable, walk down to it
+        if (canRobotStandAt(level, stepColumnBase)) {
+            targetPos = null;
+            standPos = stepColumnBase;
+            walkingStairStep = true;
+            stuckTicks = 0;
+            return true;
+        }
+
+        // Fallback if blocked or unable to step in current direction: try normal search
+        activeColumnHeight = COLUMN_HEIGHT;
+        return selectNormalTarget();
+    }
+
+    private boolean selectDigChunksTarget(int targetY) {
+        if (!robot.hasDigAnchor()) {
+            robot.setDigAnchor(
+                    SectionPos.blockToSectionCoord(robot.getBlockX()),
+                    SectionPos.blockToSectionCoord(robot.getBlockZ())
+            );
+        }
+        int anchorX = robot.getDigAnchorChunkX();
+        int anchorZ = robot.getDigAnchorChunkZ();
+        int radius = robot.getChunkRadius();
+        int minX = (anchorX - radius) * 16;
+        int maxX = (anchorX + radius) * 16 + 15;
+        int minZ = (anchorZ - radius) * 16;
+        int maxZ = (anchorZ + radius) * 16 + 15;
+
+        Level level = robot.level();
+        BlockPos origin = robot.blockPosition();
+        List<BlockPos> candidates = new ArrayList<>();
+
+        int[] radii = { 16, 36, Integer.MAX_VALUE };
+        for (int r : radii) {
+            int xStart = r == Integer.MAX_VALUE ? minX : Math.max(minX, origin.getX() - r);
+            int xEnd = r == Integer.MAX_VALUE ? maxX : Math.min(maxX, origin.getX() + r);
+            int zStart = r == Integer.MAX_VALUE ? minZ : Math.max(minZ, origin.getZ() - r);
+            int zEnd = r == Integer.MAX_VALUE ? maxZ : Math.min(maxZ, origin.getZ() + r);
+
+            for (int x = xStart; x <= xEnd; x++) {
+                for (int z = zStart; z <= zEnd; z++) {
+                    BlockPos base = new BlockPos(x, targetY, z);
+                    if (blacklistedColumns.containsKey(base)) {
+                        continue;
+                    }
+                    if (hasTargetBlockInColumn(base, COLUMN_HEIGHT)) {
+                        candidates.add(base);
+                    }
+                }
+            }
+            if (!candidates.isEmpty()) {
+                break;
+            }
+        }
+
+        return pickBestCandidate(candidates, origin);
+    }
+
+    private boolean selectNormalTarget() {
         BlockPos origin = robot.blockPosition();
         Set<BlockPos> seenColumns = new HashSet<>();
         List<BlockPos> candidates = new ArrayList<>();
+        Level level = robot.level();
 
         for (int dy = -1; dy <= 3; dy++) {
             for (int dx = -SEARCH_RADIUS; dx <= SEARCH_RADIUS; dx++) {
                 for (int dz = -SEARCH_RADIUS; dz <= SEARCH_RADIUS; dz++) {
                     BlockPos pos = origin.offset(dx, dy, dz);
-                    if (isTargetStone(robot.level().getBlockState(pos))) {
+                    if (isTargetBlock(level, pos, level.getBlockState(pos))) {
                         BlockPos base = toColumnBase(pos, origin.getY());
                         if (!blacklistedColumns.containsKey(base) && seenColumns.add(base)) {
                             candidates.add(base);
@@ -237,6 +419,10 @@ public class RobotMineStoneGoal extends Goal {
             }
         }
 
+        return pickBestCandidate(candidates, origin);
+    }
+
+    private boolean pickBestCandidate(List<BlockPos> candidates, BlockPos origin) {
         if (candidates.isEmpty()) {
             targetPos = null;
             standPos = null;
@@ -260,7 +446,6 @@ public class RobotMineStoneGoal extends Goal {
             }
         }
 
-        // Fallback: pick closest candidate with an adjacent standable spot so scaffold recovery can try
         for (BlockPos candidate : candidates) {
             BlockPos fallbackStand = findBestStandPos(candidate, false);
             if (fallbackStand != null) {
@@ -361,28 +546,31 @@ public class RobotMineStoneGoal extends Goal {
         return false;
     }
 
-    private List<BlockPos> getColumnTargets(BlockPos basePos) {
-        List<BlockPos> targets = new ArrayList<>(COLUMN_HEIGHT);
-        for (int dy = 0; dy < COLUMN_HEIGHT; dy++) {
+    private List<BlockPos> getColumnTargets(BlockPos basePos, int height) {
+        List<BlockPos> targets = new ArrayList<>(height);
+        Level level = robot.level();
+        for (int dy = 0; dy < height; dy++) {
             BlockPos pos = basePos.above(dy);
-            if (isTargetStone(robot.level().getBlockState(pos))) {
+            if (isTargetBlock(level, pos, level.getBlockState(pos))) {
                 targets.add(pos);
             }
         }
         return targets;
     }
 
-    private boolean hasTargetStoneInColumn(BlockPos basePos) {
-        for (int dy = 0; dy < COLUMN_HEIGHT; dy++) {
-            if (isTargetStone(robot.level().getBlockState(basePos.above(dy)))) {
+    private boolean hasTargetBlockInColumn(BlockPos basePos, int height) {
+        Level level = robot.level();
+        for (int dy = 0; dy < height; dy++) {
+            BlockPos pos = basePos.above(dy);
+            if (isTargetBlock(level, pos, level.getBlockState(pos))) {
                 return true;
             }
         }
         return false;
     }
 
-    private static BlockPos toColumnBase(BlockPos stonePos, int robotY) {
-        int y = stonePos.getY();
+    private static BlockPos toColumnBase(BlockPos blockPos, int robotY) {
+        int y = blockPos.getY();
         int baseY;
         if (y >= robotY && y < robotY + COLUMN_HEIGHT) {
             baseY = robotY;
@@ -391,12 +579,16 @@ public class RobotMineStoneGoal extends Goal {
         } else {
             baseY = y;
         }
-        return new BlockPos(stonePos.getX(), baseY, stonePos.getZ());
+        return new BlockPos(blockPos.getX(), baseY, blockPos.getZ());
     }
 
-    private static boolean isTargetStone(BlockState state) {
-        return state.is(BlockTags.BASE_STONE_OVERWORLD)
-                || state.is(Blocks.COBBLESTONE)
-                || state.is(Blocks.COBBLED_DEEPSLATE);
+    private boolean isTargetBlock(Level level, BlockPos pos, BlockState state) {
+        if (pos.equals(robot.getLinkedChestPos()) || pos.equals(robot.getChargerPos())) {
+            return false;
+        }
+        return !state.isAir()
+                && state.getFluidState().isEmpty()
+                && state.getDestroySpeed(level, pos) >= 0
+                && state.blocksMotion();
     }
 }

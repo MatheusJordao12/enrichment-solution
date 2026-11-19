@@ -389,6 +389,36 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('C', ModItems.ULTRA_CIRCUIT.get())
                 .unlockedBy("has_ultra_circuit", has(ModItems.ULTRA_CIRCUIT.get()))
                 .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.SLOT_UPGRADE_TIER_1.get())
+                .pattern("ASA")
+                .pattern("SCS")
+                .pattern("ASA")
+                .define('A', ModItems.ALUMINIUM_INGOT.get())
+                .define('S', ModItems.STEEL_INGOT.get())
+                .define('C', Items.CHEST)
+                .unlockedBy("has_steel_ingot", has(ModItems.STEEL_INGOT.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.SLOT_UPGRADE_TIER_2.get())
+                .pattern("GCG")
+                .pattern("GUG")
+                .pattern("GCG")
+                .define('G', Items.GOLD_INGOT)
+                .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                .define('U', ModItems.SLOT_UPGRADE_TIER_1.get())
+                .unlockedBy("has_slot_upgrade_tier_1", has(ModItems.SLOT_UPGRADE_TIER_1.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.SLOT_UPGRADE_TIER_3.get())
+                .pattern("DCD")
+                .pattern("DUD")
+                .pattern("DCD")
+                .define('D', Items.DIAMOND)
+                .define('C', ModItems.ULTIMATE_CIRCUIT.get())
+                .define('U', ModItems.SLOT_UPGRADE_TIER_2.get())
+                .unlockedBy("has_slot_upgrade_tier_2", has(ModItems.SLOT_UPGRADE_TIER_2.get()))
+                .save(output);
     }
 
     private void tierUpgrade8(RecipeOutput output, ItemLike result, ItemLike previous, ItemLike circuit) {
@@ -420,6 +450,9 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
 
         smeltAndBlast(output, ModItems.UNSTABLE_OLD_URANIUM_INGOT.get(), "unstable_old_uranium_ingot",
                 ModBlocks.UNSTABLE_OLD_URANIUM_ORE.get(), ModBlocks.DEEPSLATE_UNSTABLE_OLD_URANIUM_ORE.get(), ModItems.RAW_UNSTABLE_OLD_URANIUM.get());
+
+        smeltAndBlast(output, ModItems.URANIUM_INGOT.get(), "uranium_ingot",
+                ModBlocks.URANIUM_ORE.get(), ModBlocks.DEEPSLATE_URANIUM_ORE.get(), ModItems.RAW_URANIUM.get());
     }
 
     private void smeltAndBlast(RecipeOutput output, ItemLike result, String resultName, ItemLike... inputs) {

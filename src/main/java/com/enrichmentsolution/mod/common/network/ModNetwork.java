@@ -2,6 +2,7 @@ package com.enrichmentsolution.mod.common.network;
 
 import com.enrichmentsolution.mod.common.block.entity.EnergyCableBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.FluidPipeBlockEntity;
+import com.enrichmentsolution.mod.common.entity.RobotEntity;
 import com.enrichmentsolution.mod.common.fluid.ThermalFluidHelper;
 import com.enrichmentsolution.mod.registry.ModItems;
 import net.minecraft.core.BlockPos;
@@ -48,7 +49,21 @@ public final class ModNetwork {
     public static void register(RegisterPayloadHandlersEvent event) {
         event.registrar("1")
                 .playToServer(InspectRequestPayload.TYPE, InspectRequestPayload.STREAM_CODEC, ModNetwork::handleRequest)
+                .playToServer(RobotConfigPayload.TYPE, RobotConfigPayload.STREAM_CODEC, ModNetwork::handleRobotConfig)
                 .playToClient(InspectResponsePayload.TYPE, InspectResponsePayload.STREAM_CODEC, ModNetwork::handleResponse);
+    }
+
+    private static void handleRobotConfig(RobotConfigPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (!(context.player() instanceof ServerPlayer player)) {
+                return;
+            }
+            if (player.level().getEntity(payload.entityId()) instanceof RobotEntity robot && robot.isOwner(player)) {
+                robot.setMiningTargetY(payload.targetY());
+                robot.setDigChunks(payload.digChunks());
+                robot.setChunkRadius(payload.chunkRadius());
+            }
+        });
     }
 
     private static void handleRequest(InspectRequestPayload payload, IPayloadContext context) {

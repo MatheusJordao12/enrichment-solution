@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "enrichment_solution:advanced_circuit"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "U": {
+      "item": "enrichment_solution:slot_upgrade_tier_1"
+    }
+  },
+  "pattern": [
+    "GCG",
+    "GUG",
+    "GCG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:slot_upgrade_tier_2"
+  }
+}

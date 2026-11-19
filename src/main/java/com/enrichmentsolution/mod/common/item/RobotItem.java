@@ -21,6 +21,8 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.List;
 
@@ -31,6 +33,13 @@ public class RobotItem extends Item {
     public static final String TAG_CHARGER_X = "ChargerX";
     public static final String TAG_CHARGER_Y = "ChargerY";
     public static final String TAG_CHARGER_Z = "ChargerZ";
+    public static final String TAG_SLOT_UPGRADE_TIER = "SlotUpgradeTier";
+    public static final String TAG_MINING_TARGET_Y = "MiningTargetY";
+    public static final String TAG_DIG_CHUNKS = "DigChunks";
+    public static final String TAG_CHUNK_RADIUS = "ChunkRadius";
+    public static final String TAG_LINKED_CHEST_X = "LinkedChestX";
+    public static final String TAG_LINKED_CHEST_Y = "LinkedChestY";
+    public static final String TAG_LINKED_CHEST_Z = "LinkedChestZ";
 
     public RobotItem(Properties properties) {
         super(properties);
@@ -59,6 +68,24 @@ public class RobotItem extends Item {
                             clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()
                     ), true);
                 }
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+
+        if (player != null && player.isShiftKeyDown() && hasItemHandler(level, clickedPos, context.getClickedFace())) {
+            if (!level.isClientSide) {
+                CustomData existing = stack.get(DataComponents.CUSTOM_DATA);
+                CompoundTag tag = existing != null ? existing.copyTag() : new CompoundTag();
+                tag.putInt(TAG_LINKED_CHEST_X, clickedPos.getX());
+                tag.putInt(TAG_LINKED_CHEST_Y, clickedPos.getY());
+                tag.putInt(TAG_LINKED_CHEST_Z, clickedPos.getZ());
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+
+                level.playSound(null, clickedPos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.7F, 1.3F);
+                player.displayClientMessage(Component.translatable(
+                        "message.enrichment_solution.robot.chest_linked",
+                        clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()
+                ), true);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
@@ -109,11 +136,30 @@ public class RobotItem extends Item {
             if (tag.contains(TAG_AUTO_RECHARGER)) {
                 robot.setAutoRecharger(tag.getBoolean(TAG_AUTO_RECHARGER));
             }
+            if (tag.contains(TAG_SLOT_UPGRADE_TIER)) {
+                robot.setSlotUpgradeTier(tag.getInt(TAG_SLOT_UPGRADE_TIER));
+            }
+            if (tag.contains(TAG_MINING_TARGET_Y)) {
+                robot.setMiningTargetY(tag.getInt(TAG_MINING_TARGET_Y));
+            }
+            if (tag.contains(TAG_DIG_CHUNKS)) {
+                robot.setDigChunks(tag.getBoolean(TAG_DIG_CHUNKS));
+            }
+            if (tag.contains(TAG_CHUNK_RADIUS)) {
+                robot.setChunkRadius(tag.getInt(TAG_CHUNK_RADIUS));
+            }
             if (tag.contains(TAG_CHARGER_X) && tag.contains(TAG_CHARGER_Y) && tag.contains(TAG_CHARGER_Z)) {
                 robot.setChargerPos(new BlockPos(
                         tag.getInt(TAG_CHARGER_X),
                         tag.getInt(TAG_CHARGER_Y),
                         tag.getInt(TAG_CHARGER_Z)
+                ));
+            }
+            if (tag.contains(TAG_LINKED_CHEST_X) && tag.contains(TAG_LINKED_CHEST_Y) && tag.contains(TAG_LINKED_CHEST_Z)) {
+                robot.setLinkedChestPos(new BlockPos(
+                        tag.getInt(TAG_LINKED_CHEST_X),
+                        tag.getInt(TAG_LINKED_CHEST_Y),
+                        tag.getInt(TAG_LINKED_CHEST_Z)
                 ));
             }
         }
@@ -126,6 +172,14 @@ public class RobotItem extends Item {
         }
 
         return InteractionResult.CONSUME;
+    }
+
+    private static boolean hasItemHandler(Level level, BlockPos pos, Direction face) {
+        IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, face);
+        if (handler != null) {
+            return true;
+        }
+        return level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null) != null;
     }
 
     @Override

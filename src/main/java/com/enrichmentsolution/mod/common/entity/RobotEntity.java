@@ -2,6 +2,7 @@ package com.enrichmentsolution.mod.common.entity;
 
 import com.enrichmentsolution.mod.common.entity.goal.RobotAutoRechargeGoal;
 import com.enrichmentsolution.mod.common.entity.goal.RobotDefendOwnerTargetGoal;
+import com.enrichmentsolution.mod.common.entity.goal.RobotDepositChestGoal;
 import com.enrichmentsolution.mod.common.entity.goal.RobotFollowOwnerGoal;
 import com.enrichmentsolution.mod.common.entity.goal.RobotJetpackFlyGoal;
 import com.enrichmentsolution.mod.common.entity.goal.RobotMineStoneGoal;
@@ -61,11 +62,12 @@ import java.util.UUID;
 public class RobotEntity extends PathfinderMob {
 
     public static final int SLOT_PICKAXE = 0;
-    public static final int SLOT_STORAGE_START = 1;
-    public static final int STORAGE_SLOTS = 9;
-    public static final int SLOT_CELL_START = SLOT_STORAGE_START + STORAGE_SLOTS;
+    public static final int SLOT_CELL_START = 1;
     public static final int CELL_SLOTS = 3;
-    public static final int TOTAL_SLOTS = 1 + STORAGE_SLOTS + CELL_SLOTS;
+    public static final int SLOT_STORAGE_START = SLOT_CELL_START + CELL_SLOTS;
+    public static final int STORAGE_SLOTS = 9;
+    public static final int MAX_STORAGE_SLOTS = 81;
+    public static final int TOTAL_SLOTS = 1 + CELL_SLOTS + MAX_STORAGE_SLOTS;
 
     public static final int HIT_ENERGY_COST = 1_000;
     public static final int EXPLOSION_ENERGY_COST = 5_000;
@@ -102,6 +104,16 @@ public class RobotEntity extends PathfinderMob {
             SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_DOCKED =
             SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_SLOT_UPGRADE_TIER =
+            SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_MINING_TARGET_Y =
+            SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_DIG_CHUNKS =
+            SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_CHUNK_RADIUS =
+            SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Optional<BlockPos>> DATA_LINKED_CHEST_POS =
+            SynchedEntityData.defineId(RobotEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
 
     public final AnimationState pickupAnimationState = new AnimationState();
     public final AnimationState mineAnimationState = new AnimationState();
@@ -117,6 +129,9 @@ public class RobotEntity extends PathfinderMob {
     private final RobotInventoryHelper inventoryHelper = new RobotInventoryHelper();
     private final RobotPatrolState patrolState = new RobotPatrolState();
     private final ItemStackHandler inventory = inventoryHelper.createInventory(this);
+    private boolean hasDigAnchor = false;
+    private int digAnchorChunkX = 0;
+    private int digAnchorChunkZ = 0;
 
     public RobotEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -146,6 +161,11 @@ public class RobotEntity extends PathfinderMob {
         builder.define(DATA_AUTO_RECHARGER, false);
         builder.define(DATA_RECHARGING, false);
         builder.define(DATA_DOCKED, false);
+        builder.define(DATA_SLOT_UPGRADE_TIER, 0);
+        builder.define(DATA_MINING_TARGET_Y, 0);
+        builder.define(DATA_DIG_CHUNKS, false);
+        builder.define(DATA_CHUNK_RADIUS, 1);
+        builder.define(DATA_LINKED_CHEST_POS, Optional.empty());
     }
 
     @Override
@@ -165,6 +185,7 @@ public class RobotEntity extends PathfinderMob {
             }
         });
         this.goalSelector.addGoal(3, new RobotFollowOwnerGoal(this, 1.05D, 6.0F, 2.5F));
+        this.goalSelector.addGoal(3, new RobotDepositChestGoal(this));
         this.goalSelector.addGoal(4, new RobotStayPatrolGoal(this));
         this.goalSelector.addGoal(5, new RobotPickupItemGoal(this));
         this.goalSelector.addGoal(6, new RobotMineStoneGoal(this));
@@ -317,6 +338,15 @@ public class RobotEntity extends PathfinderMob {
             player.displayClientMessage(Component.translatable("message.enrichment_solution.robot.auto_recharger_installed"), true);
             return InteractionResult.CONSUME;
         }
+        if (held.is(ModItems.SLOT_UPGRADE_TIER_1.get()) && getSlotUpgradeTier() < 1) {
+            return applySlotUpgrade(player, held, 1);
+        }
+        if (held.is(ModItems.SLOT_UPGRADE_TIER_2.get()) && getSlotUpgradeTier() < 2) {
+            return applySlotUpgrade(player, held, 2);
+        }
+        if (held.is(ModItems.SLOT_UPGRADE_TIER_3.get()) && getSlotUpgradeTier() < 3) {
+            return applySlotUpgrade(player, held, 3);
+        }
 
         if (player.isShiftKeyDown()) {
             return handleShiftInteract(player);
@@ -327,6 +357,15 @@ public class RobotEntity extends PathfinderMob {
                 Component.translatable("container.enrichment_solution.robot")
         ), buf -> buf.writeInt(this.getId()));
 
+        return InteractionResult.CONSUME;
+    }
+
+    private InteractionResult applySlotUpgrade(Player player, ItemStack held, int tier) {
+        setSlotUpgradeTier(tier);
+        if (!player.getAbilities().instabuild) {
+            held.shrink(1);
+        }
+        this.playSound(SoundEvents.ANVIL_USE, 0.7F, 1.2F);
         return InteractionResult.CONSUME;
     }
 
@@ -342,11 +381,21 @@ public class RobotEntity extends PathfinderMob {
         CompoundTag tag = new CompoundTag();
         tag.put(RobotItem.TAG_INVENTORY, inventory.serializeNBT(this.registryAccess()));
         tag.putBoolean(RobotItem.TAG_AUTO_RECHARGER, hasAutoRecharger());
+        tag.putInt(RobotItem.TAG_SLOT_UPGRADE_TIER, getSlotUpgradeTier());
+        tag.putInt(RobotItem.TAG_MINING_TARGET_Y, getMiningTargetY());
+        tag.putBoolean(RobotItem.TAG_DIG_CHUNKS, isDigChunks());
+        tag.putInt(RobotItem.TAG_CHUNK_RADIUS, getChunkRadius());
         BlockPos chargerPos = energyManager.getChargerPos();
         if (chargerPos != null) {
             tag.putInt(RobotItem.TAG_CHARGER_X, chargerPos.getX());
             tag.putInt(RobotItem.TAG_CHARGER_Y, chargerPos.getY());
             tag.putInt(RobotItem.TAG_CHARGER_Z, chargerPos.getZ());
+        }
+        BlockPos linkedChestPos = getLinkedChestPos();
+        if (linkedChestPos != null) {
+            tag.putInt(RobotItem.TAG_LINKED_CHEST_X, linkedChestPos.getX());
+            tag.putInt(RobotItem.TAG_LINKED_CHEST_Y, linkedChestPos.getY());
+            tag.putInt(RobotItem.TAG_LINKED_CHEST_Z, linkedChestPos.getZ());
         }
         robotItem.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 
@@ -372,6 +421,21 @@ public class RobotEntity extends PathfinderMob {
         }
         compound.putBoolean("FollowOwner", isFollowOwner());
         compound.putBoolean("AutoRecharger", hasAutoRecharger());
+        compound.putInt("SlotUpgradeTier", getSlotUpgradeTier());
+        compound.putInt("MiningTargetY", getMiningTargetY());
+        compound.putBoolean("DigChunks", isDigChunks());
+        compound.putInt("ChunkRadius", getChunkRadius());
+        BlockPos linkedChest = getLinkedChestPos();
+        if (linkedChest != null) {
+            compound.putInt("LinkedChestX", linkedChest.getX());
+            compound.putInt("LinkedChestY", linkedChest.getY());
+            compound.putInt("LinkedChestZ", linkedChest.getZ());
+        }
+        if (hasDigAnchor) {
+            compound.putBoolean("HasDigAnchor", true);
+            compound.putInt("DigAnchorChunkX", digAnchorChunkX);
+            compound.putInt("DigAnchorChunkZ", digAnchorChunkZ);
+        }
         energyManager.save(compound);
         patrolState.save(compound);
         compound.put("Inventory", inventory.serializeNBT(this.registryAccess()));
@@ -388,6 +452,29 @@ public class RobotEntity extends PathfinderMob {
         }
         if (compound.contains("AutoRecharger")) {
             setAutoRecharger(compound.getBoolean("AutoRecharger"));
+        }
+        if (compound.contains("SlotUpgradeTier")) {
+            setSlotUpgradeTier(compound.getInt("SlotUpgradeTier"));
+        }
+        if (compound.contains("MiningTargetY")) {
+            setMiningTargetY(compound.getInt("MiningTargetY"));
+        }
+        if (compound.contains("DigChunks")) {
+            setDigChunks(compound.getBoolean("DigChunks"));
+        }
+        if (compound.contains("ChunkRadius")) {
+            setChunkRadius(compound.getInt("ChunkRadius"));
+        }
+        if (compound.contains("LinkedChestX") && compound.contains("LinkedChestY") && compound.contains("LinkedChestZ")) {
+            setLinkedChestPos(new BlockPos(
+                    compound.getInt("LinkedChestX"),
+                    compound.getInt("LinkedChestY"),
+                    compound.getInt("LinkedChestZ")));
+        }
+        if (compound.getBoolean("HasDigAnchor")) {
+            this.hasDigAnchor = true;
+            this.digAnchorChunkX = compound.getInt("DigAnchorChunkX");
+            this.digAnchorChunkZ = compound.getInt("DigAnchorChunkZ");
         }
         energyManager.load(compound);
         patrolState.load(compound);
@@ -642,15 +729,102 @@ public class RobotEntity extends PathfinderMob {
     }
 
     public boolean hasStorageSpaceFor(ItemStack stack) {
-        return RobotInventoryHelper.hasStorageSpaceFor(inventory, stack);
+        return RobotInventoryHelper.hasStorageSpaceFor(this, inventory, stack);
     }
 
     public boolean hasAnyStorageSlotFree() {
-        return RobotInventoryHelper.hasAnyStorageSlotFree(inventory);
+        return RobotInventoryHelper.hasAnyStorageSlotFree(this, inventory);
+    }
+
+    public boolean hasEmptyStorageSlot() {
+        return RobotInventoryHelper.hasEmptyStorageSlot(this, inventory);
     }
 
     public ItemStack insertIntoStorage(ItemStack stack) {
-        return RobotInventoryHelper.insertIntoStorage(inventory, stack);
+        return RobotInventoryHelper.insertIntoStorage(this, inventory, stack);
+    }
+
+    public int getSlotUpgradeTier() {
+        return this.entityData.get(DATA_SLOT_UPGRADE_TIER);
+    }
+
+    public void setSlotUpgradeTier(int tier) {
+        this.entityData.set(DATA_SLOT_UPGRADE_TIER, Math.max(0, Math.min(3, tier)));
+    }
+
+    public int getStorageCapacity() {
+        return switch (getSlotUpgradeTier()) {
+            case 1 -> 27;
+            case 2 -> 54;
+            case 3 -> 81;
+            default -> 9;
+        };
+    }
+
+    public int getMiningTargetY() {
+        return this.entityData.get(DATA_MINING_TARGET_Y);
+    }
+
+    public void setMiningTargetY(int y) {
+        int clamped = Math.max(-64, Math.min(320, y));
+        if (clamped != getMiningTargetY()) {
+            this.hasDigAnchor = false;
+        }
+        this.entityData.set(DATA_MINING_TARGET_Y, clamped);
+    }
+
+    public boolean isDigChunks() {
+        return this.entityData.get(DATA_DIG_CHUNKS);
+    }
+
+    public void setDigChunks(boolean digChunks) {
+        if (!digChunks) {
+            this.hasDigAnchor = false;
+        }
+        this.entityData.set(DATA_DIG_CHUNKS, digChunks);
+    }
+
+    public int getChunkRadius() {
+        return this.entityData.get(DATA_CHUNK_RADIUS);
+    }
+
+    public void setChunkRadius(int r) {
+        this.entityData.set(DATA_CHUNK_RADIUS, Math.max(0, Math.min(4, r)));
+    }
+
+    @Nullable
+    public BlockPos getLinkedChestPos() {
+        return this.entityData.get(DATA_LINKED_CHEST_POS).orElse(null);
+    }
+
+    public void setLinkedChestPos(@Nullable BlockPos pos) {
+        this.entityData.set(DATA_LINKED_CHEST_POS, Optional.ofNullable(pos));
+    }
+
+    public boolean hasLinkedChest() {
+        return getLinkedChestPos() != null;
+    }
+
+    public boolean hasDigAnchor() {
+        return hasDigAnchor;
+    }
+
+    public int getDigAnchorChunkX() {
+        return digAnchorChunkX;
+    }
+
+    public int getDigAnchorChunkZ() {
+        return digAnchorChunkZ;
+    }
+
+    public void setDigAnchor(int chunkX, int chunkZ) {
+        this.hasDigAnchor = true;
+        this.digAnchorChunkX = chunkX;
+        this.digAnchorChunkZ = chunkZ;
+    }
+
+    public void clearDigAnchor() {
+        this.hasDigAnchor = false;
     }
 
     public boolean tryPlaceScaffoldBlock(BlockPos pos) {

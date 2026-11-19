@@ -30,6 +30,15 @@ public final class ModItems {
     public static final DeferredItem<Item> AUTO_RECHARGER_UPGRADE_TEMPLATE = ITEMS.register("auto_recharger_upgrade_template",
             () -> new Item(new Item.Properties()));
 
+    public static final DeferredItem<Item> SLOT_UPGRADE_TIER_1 = ITEMS.register("slot_upgrade_tier_1",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> SLOT_UPGRADE_TIER_2 = ITEMS.register("slot_upgrade_tier_2",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> SLOT_UPGRADE_TIER_3 = ITEMS.register("slot_upgrade_tier_3",
+            () -> new Item(new Item.Properties()));
+
     public static final DeferredItem<Item> ROBOT_CIRCUIT = ITEMS.register("robot_circuit",
             () -> new Item(new Item.Properties()));
 

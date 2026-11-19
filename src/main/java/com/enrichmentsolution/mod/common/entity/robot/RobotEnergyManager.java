@@ -23,7 +23,8 @@ public class RobotEnergyManager {
 
     public int getEnergyStored(ItemStackHandler inventory) {
         int total = 0;
-        for (int i = RobotEntity.SLOT_CELL_START; i < RobotEntity.TOTAL_SLOTS; i++) {
+        int cellEnd = RobotEntity.SLOT_CELL_START + RobotEntity.CELL_SLOTS;
+        for (int i = RobotEntity.SLOT_CELL_START; i < cellEnd; i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (stack.getItem() instanceof EnergyCellBlockItem) {
                 total += stack.getOrDefault(ModDataComponents.STORED_ENERGY.get(), 0);
@@ -34,7 +35,8 @@ public class RobotEnergyManager {
 
     public int getMaxEnergyStored(ItemStackHandler inventory) {
         int total = 0;
-        for (int i = RobotEntity.SLOT_CELL_START; i < RobotEntity.TOTAL_SLOTS; i++) {
+        int cellEnd = RobotEntity.SLOT_CELL_START + RobotEntity.CELL_SLOTS;
+        for (int i = RobotEntity.SLOT_CELL_START; i < cellEnd; i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (stack.getItem() instanceof EnergyCellBlockItem cellItem) {
                 total += cellItem.getTier().getCapacity();
@@ -48,7 +50,8 @@ public class RobotEnergyManager {
             return;
         }
         int remaining = amount;
-        for (int i = RobotEntity.SLOT_CELL_START; i < RobotEntity.TOTAL_SLOTS && remaining > 0; i++) {
+        int cellEnd = RobotEntity.SLOT_CELL_START + RobotEntity.CELL_SLOTS;
+        for (int i = RobotEntity.SLOT_CELL_START; i < cellEnd && remaining > 0; i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (!(stack.getItem() instanceof EnergyCellBlockItem)) {
                 continue;
@@ -75,7 +78,8 @@ public class RobotEnergyManager {
         }
         int remaining = amount;
         int accepted = 0;
-        for (int i = RobotEntity.SLOT_CELL_START; i < RobotEntity.TOTAL_SLOTS && remaining > 0; i++) {
+        int cellEnd = RobotEntity.SLOT_CELL_START + RobotEntity.CELL_SLOTS;
+        for (int i = RobotEntity.SLOT_CELL_START; i < cellEnd && remaining > 0; i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (!(stack.getItem() instanceof EnergyCellBlockItem cellItem)) {
                 continue;

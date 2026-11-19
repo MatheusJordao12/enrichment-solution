@@ -49,6 +49,8 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
         simpleBlock(ModBlocks.STEEL_ORE.get());
         simpleBlock(ModBlocks.DEEPSLATE_STEEL_ORE.get());
+        simpleBlock(ModBlocks.URANIUM_ORE.get());
+        simpleBlock(ModBlocks.DEEPSLATE_URANIUM_ORE.get());
         simpleBlock(ModBlocks.BAUXITE_ORE.get());
         simpleBlock(ModBlocks.DEEPSLATE_BAUXITE_ORE.get());
         simpleBlock(ModBlocks.ALUMINIUM_ORE.get());

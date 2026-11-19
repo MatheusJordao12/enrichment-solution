@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "C": {
+      "item": "minecraft:chest"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "ASA",
+    "SCS",
+    "ASA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:slot_upgrade_tier_1"
+  }
+}

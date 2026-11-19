@@ -63,6 +63,8 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
                         ModBlocks.CRYOGENIC_THERMAL_PIPE.get(),
                         ModBlocks.STEEL_ORE.get(),
                         ModBlocks.DEEPSLATE_STEEL_ORE.get(),
+                        ModBlocks.URANIUM_ORE.get(),
+                        ModBlocks.DEEPSLATE_URANIUM_ORE.get(),
                         ModBlocks.BAUXITE_ORE.get(),
                         ModBlocks.DEEPSLATE_BAUXITE_ORE.get(),
                         ModBlocks.ALUMINIUM_ORE.get(),
@@ -99,6 +101,8 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
                         ModBlocks.FLUID_PUMP.get(),
                         ModBlocks.STEEL_ORE.get(),
                         ModBlocks.DEEPSLATE_STEEL_ORE.get(),
+                        ModBlocks.URANIUM_ORE.get(),
+                        ModBlocks.DEEPSLATE_URANIUM_ORE.get(),
                         ModBlocks.DEEPSLATE_BAUXITE_ORE.get(),
                         ModBlocks.DEEPSLATE_ALUMINIUM_ORE.get()
                 );

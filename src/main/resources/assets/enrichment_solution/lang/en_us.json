@@ -314,5 +314,22 @@
   "guide.enrichment_solution.robot.p2.b1": "Robot Charger stores 500,000 FE and charges robots on or adjacent to it at up to 5,000 FE/t.",
   "guide.enrichment_solution.robot.p2.r1": "Robot Charger: 2x Aluminium + Adv. Cable + 2x Steel + Machine Casing + 3x Redstone",
   "guide.enrichment_solution.robot.p2.b2": "Auto Recharger Upgrade Template lets a linked robot automatically return to its charger when low on FE.",
-  "guide.enrichment_solution.robot.p2.r2": "Auto Recharger Template: 4x Aluminium + Redstone Block + 2x Diamond + Steel + Basic Cable"
+  "guide.enrichment_solution.robot.p2.r2": "Auto Recharger Template: 4x Aluminium + Redstone Block + 2x Diamond + Steel + Basic Cable",
+  "item.enrichment_solution.slot_upgrade_tier_1": "Slot Upgrade Tier 1",
+  "item.enrichment_solution.slot_upgrade_tier_2": "Slot Upgrade Tier 2",
+  "item.enrichment_solution.slot_upgrade_tier_3": "Slot Upgrade Tier 3",
+  "message.enrichment_solution.robot.chest_linked": "Robot linked to Chest at %s, %s, %s!",
+  "gui.enrichment_solution.robot.follow_tooltip": "Following Owner (click to Stay)",
+  "gui.enrichment_solution.robot.stay_tooltip": "Staying / Patrol (click to Follow)",
+  "gui.enrichment_solution.robot.battery_tab": "Battery & Energy",
+  "gui.enrichment_solution.robot.tool_config_tab": "Tool Configuration",
+  "gui.enrichment_solution.robot.tool_config_short": "Mining",
+  "gui.enrichment_solution.robot.tool_config.no_tool": "Place a tool to configure robot operation",
+  "gui.enrichment_solution.robot.tool_config.not_pickaxe": "Mining settings require a pickaxe",
+  "gui.enrichment_solution.robot.tool_config.target_y": "Target Y: %s",
+  "gui.enrichment_solution.robot.tool_config.chunk_radius": "Chunk R: %s",
+  "gui.enrichment_solution.robot.tool_config.dig_chunks": "Dig Chunks",
+  "gui.enrichment_solution.robot.open_storage": "Open Expanded Storage (%s slots)",
+  "gui.enrichment_solution.robot.close_storage": "Back",
+  "gui.enrichment_solution.robot.slots_count": "%s Slots"
 }

@@ -25,6 +25,9 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.ENRICHED_URANIUM.get());
         basicItem(ModItems.SOLAR_UPGRADE_TEMPLATE.get());
         basicItem(ModItems.AUTO_RECHARGER_UPGRADE_TEMPLATE.get());
+        basicItem(ModItems.SLOT_UPGRADE_TIER_1.get());
+        basicItem(ModItems.SLOT_UPGRADE_TIER_2.get());
+        basicItem(ModItems.SLOT_UPGRADE_TIER_3.get());
         basicItem(ModItems.ROBOT_CIRCUIT.get());
         basicItem(ModItems.BASIC_CIRCUIT.get());
         basicItem(ModItems.ADVANCED_CIRCUIT.get());
@@ -55,6 +58,8 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleBlockItem(ModBlocks.MACHINE_CASING.get());
         simpleBlockItem(ModBlocks.STEEL_ORE.get());
         simpleBlockItem(ModBlocks.DEEPSLATE_STEEL_ORE.get());
+        simpleBlockItem(ModBlocks.URANIUM_ORE.get());
+        simpleBlockItem(ModBlocks.DEEPSLATE_URANIUM_ORE.get());
         simpleBlockItem(ModBlocks.BAUXITE_ORE.get());
         simpleBlockItem(ModBlocks.DEEPSLATE_BAUXITE_ORE.get());
         simpleBlockItem(ModBlocks.ALUMINIUM_ORE.get());

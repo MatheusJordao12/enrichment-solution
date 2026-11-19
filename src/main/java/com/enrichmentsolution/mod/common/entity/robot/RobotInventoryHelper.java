@@ -33,10 +33,13 @@ public class RobotInventoryHelper {
                 if (slot == RobotEntity.SLOT_PICKAXE) {
                     return isValidTool(stack);
                 }
-                if (slot >= RobotEntity.SLOT_CELL_START && slot < RobotEntity.TOTAL_SLOTS) {
+                if (slot >= RobotEntity.SLOT_CELL_START && slot < RobotEntity.SLOT_CELL_START + RobotEntity.CELL_SLOTS) {
                     return stack.getItem() instanceof EnergyCellBlockItem;
                 }
-                return true;
+                if (slot >= RobotEntity.SLOT_STORAGE_START && slot < RobotEntity.SLOT_STORAGE_START + robot.getStorageCapacity()) {
+                    return true;
+                }
+                return false;
             }
 
             @Override
@@ -56,7 +59,7 @@ public class RobotInventoryHelper {
                         }
                         wasHoldingSword = nowHasSword;
                         robot.syncMainHandPickaxe();
-                    } else if (slot >= RobotEntity.SLOT_CELL_START && slot < RobotEntity.TOTAL_SLOTS) {
+                    } else if (slot >= RobotEntity.SLOT_CELL_START && slot < RobotEntity.SLOT_CELL_START + RobotEntity.CELL_SLOTS) {
                         robot.syncEnergyData();
                     }
                 }
@@ -86,12 +89,13 @@ public class RobotInventoryHelper {
         return stack.is(ItemTags.PICKAXES) ? stack : ItemStack.EMPTY;
     }
 
-    public static boolean hasStorageSpaceFor(ItemStackHandler inventory, ItemStack stack) {
+    public static boolean hasStorageSpaceFor(RobotEntity robot, ItemStackHandler inventory, ItemStack stack) {
         if (stack.isEmpty()) {
             return false;
         }
         ItemStack remaining = stack.copy();
-        for (int i = RobotEntity.SLOT_STORAGE_START; i < RobotEntity.TOTAL_SLOTS; i++) {
+        int storageEnd = RobotEntity.SLOT_STORAGE_START + robot.getStorageCapacity();
+        for (int i = RobotEntity.SLOT_STORAGE_START; i < storageEnd; i++) {
             remaining = inventory.insertItem(i, remaining, true);
             if (remaining.isEmpty()) {
                 return true;
@@ -100,8 +104,9 @@ public class RobotInventoryHelper {
         return remaining.getCount() < stack.getCount();
     }
 
-    public static boolean hasAnyStorageSlotFree(ItemStackHandler inventory) {
-        for (int i = RobotEntity.SLOT_STORAGE_START; i < RobotEntity.TOTAL_SLOTS; i++) {
+    public static boolean hasAnyStorageSlotFree(RobotEntity robot, ItemStackHandler inventory) {
+        int storageEnd = RobotEntity.SLOT_STORAGE_START + robot.getStorageCapacity();
+        for (int i = RobotEntity.SLOT_STORAGE_START; i < storageEnd; i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
                 return true;
@@ -110,9 +115,20 @@ public class RobotInventoryHelper {
         return false;
     }
 
-    public static ItemStack insertIntoStorage(ItemStackHandler inventory, ItemStack stack) {
+    public static boolean hasEmptyStorageSlot(RobotEntity robot, ItemStackHandler inventory) {
+        int storageEnd = RobotEntity.SLOT_STORAGE_START + robot.getStorageCapacity();
+        for (int i = RobotEntity.SLOT_STORAGE_START; i < storageEnd; i++) {
+            if (inventory.getStackInSlot(i).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static ItemStack insertIntoStorage(RobotEntity robot, ItemStackHandler inventory, ItemStack stack) {
         ItemStack remaining = stack.copy();
-        for (int i = RobotEntity.SLOT_STORAGE_START; i < RobotEntity.TOTAL_SLOTS; i++) {
+        int storageEnd = RobotEntity.SLOT_STORAGE_START + robot.getStorageCapacity();
+        for (int i = RobotEntity.SLOT_STORAGE_START; i < storageEnd; i++) {
             remaining = inventory.insertItem(i, remaining, false);
             if (remaining.isEmpty()) {
                 return ItemStack.EMPTY;
@@ -150,7 +166,8 @@ public class RobotInventoryHelper {
 
     private static int findScaffoldSlot(RobotEntity robot, ItemStackHandler inventory) {
         int fallback = -1;
-        for (int i = RobotEntity.SLOT_STORAGE_START; i < RobotEntity.TOTAL_SLOTS; i++) {
+        int storageEnd = RobotEntity.SLOT_STORAGE_START + robot.getStorageCapacity();
+        for (int i = RobotEntity.SLOT_STORAGE_START; i < storageEnd; i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem blockItem)) {
                 continue;
