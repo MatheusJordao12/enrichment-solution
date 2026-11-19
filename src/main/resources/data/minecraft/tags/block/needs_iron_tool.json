@@ -22,6 +22,8 @@
     "enrichment_solution:steel_ore",
     "enrichment_solution:deepslate_steel_ore",
     "enrichment_solution:deepslate_bauxite_ore",
-    "enrichment_solution:deepslate_aluminium_ore"
+    "enrichment_solution:deepslate_aluminium_ore",
+    "enrichment_solution:uranium_ore",
+    "enrichment_solution:deepslate_uranium_ore"
   ]
 }

@@ -3,6 +3,8 @@
   "block.enrichment_solution.machine_casing": "Machine Casing",
   "block.enrichment_solution.steel_ore": "Steel Ore",
   "block.enrichment_solution.deepslate_steel_ore": "Deepslate Steel Ore",
+  "block.enrichment_solution.uranium_ore": "Uranium Ore",
+  "block.enrichment_solution.deepslate_uranium_ore": "Deepslate Uranium Ore",
   "block.enrichment_solution.enrichment_chamber": "Enrichment Chamber",
   "block.enrichment_solution.solar_panel": "Solar Panel",
   "block.enrichment_solution.energy_cable": "Basic Energy Cable",
