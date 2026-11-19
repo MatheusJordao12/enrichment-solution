@@ -92,6 +92,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.ROBOT.get());
                         output.accept(ModItems.CRUDE_OIL_BUCKET.get());
                         output.accept(ModItems.LIQUID_ISOBUTANE_BUCKET.get());
+                        output.accept(ModItems.ENRICHMENT_GUIDE.get());
                     })
                     .build());
 
