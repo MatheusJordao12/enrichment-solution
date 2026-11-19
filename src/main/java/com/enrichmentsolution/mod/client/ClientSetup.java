@@ -12,6 +12,7 @@ import com.enrichmentsolution.mod.client.screen.EnergyCellScreen;
 import com.enrichmentsolution.mod.client.screen.EnrichmentChamberScreen;
 import com.enrichmentsolution.mod.client.screen.FluidPumpScreen;
 import com.enrichmentsolution.mod.client.screen.GeothermalGeneratorScreen;
+import com.enrichmentsolution.mod.client.screen.GuideBookScreen;
 import com.enrichmentsolution.mod.client.screen.HeatExchangerScreen;
 import com.enrichmentsolution.mod.client.screen.IsolatedBackpackScreen;
 import com.enrichmentsolution.mod.client.screen.OilRefineryScreen;
@@ -21,6 +22,7 @@ import com.enrichmentsolution.mod.client.screen.RobotScreen;
 import com.enrichmentsolution.mod.client.screen.SolarPanelScreen;
 import com.enrichmentsolution.mod.client.screen.StampingPressScreen;
 import com.enrichmentsolution.mod.client.screen.TankScreen;
+import com.enrichmentsolution.mod.common.item.GuideBookItem;
 import com.enrichmentsolution.mod.common.item.PlutoniumExtractorItem;
 import com.enrichmentsolution.mod.common.network.ModNetwork;
 import com.enrichmentsolution.mod.registry.ModBlockEntities;
@@ -55,6 +57,7 @@ public final class ClientSetup {
                 ResourceLocation.fromNamespaceAndPath(EnrichmentSolutionMod.MOD_ID, "filled"),
                 (stack, level, entity, seed) -> PlutoniumExtractorItem.isFilled(stack) ? 1.0F : 0.0F
         ));
+        GuideBookItem.setScreenOpener(() -> net.minecraft.client.Minecraft.getInstance().setScreen(new GuideBookScreen()));
     }
 
     @SubscribeEvent

@@ -1,6 +1,7 @@
 package com.enrichmentsolution.mod.registry;
 
 import com.enrichmentsolution.mod.EnrichmentSolutionMod;
+import com.enrichmentsolution.mod.common.item.GuideBookItem;
 import com.enrichmentsolution.mod.common.item.HiTechGogglesItem;
 import com.enrichmentsolution.mod.common.item.RobotItem;
 import net.minecraft.world.item.BucketItem;
@@ -115,6 +116,9 @@ public final class ModItems {
 
     public static final DeferredItem<Item> HAMMER_X = ITEMS.register("hammer_x",
             () -> new com.enrichmentsolution.mod.common.item.HammerXItem(new Item.Properties().stacksTo(1)));
+
+    public static final DeferredItem<Item> ENRICHMENT_GUIDE = ITEMS.register("enrichment_guide",
+            () -> new GuideBookItem(new Item.Properties().stacksTo(1)));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
