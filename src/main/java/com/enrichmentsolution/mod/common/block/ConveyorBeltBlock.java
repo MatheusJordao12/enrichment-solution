@@ -129,6 +129,11 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!level.isClientSide && !state.is(newState.getBlock())) {
+            if (level.getBlockEntity(pos) instanceof ConveyorBeltBlockEntity beltBe) {
+                beltBe.dropStoredItem(level, pos);
+            }
+        }
         super.onRemove(state, level, pos, newState, movedByPiston);
         if (!level.isClientSide && !state.is(newState.getBlock())) {
             Direction facing = state.getValue(FACING);
@@ -167,10 +172,11 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide) {
-            return null;
-        }
-        return createTickerHelper(type, ModBlockEntities.CONVEYOR_BELT.get(), ConveyorBeltBlockEntity::serverTick);
+        return createTickerHelper(
+                type,
+                ModBlockEntities.CONVEYOR_BELT.get(),
+                level.isClientSide ? ConveyorBeltBlockEntity::clientTick : ConveyorBeltBlockEntity::serverTick
+        );
     }
 
     public static BeltPart computePart(BlockGetter level, BlockPos pos, Direction facing) {

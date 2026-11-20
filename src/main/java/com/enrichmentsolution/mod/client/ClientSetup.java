@@ -5,6 +5,7 @@ import com.enrichmentsolution.mod.client.ctm.CtmRegistry;
 import com.enrichmentsolution.mod.client.model.RobotModel;
 import com.enrichmentsolution.mod.client.render.GogglesLayer;
 import com.enrichmentsolution.mod.client.renderer.BeltDriveRenderer;
+import com.enrichmentsolution.mod.client.renderer.ConveyorBeltRenderer;
 import com.enrichmentsolution.mod.client.renderer.EnrichmentChamberRenderer;
 import com.enrichmentsolution.mod.client.renderer.PcbPrinterRenderer;
 import com.enrichmentsolution.mod.client.renderer.RobotRenderer;
@@ -88,6 +89,7 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(ModBlockEntities.ENRICHMENT_CHAMBER.get(), EnrichmentChamberRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.PCB_PRINTER.get(), PcbPrinterRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.BELT_DRIVE.get(), BeltDriveRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CONVEYOR_BELT.get(), ConveyorBeltRenderer::new);
         event.registerEntityRenderer(ModEntities.ROBOT.get(), RobotRenderer::new);
     }
 
