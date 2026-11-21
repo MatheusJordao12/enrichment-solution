@@ -1,43 +1,244 @@
 {
   "variants": {
-    "active=false,facing=south,part=single": { "model": "enrichment_solution:block/conveyor_belt_single" },
-    "active=false,facing=west,part=single":  { "model": "enrichment_solution:block/conveyor_belt_single", "y": 90 },
-    "active=false,facing=north,part=single": { "model": "enrichment_solution:block/conveyor_belt_single", "y": 180 },
-    "active=false,facing=east,part=single":  { "model": "enrichment_solution:block/conveyor_belt_single", "y": 270 },
-
-    "active=true,facing=south,part=single":  { "model": "enrichment_solution:block/conveyor_belt_single_active" },
-    "active=true,facing=west,part=single":   { "model": "enrichment_solution:block/conveyor_belt_single_active", "y": 90 },
-    "active=true,facing=north,part=single":  { "model": "enrichment_solution:block/conveyor_belt_single_active", "y": 180 },
-    "active=true,facing=east,part=single":   { "model": "enrichment_solution:block/conveyor_belt_single_active", "y": 270 },
-
-    "active=false,facing=south,part=start":  { "model": "enrichment_solution:block/conveyor_belt_start" },
-    "active=false,facing=west,part=start":   { "model": "enrichment_solution:block/conveyor_belt_start", "y": 90 },
-    "active=false,facing=north,part=start":  { "model": "enrichment_solution:block/conveyor_belt_start", "y": 180 },
-    "active=false,facing=east,part=start":   { "model": "enrichment_solution:block/conveyor_belt_start", "y": 270 },
-
-    "active=true,facing=south,part=start":   { "model": "enrichment_solution:block/conveyor_belt_start_active" },
-    "active=true,facing=west,part=start":    { "model": "enrichment_solution:block/conveyor_belt_start_active", "y": 90 },
-    "active=true,facing=north,part=start":   { "model": "enrichment_solution:block/conveyor_belt_start_active", "y": 180 },
-    "active=true,facing=east,part=start":    { "model": "enrichment_solution:block/conveyor_belt_start_active", "y": 270 },
-
-    "active=false,facing=south,part=middle": { "model": "enrichment_solution:block/conveyor_belt_middle" },
-    "active=false,facing=west,part=middle":  { "model": "enrichment_solution:block/conveyor_belt_middle", "y": 90 },
-    "active=false,facing=north,part=middle": { "model": "enrichment_solution:block/conveyor_belt_middle", "y": 180 },
-    "active=false,facing=east,part=middle":  { "model": "enrichment_solution:block/conveyor_belt_middle", "y": 270 },
-
-    "active=true,facing=south,part=middle":  { "model": "enrichment_solution:block/conveyor_belt_middle_active" },
-    "active=true,facing=west,part=middle":   { "model": "enrichment_solution:block/conveyor_belt_middle_active", "y": 90 },
-    "active=true,facing=north,part=middle":  { "model": "enrichment_solution:block/conveyor_belt_middle_active", "y": 180 },
-    "active=true,facing=east,part=middle":   { "model": "enrichment_solution:block/conveyor_belt_middle_active", "y": 270 },
-
-    "active=false,facing=south,part=end":    { "model": "enrichment_solution:block/conveyor_belt_end" },
-    "active=false,facing=west,part=end":     { "model": "enrichment_solution:block/conveyor_belt_end", "y": 90 },
-    "active=false,facing=north,part=end":    { "model": "enrichment_solution:block/conveyor_belt_end", "y": 180 },
-    "active=false,facing=east,part=end":     { "model": "enrichment_solution:block/conveyor_belt_end", "y": 270 },
-
-    "active=true,facing=south,part=end":     { "model": "enrichment_solution:block/conveyor_belt_end_active" },
-    "active=true,facing=west,part=end":      { "model": "enrichment_solution:block/conveyor_belt_end_active", "y": 90 },
-    "active=true,facing=north,part=end":     { "model": "enrichment_solution:block/conveyor_belt_end_active", "y": 180 },
-    "active=true,facing=east,part=end":      { "model": "enrichment_solution:block/conveyor_belt_end_active", "y": 270 }
+    "active=false,facing=south,part=single,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_single"
+    },
+    "active=false,facing=west,part=single,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_single",
+      "y": 90
+    },
+    "active=false,facing=north,part=single,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_single",
+      "y": 180
+    },
+    "active=false,facing=east,part=single,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_single",
+      "y": 270
+    },
+    "active=false,facing=south,part=single,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_single"
+    },
+    "active=false,facing=west,part=single,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_single",
+      "y": 90
+    },
+    "active=false,facing=north,part=single,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_single",
+      "y": 180
+    },
+    "active=false,facing=east,part=single,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_single",
+      "y": 270
+    },
+    "active=true,facing=south,part=single,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_single_active"
+    },
+    "active=true,facing=west,part=single,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_single_active",
+      "y": 90
+    },
+    "active=true,facing=north,part=single,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_single_active",
+      "y": 180
+    },
+    "active=true,facing=east,part=single,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_single_active",
+      "y": 270
+    },
+    "active=true,facing=south,part=single,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_single_reverse"
+    },
+    "active=true,facing=west,part=single,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_single_reverse",
+      "y": 90
+    },
+    "active=true,facing=north,part=single,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_single_reverse",
+      "y": 180
+    },
+    "active=true,facing=east,part=single,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_single_reverse",
+      "y": 270
+    },
+    "active=false,facing=south,part=start,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_start"
+    },
+    "active=false,facing=west,part=start,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_start",
+      "y": 90
+    },
+    "active=false,facing=north,part=start,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_start",
+      "y": 180
+    },
+    "active=false,facing=east,part=start,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_start",
+      "y": 270
+    },
+    "active=false,facing=south,part=start,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_start"
+    },
+    "active=false,facing=west,part=start,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_start",
+      "y": 90
+    },
+    "active=false,facing=north,part=start,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_start",
+      "y": 180
+    },
+    "active=false,facing=east,part=start,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_start",
+      "y": 270
+    },
+    "active=true,facing=south,part=start,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_start_active"
+    },
+    "active=true,facing=west,part=start,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_start_active",
+      "y": 90
+    },
+    "active=true,facing=north,part=start,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_start_active",
+      "y": 180
+    },
+    "active=true,facing=east,part=start,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_start_active",
+      "y": 270
+    },
+    "active=true,facing=south,part=start,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_start_reverse"
+    },
+    "active=true,facing=west,part=start,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_start_reverse",
+      "y": 90
+    },
+    "active=true,facing=north,part=start,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_start_reverse",
+      "y": 180
+    },
+    "active=true,facing=east,part=start,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_start_reverse",
+      "y": 270
+    },
+    "active=false,facing=south,part=middle,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_middle"
+    },
+    "active=false,facing=west,part=middle,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_middle",
+      "y": 90
+    },
+    "active=false,facing=north,part=middle,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_middle",
+      "y": 180
+    },
+    "active=false,facing=east,part=middle,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_middle",
+      "y": 270
+    },
+    "active=false,facing=south,part=middle,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_middle"
+    },
+    "active=false,facing=west,part=middle,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_middle",
+      "y": 90
+    },
+    "active=false,facing=north,part=middle,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_middle",
+      "y": 180
+    },
+    "active=false,facing=east,part=middle,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_middle",
+      "y": 270
+    },
+    "active=true,facing=south,part=middle,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_middle_active"
+    },
+    "active=true,facing=west,part=middle,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_middle_active",
+      "y": 90
+    },
+    "active=true,facing=north,part=middle,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_middle_active",
+      "y": 180
+    },
+    "active=true,facing=east,part=middle,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_middle_active",
+      "y": 270
+    },
+    "active=true,facing=south,part=middle,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_middle_reverse"
+    },
+    "active=true,facing=west,part=middle,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_middle_reverse",
+      "y": 90
+    },
+    "active=true,facing=north,part=middle,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_middle_reverse",
+      "y": 180
+    },
+    "active=true,facing=east,part=middle,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_middle_reverse",
+      "y": 270
+    },
+    "active=false,facing=south,part=end,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_end"
+    },
+    "active=false,facing=west,part=end,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_end",
+      "y": 90
+    },
+    "active=false,facing=north,part=end,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_end",
+      "y": 180
+    },
+    "active=false,facing=east,part=end,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_end",
+      "y": 270
+    },
+    "active=false,facing=south,part=end,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_end"
+    },
+    "active=false,facing=west,part=end,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_end",
+      "y": 90
+    },
+    "active=false,facing=north,part=end,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_end",
+      "y": 180
+    },
+    "active=false,facing=east,part=end,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_end",
+      "y": 270
+    },
+    "active=true,facing=south,part=end,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_end_active"
+    },
+    "active=true,facing=west,part=end,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_end_active",
+      "y": 90
+    },
+    "active=true,facing=north,part=end,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_end_active",
+      "y": 180
+    },
+    "active=true,facing=east,part=end,reverse=false": {
+      "model": "enrichment_solution:block/conveyor_belt_end_active",
+      "y": 270
+    },
+    "active=true,facing=south,part=end,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_end_reverse"
+    },
+    "active=true,facing=west,part=end,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_end_reverse",
+      "y": 90
+    },
+    "active=true,facing=north,part=end,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_end_reverse",
+      "y": 180
+    },
+    "active=true,facing=east,part=end,reverse=true": {
+      "model": "enrichment_solution:block/conveyor_belt_end_reverse",
+      "y": 270
+    }
   }
 }

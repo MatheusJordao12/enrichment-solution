@@ -46,6 +46,7 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<BeltPart> PART = EnumProperty.create("part", BeltPart.class);
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
+    public static final BooleanProperty REVERSE = BooleanProperty.create("reverse");
 
     public static final int MAX_LINE_LENGTH = 64;
     private static final VoxelShape SHAPE = Block.box(0.0D, 1.0D, 0.0D, 16.0D, 15.0D, 16.0D);
@@ -55,7 +56,8 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(PART, BeltPart.SINGLE)
-                .setValue(ACTIVE, false));
+                .setValue(ACTIVE, false)
+                .setValue(REVERSE, false));
     }
 
     @Override
@@ -83,7 +85,8 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
         return this.defaultBlockState()
                 .setValue(FACING, facing)
                 .setValue(PART, part)
-                .setValue(ACTIVE, false);
+                .setValue(ACTIVE, false)
+                .setValue(REVERSE, false);
     }
 
     @Override
@@ -160,7 +163,7 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, PART, ACTIVE);
+        builder.add(FACING, PART, ACTIVE, REVERSE);
     }
 
     @Nullable
@@ -261,10 +264,14 @@ public class ConveyorBeltBlock extends BaseEntityBlock {
                 continue;
             }
             BeltPart newPart = computePart(level, beltPos, facing);
-            if (beltState.getValue(PART) != newPart || beltState.getValue(ACTIVE) != anyDriveActive) {
+            if (beltState.getValue(PART) != newPart
+                    || beltState.getValue(ACTIVE) != anyDriveActive
+                    || beltState.getValue(REVERSE) != anyDriveReverse) {
                 level.setBlock(
                         beltPos,
-                        beltState.setValue(PART, newPart).setValue(ACTIVE, anyDriveActive),
+                        beltState.setValue(PART, newPart)
+                                .setValue(ACTIVE, anyDriveActive)
+                                .setValue(REVERSE, anyDriveReverse),
                         Block.UPDATE_ALL
                 );
             }

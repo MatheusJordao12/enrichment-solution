@@ -1,0 +1,7 @@
+{
+  "parent": "enrichment_solution:block/conveyor_belt_start",
+  "textures": {
+    "belt": "enrichment_solution:block/conveyor_belt_reverse",
+    "particle": "enrichment_solution:block/conveyor_belt_reverse"
+  }
+}
