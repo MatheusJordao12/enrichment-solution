@@ -349,5 +349,17 @@
   "gui.enrichment_solution.belt_drive.forward": "Frente →",
   "gui.enrichment_solution.belt_drive.reverse": "Reverso ←",
   "item.enrichment_solution.lab_explorer_map": "Mapa do Laboratório Destruído",
-  "message.enrichment_solution.cartographer.lab_map": "Villager Cartógrafo: Eu achei esse mapa andando pelo mundo. Não fui até lá e esse óculos me lembrou desse mapa. Obrigado!"
+  "message.enrichment_solution.cartographer.lab_map": "Villager Cartógrafo: Eu achei esse mapa andando pelo mundo. Não fui até lá e esse óculos me lembrou desse mapa. Obrigado!",
+  "item.enrichment_solution.yellowcake": "Yellowcake",
+  "item.enrichment_solution.uranium_pellet": "Pastilha de Urânio",
+  "block.enrichment_solution.pelletizer_controller": "Controlador de Peletizadora",
+  "block.enrichment_solution.crusher_module": "Módulo Triturador",
+  "block.enrichment_solution.hydraulic_press_head": "Cabeçote de Prensa Hidráulica",
+  "block.enrichment_solution.sintering_heater": "Aquecedor de Sinterização",
+  "container.enrichment_solution.pelletizer": "Peletizadora",
+  "container.enrichment_solution.pelletizer_controller": "Peletizadora",
+  "gui.enrichment_solution.pelletizer.structure_valid": "Estrutura: Válida",
+  "gui.enrichment_solution.pelletizer.structure_incomplete": "Estrutura: Incompleta (3x3x4)",
+  "jei.enrichment_solution.pelletizing": "Peletização",
+  "jei.enrichment_solution.pelletizing.cost": "%s FE/t · %s ticks · %s FE"
 }

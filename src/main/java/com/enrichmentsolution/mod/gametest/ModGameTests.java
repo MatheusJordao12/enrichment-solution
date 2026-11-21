@@ -6,6 +6,7 @@ import com.enrichmentsolution.mod.common.block.entity.EnrichmentChamberBlockEnti
 import com.enrichmentsolution.mod.common.block.entity.HeatExchangerBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.OilRefineryBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.PcbPrinterBlockEntity;
+import com.enrichmentsolution.mod.common.block.entity.PelletizerControllerBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.StampingPressBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.TankBlockEntity;
 import com.enrichmentsolution.mod.registry.ModBlocks;
@@ -81,8 +82,8 @@ public final class ModGameTests {
         helper.succeedWhen(() -> {
             ItemStack out = items.getStackInSlot(EnrichmentChamberBlockEntity.SLOT_OUTPUT);
             helper.assertTrue(
-                    out.is(ModItems.ENRICHED_URANIUM.get()) && out.getCount() >= 1,
-                    "Expected enriched_uranium in output slot, found: " + out
+                    out.is(ModItems.YELLOWCAKE.get()) && out.getCount() >= 1,
+                    "Expected yellowcake in output slot, found: " + out
             );
         });
     }
@@ -535,5 +536,54 @@ public final class ModGameTests {
         );
 
         helper.succeed();
+    }
+
+    @GameTest(template = EMPTY_TEMPLATE, timeoutTicks = 300)
+    public static void pelletizer_multiblock_test(GameTestHelper helper) {
+        BlockPos controllerPos = new BlockPos(3, 1, 1);
+        Direction facing = Direction.NORTH;
+        Direction backDir = facing.getOpposite();
+        Direction rightDir = facing.getClockWise();
+
+        for (int back = 0; back <= 3; back++) {
+            for (int y = 0; y <= 2; y++) {
+                for (int x = -1; x <= 1; x++) {
+                    BlockPos pos = controllerPos.relative(rightDir, x).relative(backDir, back).above(y);
+                    if (x == 0 && y == 0 && back == 0) {
+                        helper.setBlock(pos, ModBlocks.PELLETIZER_CONTROLLER.get().defaultBlockState()
+                                .setValue(com.enrichmentsolution.mod.common.block.PelletizerControllerBlock.FACING, facing));
+                    } else if (x == 0 && y == 2 && back == 1) {
+                        helper.setBlock(pos, ModBlocks.CRUSHER_MODULE.get());
+                    } else if (x == 0 && y == 2 && back == 2) {
+                        helper.setBlock(pos, ModBlocks.HYDRAULIC_PRESS_HEAD.get());
+                    } else if (x == 0 && y == 2 && back == 3) {
+                        helper.setBlock(pos, ModBlocks.SINTERING_HEATER.get());
+                    } else {
+                        helper.setBlock(pos, ModBlocks.MACHINE_CASING.get());
+                    }
+                }
+            }
+        }
+
+        PelletizerControllerBlockEntity be = helper.getBlockEntity(controllerPos);
+        helper.assertTrue(be.isStructureValid(), "Expected 3x3x4 pelletizer structure to be valid");
+        fillEnergy(helper, be.getEnergyStorage(null), 50_000);
+
+        IItemHandler items = be.getItemHandler(null);
+        helper.assertTrue(items != null, "Item handler should not be null");
+        ItemStack remainder = items.insertItem(
+                PelletizerControllerBlockEntity.SLOT_INPUT,
+                new ItemStack(ModItems.ENRICHED_URANIUM.get(), 2),
+                false
+        );
+        helper.assertTrue(remainder.isEmpty(), "Enriched uranium should fit in pelletizer input slot");
+
+        helper.succeedWhen(() -> {
+            ItemStack out = items.getStackInSlot(PelletizerControllerBlockEntity.SLOT_OUTPUT);
+            helper.assertTrue(
+                    out.is(ModItems.URANIUM_PELLET.get()) && out.getCount() >= 4,
+                    "Expected 4x uranium_pellet in output slot, found: " + out
+            );
+        });
     }
 }

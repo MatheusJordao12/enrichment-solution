@@ -47,8 +47,9 @@ public class ReactorCoreBlockEntity extends AbstractMachineBlockEntity {
 
         if (isStructureValid(level, pos)) {
             if (burnTime <= 0 && hasFuel()) {
-                itemHandler.extractItem(SLOT_FUEL, 1, false);
-                burnTime = ModServerConfig.get(ModServerConfig.REACTOR_FUEL_BURN_TIME);
+                ItemStack consumed = itemHandler.extractItem(SLOT_FUEL, 1, false);
+                int baseBurnTime = ModServerConfig.get(ModServerConfig.REACTOR_FUEL_BURN_TIME);
+                burnTime = consumed.is(ModItems.URANIUM_PELLET.get()) ? baseBurnTime * 2 : baseBurnTime;
                 setChanged();
             }
 
@@ -76,7 +77,7 @@ public class ReactorCoreBlockEntity extends AbstractMachineBlockEntity {
 
     private boolean hasFuel() {
         ItemStack fuel = itemHandler.getStackInSlot(SLOT_FUEL);
-        return fuel.is(ModItems.ENRICHED_URANIUM.get()) && !fuel.isEmpty();
+        return !fuel.isEmpty() && (fuel.is(ModItems.ENRICHED_URANIUM.get()) || fuel.is(ModItems.URANIUM_PELLET.get()));
     }
 
     /**

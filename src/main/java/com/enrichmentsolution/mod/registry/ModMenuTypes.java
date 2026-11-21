@@ -11,6 +11,7 @@ import com.enrichmentsolution.mod.common.menu.HeatExchangerMenu;
 import com.enrichmentsolution.mod.common.menu.IsolatedBackpackMenu;
 import com.enrichmentsolution.mod.common.menu.OilRefineryMenu;
 import com.enrichmentsolution.mod.common.menu.PcbPrinterMenu;
+import com.enrichmentsolution.mod.common.menu.PelletizerMenu;
 import com.enrichmentsolution.mod.common.menu.QuadEnrichmentMenu;
 import com.enrichmentsolution.mod.common.menu.RobotMenu;
 import com.enrichmentsolution.mod.common.menu.SolarPanelMenu;
@@ -72,6 +73,9 @@ public final class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<BeltDriveMenu>> BELT_DRIVE =
             MENUS.register("belt_drive", () -> IMenuTypeExtension.create(BeltDriveMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<PelletizerMenu>> PELLETIZER =
+            MENUS.register("pelletizer", () -> IMenuTypeExtension.create(PelletizerMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);

@@ -32,6 +32,9 @@ public final class MachineRecipes {
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> PCB_PRINTING_TYPE =
             RECIPE_TYPES.register("pcb_printing", () -> RecipeType.<MachineRecipe>simple(MachineRecipeKind.PCB_PRINTING.id()));
 
+    public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> PELLETIZING_TYPE =
+            RECIPE_TYPES.register("pelletizing", () -> RecipeType.<MachineRecipe>simple(MachineRecipeKind.PELLETIZING.id()));
+
     public static final DeferredHolder<RecipeSerializer<?>, MachineRecipeSerializer> ENRICHMENT_SERIALIZER =
             RECIPE_SERIALIZERS.register("enrichment", () -> new MachineRecipeSerializer(MachineRecipeKind.ENRICHMENT));
 
@@ -43,6 +46,9 @@ public final class MachineRecipes {
 
     public static final DeferredHolder<RecipeSerializer<?>, MachineRecipeSerializer> PCB_PRINTING_SERIALIZER =
             RECIPE_SERIALIZERS.register("pcb_printing", () -> new MachineRecipeSerializer(MachineRecipeKind.PCB_PRINTING));
+
+    public static final DeferredHolder<RecipeSerializer<?>, MachineRecipeSerializer> PELLETIZING_SERIALIZER =
+            RECIPE_SERIALIZERS.register("pelletizing", () -> new MachineRecipeSerializer(MachineRecipeKind.PELLETIZING));
 
     private MachineRecipes() {
     }
@@ -58,6 +64,7 @@ public final class MachineRecipes {
             case REFINING -> REFINING_TYPE.get();
             case STAMPING -> STAMPING_TYPE.get();
             case PCB_PRINTING -> PCB_PRINTING_TYPE.get();
+            case PELLETIZING -> PELLETIZING_TYPE.get();
         };
     }
 
@@ -67,6 +74,7 @@ public final class MachineRecipes {
             case REFINING -> REFINING_SERIALIZER.get();
             case STAMPING -> STAMPING_SERIALIZER.get();
             case PCB_PRINTING -> PCB_PRINTING_SERIALIZER.get();
+            case PELLETIZING -> PELLETIZING_SERIALIZER.get();
         };
     }
 }

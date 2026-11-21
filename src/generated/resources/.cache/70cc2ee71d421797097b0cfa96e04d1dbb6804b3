@@ -1,4 +1,4 @@
-// 1.21.1	2026-11-19T18:26:58.1143689	Tags for minecraft:block mod id enrichment_solution
-fde1586b58495f53adc08c60bab88b4e1355c6f0 data/minecraft/tags/block/mineable/pickaxe.json
+// 1.21.1	2026-11-21T20:23:23.0398416	Tags for minecraft:block mod id enrichment_solution
+77594346ef00a34f8b381581a429d819dd75abbf data/minecraft/tags/block/mineable/pickaxe.json
 76e064856536abbfb400c5fcf9643c3aae59ba8b data/minecraft/tags/block/needs_diamond_tool.json
-e3b1eb17a954c63568f3b044e576eff093da3c7a data/minecraft/tags/block/needs_iron_tool.json
+a4d5cf8861e88766dd77ee7cc3ab49c552660aba data/minecraft/tags/block/needs_iron_tool.json

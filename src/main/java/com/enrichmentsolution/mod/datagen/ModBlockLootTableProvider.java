@@ -48,6 +48,10 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.FLUID_PUMP.get());
         dropSelf(ModBlocks.BELT_DRIVE.get());
         dropSelf(ModBlocks.CONVEYOR_BELT.get());
+        dropSelf(ModBlocks.PELLETIZER_CONTROLLER.get());
+        dropSelf(ModBlocks.CRUSHER_MODULE.get());
+        dropSelf(ModBlocks.HYDRAULIC_PRESS_HEAD.get());
+        dropSelf(ModBlocks.SINTERING_HEATER.get());
 
         // Energy cables
         dropSelf(ModBlocks.ENERGY_CABLE.get());

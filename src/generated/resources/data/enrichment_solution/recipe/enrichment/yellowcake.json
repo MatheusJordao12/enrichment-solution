@@ -1,0 +1,14 @@
+{
+  "type": "enrichment_solution:enrichment",
+  "energy_per_tick": 80,
+  "item_inputs": [
+    {
+      "item": "enrichment_solution:yellowcake"
+    }
+  ],
+  "item_output": {
+    "count": 1,
+    "id": "enrichment_solution:enriched_uranium"
+  },
+  "ticks": 150
+}

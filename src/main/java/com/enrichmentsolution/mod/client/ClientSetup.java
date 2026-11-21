@@ -21,6 +21,7 @@ import com.enrichmentsolution.mod.client.screen.HeatExchangerScreen;
 import com.enrichmentsolution.mod.client.screen.IsolatedBackpackScreen;
 import com.enrichmentsolution.mod.client.screen.OilRefineryScreen;
 import com.enrichmentsolution.mod.client.screen.PcbPrinterScreen;
+import com.enrichmentsolution.mod.client.screen.PelletizerScreen;
 import com.enrichmentsolution.mod.client.screen.QuadEnrichmentScreen;
 import com.enrichmentsolution.mod.client.screen.RobotScreen;
 import com.enrichmentsolution.mod.client.screen.SolarPanelScreen;
@@ -81,6 +82,7 @@ public final class ClientSetup {
         event.register(ModMenuTypes.FLUID_PUMP.get(), FluidPumpScreen::new);
         event.register(ModMenuTypes.ISOLATED_BACKPACK.get(), IsolatedBackpackScreen::new);
         event.register(ModMenuTypes.BELT_DRIVE.get(), BeltDriveScreen::new);
+        event.register(ModMenuTypes.PELLETIZER.get(), PelletizerScreen::new);
     }
 
     @SubscribeEvent

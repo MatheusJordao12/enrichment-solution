@@ -21,8 +21,10 @@ public class ModItemModelProvider extends ItemModelProvider {
     protected void registerModels() {
         // Simple generated items
         basicItem(ModItems.RAW_URANIUM.get());
+        basicItem(ModItems.YELLOWCAKE.get());
         basicItem(ModItems.URANIUM_INGOT.get());
         basicItem(ModItems.ENRICHED_URANIUM.get());
+        basicItem(ModItems.URANIUM_PELLET.get());
         basicItem(ModItems.SOLAR_UPGRADE_TEMPLATE.get());
         basicItem(ModItems.AUTO_RECHARGER_UPGRADE_TEMPLATE.get());
         basicItem(ModItems.SLOT_UPGRADE_TIER_1.get());
@@ -93,6 +95,10 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleBlockItem(ModBlocks.GEOTHERMAL_GENERATOR.get());
         simpleBlockItem(ModBlocks.CONDENSER.get());
         simpleBlockItem(ModBlocks.FLUID_PUMP.get());
+        simpleBlockItem(ModBlocks.PELLETIZER_CONTROLLER.get());
+        simpleBlockItem(ModBlocks.CRUSHER_MODULE.get());
+        simpleBlockItem(ModBlocks.HYDRAULIC_PRESS_HEAD.get());
+        simpleBlockItem(ModBlocks.SINTERING_HEATER.get());
 
         withExistingParent("solar_panel", modLoc("block/solar_panel_full"));
     }

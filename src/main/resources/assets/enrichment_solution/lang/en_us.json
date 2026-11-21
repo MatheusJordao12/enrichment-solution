@@ -349,5 +349,17 @@
   "gui.enrichment_solution.belt_drive.forward": "Forward →",
   "gui.enrichment_solution.belt_drive.reverse": "Reverse ←",
   "item.enrichment_solution.lab_explorer_map": "Destroyed Laboratory Map",
-  "message.enrichment_solution.cartographer.lab_map": "Cartographer Villager: I found this map while wandering the world. I never went there, and those goggles reminded me of it. Thank you!"
+  "message.enrichment_solution.cartographer.lab_map": "Cartographer Villager: I found this map while wandering the world. I never went there, and those goggles reminded me of it. Thank you!",
+  "item.enrichment_solution.yellowcake": "Yellowcake",
+  "item.enrichment_solution.uranium_pellet": "Uranium Pellet",
+  "block.enrichment_solution.pelletizer_controller": "Pelletizer Controller",
+  "block.enrichment_solution.crusher_module": "Crusher Module",
+  "block.enrichment_solution.hydraulic_press_head": "Hydraulic Press Head",
+  "block.enrichment_solution.sintering_heater": "Sintering Heater",
+  "container.enrichment_solution.pelletizer": "Pelletizer",
+  "container.enrichment_solution.pelletizer_controller": "Pelletizer",
+  "gui.enrichment_solution.pelletizer.structure_valid": "Structure: Valid",
+  "gui.enrichment_solution.pelletizer.structure_incomplete": "Structure: Incomplete (3x3x4)",
+  "jei.enrichment_solution.pelletizing": "Pelletizing",
+  "jei.enrichment_solution.pelletizing.cost": "%s FE/t · %s ticks · %s FE"
 }

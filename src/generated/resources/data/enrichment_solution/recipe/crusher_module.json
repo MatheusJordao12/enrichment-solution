@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:aluminium_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SIS",
+    "AMA",
+    "SIS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:crusher_module"
+  }
+}

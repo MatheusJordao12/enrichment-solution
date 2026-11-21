@@ -24,6 +24,12 @@ public final class ModItems {
     public static final DeferredItem<Item> ENRICHED_URANIUM = ITEMS.register("enriched_uranium",
             () -> new Item(new Item.Properties()));
 
+    public static final DeferredItem<Item> YELLOWCAKE = ITEMS.register("yellowcake",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> URANIUM_PELLET = ITEMS.register("uranium_pellet",
+            () -> new Item(new Item.Properties()));
+
     public static final DeferredItem<Item> SOLAR_UPGRADE_TEMPLATE = ITEMS.register("solar_upgrade_template",
             () -> new Item(new Item.Properties()));
 

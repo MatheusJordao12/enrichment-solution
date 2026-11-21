@@ -9,7 +9,9 @@ import com.enrichmentsolution.mod.common.block.FluidPumpBlock;
 import com.enrichmentsolution.mod.common.block.GeothermalGeneratorBlock;
 import com.enrichmentsolution.mod.common.block.HeatExchangerBlock;
 import com.enrichmentsolution.mod.common.block.OilRefineryBlock;
+import com.enrichmentsolution.mod.common.block.PelletizerControllerBlock;
 import com.enrichmentsolution.mod.common.block.ReactorCoreBlock;
+import com.enrichmentsolution.mod.common.block.SinteringHeaterBlock;
 import com.enrichmentsolution.mod.common.block.SolarPanelBlock;
 import com.enrichmentsolution.mod.common.block.StampingPressBlock;
 import com.enrichmentsolution.mod.registry.ModBlocks;
@@ -47,6 +49,9 @@ public class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.ULTIMATE_ENERGY_CELL.get());
         simpleBlock(ModBlocks.ULTRA_ENERGY_CELL.get());
 
+        simpleBlock(ModBlocks.CRUSHER_MODULE.get());
+        simpleBlock(ModBlocks.HYDRAULIC_PRESS_HEAD.get());
+
         simpleBlock(ModBlocks.STEEL_ORE.get());
         simpleBlock(ModBlocks.DEEPSLATE_STEEL_ORE.get());
         simpleBlock(ModBlocks.URANIUM_ORE.get());
@@ -69,6 +74,24 @@ public class ModBlockStateProvider extends BlockStateProvider {
         getVariantBuilder(ModBlocks.REACTOR_CORE.get())
                 .partialState().with(ReactorCoreBlock.ACTIVE, false).modelForState().modelFile(reactorOff).addModel()
                 .partialState().with(ReactorCoreBlock.ACTIVE, true).modelForState().modelFile(reactorOn).addModel();
+
+        // Pelletizer multiblock active/facing blocks
+        ModelFile sinteringOff = models().cubeAll("sintering_heater", modLoc("block/sintering_heater"));
+        ModelFile sinteringOn = models().cubeAll("sintering_heater_active", modLoc("block/sintering_heater_active"));
+        getVariantBuilder(ModBlocks.SINTERING_HEATER.get())
+                .partialState().with(SinteringHeaterBlock.ACTIVE, false).modelForState().modelFile(sinteringOff).addModel()
+                .partialState().with(SinteringHeaterBlock.ACTIVE, true).modelForState().modelFile(sinteringOn).addModel();
+
+        ModelFile pelletizerOff = models().orientable("pelletizer_controller",
+                modLoc("block/machine_casing"),
+                modLoc("block/pelletizer_controller"),
+                modLoc("block/machine_casing"));
+        ModelFile pelletizerOn = models().orientable("pelletizer_controller_active",
+                modLoc("block/machine_casing"),
+                modLoc("block/pelletizer_controller_active"),
+                modLoc("block/machine_casing"));
+        horizontalBlock(ModBlocks.PELLETIZER_CONTROLLER.get(),
+                state -> state.getValue(PelletizerControllerBlock.ACTIVE) ? pelletizerOn : pelletizerOff);
 
         // Custom-modeled ores
         simpleExistingBlock(ModBlocks.OXIDATED_PLUTONIUM_ORE.get(), "oxidated_plutonium_ore");

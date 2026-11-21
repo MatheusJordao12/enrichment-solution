@@ -47,6 +47,7 @@ public class EnrichmentJeiPlugin implements IModPlugin {
                 new EnrichmentCategory(guiHelper),
                 new RefiningCategory(guiHelper),
                 new PressingCategory(guiHelper),
+                new PelletizingCategory(guiHelper),
                 new HeatExchangerCategory(guiHelper),
                 new GeothermalCategory(guiHelper));
     }
@@ -61,6 +62,7 @@ public class EnrichmentJeiPlugin implements IModPlugin {
         registration.addRecipes(EnrichmentCategory.TYPE, recipesOf(manager, MachineRecipeKind.ENRICHMENT));
         registration.addRecipes(RefiningCategory.TYPE, recipesOf(manager, MachineRecipeKind.REFINING));
         registration.addRecipes(PressingCategory.TYPE, recipesOf(manager, MachineRecipeKind.STAMPING));
+        registration.addRecipes(PelletizingCategory.TYPE, recipesOf(manager, MachineRecipeKind.PELLETIZING));
         registration.addRecipes(PcbPrintingCategory.TYPE, recipesOf(manager, MachineRecipeKind.PCB_PRINTING));
         registration.addRecipes(HeatExchangerCategory.TYPE, List.of(
                 new HeatExchangerCategory.HeatExchangerRecipe("1x", 5, 1),
@@ -88,6 +90,7 @@ public class EnrichmentJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.ENRICHMENT_CHAMBER.get()), EnrichmentCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.OIL_REFINERY.get()), RefiningCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.STAMPING_PRESS.get()), PressingCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.PELLETIZER_CONTROLLER.get()), PelletizingCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.HEAT_EXCHANGER.get()), HeatExchangerCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.TANK_BLOCK.get()), HeatExchangerCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.GEOTHERMAL_GENERATOR.get()), GeothermalCategory.TYPE);

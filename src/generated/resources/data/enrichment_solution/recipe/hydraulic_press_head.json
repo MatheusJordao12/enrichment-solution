@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:pressed_aluminium"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SPS",
+    "AMA",
+    "SPS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:hydraulic_press_head"
+  }
+}

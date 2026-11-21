@@ -13,6 +13,7 @@ import com.enrichmentsolution.mod.common.block.entity.GeothermalGeneratorBlockEn
 import com.enrichmentsolution.mod.common.block.entity.HeatExchangerBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.OilRefineryBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.PcbPrinterBlockEntity;
+import com.enrichmentsolution.mod.common.block.entity.PelletizerControllerBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.ReactorCoreBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.RobotChargerBlockEntity;
 import com.enrichmentsolution.mod.common.block.entity.SolarPanelBlockEntity;
@@ -136,6 +137,11 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ConveyorBeltBlockEntity>> CONVEYOR_BELT =
             BLOCK_ENTITIES.register("conveyor_belt", () -> BlockEntityType.Builder
                     .of(ConveyorBeltBlockEntity::new, ModBlocks.CONVEYOR_BELT.get())
+                    .build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PelletizerControllerBlockEntity>> PELLETIZER_CONTROLLER =
+            BLOCK_ENTITIES.register("pelletizer_controller", () -> BlockEntityType.Builder
+                    .of(PelletizerControllerBlockEntity::new, ModBlocks.PELLETIZER_CONTROLLER.get())
                     .build(null));
 
     public static void register(IEventBus eventBus) {

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "enrichment_solution:block/sintering_heater"
+    },
+    "active=true": {
+      "model": "enrichment_solution:block/sintering_heater_active"
+    }
+  }
+}

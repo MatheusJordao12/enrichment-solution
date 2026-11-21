@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "enrichment_solution:block/hydraulic_press_head"
+    }
+  }
+}

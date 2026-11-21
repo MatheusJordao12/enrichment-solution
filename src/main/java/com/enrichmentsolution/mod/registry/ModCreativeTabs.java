@@ -66,11 +66,17 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.FLUID_PUMP.get());
                         output.accept(ModBlocks.BELT_DRIVE.get());
                         output.accept(ModBlocks.CONVEYOR_BELT.get());
+                        output.accept(ModBlocks.PELLETIZER_CONTROLLER.get());
+                        output.accept(ModBlocks.CRUSHER_MODULE.get());
+                        output.accept(ModBlocks.HYDRAULIC_PRESS_HEAD.get());
+                        output.accept(ModBlocks.SINTERING_HEATER.get());
                         output.accept(ModBlocks.REACTOR_CASING.get());
                         output.accept(ModBlocks.REACTOR_CORE.get());
                         output.accept(ModItems.RAW_URANIUM.get());
                         output.accept(ModItems.URANIUM_INGOT.get());
                         output.accept(ModItems.ENRICHED_URANIUM.get());
+                        output.accept(ModItems.YELLOWCAKE.get());
+                        output.accept(ModItems.URANIUM_PELLET.get());
                         output.accept(ModItems.SOLAR_UPGRADE_TEMPLATE.get());
                         output.accept(ModItems.AUTO_RECHARGER_UPGRADE_TEMPLATE.get());
                         output.accept(ModItems.SLOT_UPGRADE_TIER_1.get());

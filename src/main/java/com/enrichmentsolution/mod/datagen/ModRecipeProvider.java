@@ -193,6 +193,52 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy("has_machine_casing", has(ModBlocks.MACHINE_CASING.get()))
                 .save(output);
 
+        // Pelletizer multiblock
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.PELLETIZER_CONTROLLER.get())
+                .pattern("SCS")
+                .pattern("AMA")
+                .pattern("SES")
+                .define('S', ModItems.STEEL_INGOT.get())
+                .define('C', ModItems.ADVANCED_CIRCUIT.get())
+                .define('A', ModItems.PRESSED_ALUMINIUM.get())
+                .define('M', ModBlocks.MACHINE_CASING.get())
+                .define('E', ModBlocks.ADVANCED_ENERGY_CABLE.get())
+                .unlockedBy("has_machine_casing", has(ModBlocks.MACHINE_CASING.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.CRUSHER_MODULE.get())
+                .pattern("SIS")
+                .pattern("AMA")
+                .pattern("SIS")
+                .define('S', ModItems.STEEL_INGOT.get())
+                .define('I', Items.IRON_BLOCK)
+                .define('A', ModItems.ALUMINIUM_INGOT.get())
+                .define('M', ModBlocks.MACHINE_CASING.get())
+                .unlockedBy("has_machine_casing", has(ModBlocks.MACHINE_CASING.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYDRAULIC_PRESS_HEAD.get())
+                .pattern("SPS")
+                .pattern("AMA")
+                .pattern("SPS")
+                .define('S', ModItems.STEEL_INGOT.get())
+                .define('P', Items.PISTON)
+                .define('A', ModItems.PRESSED_ALUMINIUM.get())
+                .define('M', ModBlocks.MACHINE_CASING.get())
+                .unlockedBy("has_machine_casing", has(ModBlocks.MACHINE_CASING.get()))
+                .save(output);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.SINTERING_HEATER.get())
+                .pattern("SCS")
+                .pattern("FMF")
+                .pattern("SCS")
+                .define('S', ModItems.STEEL_INGOT.get())
+                .define('C', Items.COPPER_INGOT)
+                .define('F', Items.BLAST_FURNACE)
+                .define('M', ModBlocks.MACHINE_CASING.get())
+                .unlockedBy("has_machine_casing", has(ModBlocks.MACHINE_CASING.get()))
+                .save(output);
+
         // Tanks
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.TANK_BLOCK.get(), 4)
                 .pattern("SGS")
@@ -552,10 +598,39 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         MachineRecipeKind.ENRICHMENT,
                         List.of(input(ModItems.RAW_URANIUM.get())),
                         FluidStack.EMPTY,
-                        new ItemStack(ModItems.ENRICHED_URANIUM.get()),
+                        new ItemStack(ModItems.YELLOWCAKE.get()),
                         FluidStack.EMPTY,
                         40,
                         100
+                ),
+                null
+        );
+
+        output.accept(
+                id("enrichment/yellowcake"),
+                new MachineRecipe(
+                        MachineRecipeKind.ENRICHMENT,
+                        List.of(input(ModItems.YELLOWCAKE.get())),
+                        FluidStack.EMPTY,
+                        new ItemStack(ModItems.ENRICHED_URANIUM.get()),
+                        FluidStack.EMPTY,
+                        80,
+                        150
+                ),
+                null
+        );
+
+        // Pelletizer
+        output.accept(
+                id("pelletizing/uranium_pellet"),
+                new MachineRecipe(
+                        MachineRecipeKind.PELLETIZING,
+                        List.of(input(ModItems.ENRICHED_URANIUM.get(), 2)),
+                        FluidStack.EMPTY,
+                        new ItemStack(ModItems.URANIUM_PELLET.get(), 4),
+                        FluidStack.EMPTY,
+                        120,
+                        160
                 ),
                 null
         );

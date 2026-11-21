@@ -19,8 +19,10 @@ import com.enrichmentsolution.mod.common.block.HeatExchangerBlock;
 import com.enrichmentsolution.mod.common.block.OilRefineryBlock;
 import com.enrichmentsolution.mod.common.block.OxidatedPlutoniumOreBlock;
 import com.enrichmentsolution.mod.common.block.PcbPrinterBlock;
+import com.enrichmentsolution.mod.common.block.PelletizerControllerBlock;
 import com.enrichmentsolution.mod.common.block.ReactorCoreBlock;
 import com.enrichmentsolution.mod.common.block.RobotChargerBlock;
+import com.enrichmentsolution.mod.common.block.SinteringHeaterBlock;
 import com.enrichmentsolution.mod.common.block.SolarPanelBlock;
 import com.enrichmentsolution.mod.common.block.StampingPressBlock;
 import com.enrichmentsolution.mod.common.block.TankBlock;
@@ -306,6 +308,35 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.METAL)
                     .noOcclusion()));
+
+    public static final DeferredBlock<Block> PELLETIZER_CONTROLLER = registerBlock("pelletizer_controller",
+            () -> new PelletizerControllerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(4.0F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
+    public static final DeferredBlock<Block> CRUSHER_MODULE = registerBlock("crusher_module",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
+    public static final DeferredBlock<Block> HYDRAULIC_PRESS_HEAD = registerBlock("hydraulic_press_head",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)));
+
+    public static final DeferredBlock<Block> SINTERING_HEATER = registerBlock("sintering_heater",
+            () -> new SinteringHeaterBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5F, 6.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)
+                    .lightLevel(state -> state.getValue(SinteringHeaterBlock.ACTIVE) ? 12 : 0)));
 
     public static final DeferredBlock<LiquidBlock> CRUDE_OIL_BLOCK = BLOCKS.register("crude_oil_block",
             () -> new LiquidBlock(ModFluids.CRUDE_OIL.get(), BlockBehaviour.Properties.ofFullCopy(Blocks.WATER)

@@ -1,0 +1,15 @@
+{
+  "type": "enrichment_solution:pelletizing",
+  "energy_per_tick": 120,
+  "item_inputs": [
+    {
+      "count": 2,
+      "item": "enrichment_solution:enriched_uranium"
+    }
+  ],
+  "item_output": {
+    "count": 4,
+    "id": "enrichment_solution:uranium_pellet"
+  },
+  "ticks": 160
+}

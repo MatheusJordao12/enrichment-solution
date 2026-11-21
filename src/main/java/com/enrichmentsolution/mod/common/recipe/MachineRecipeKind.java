@@ -17,7 +17,8 @@ public enum MachineRecipeKind {
     ENRICHMENT("enrichment"),
     REFINING("refining"),
     STAMPING("stamping"),
-    PCB_PRINTING("pcb_printing");
+    PCB_PRINTING("pcb_printing"),
+    PELLETIZING("pelletizing");
 
     private final String name;
 

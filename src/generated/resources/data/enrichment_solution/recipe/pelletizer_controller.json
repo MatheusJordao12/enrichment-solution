@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "enrichment_solution:pressed_aluminium"
+    },
+    "C": {
+      "item": "enrichment_solution:advanced_circuit"
+    },
+    "E": {
+      "item": "enrichment_solution:advanced_energy_cable"
+    },
+    "M": {
+      "item": "enrichment_solution:machine_casing"
+    },
+    "S": {
+      "item": "enrichment_solution:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SCS",
+    "AMA",
+    "SES"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enrichment_solution:pelletizer_controller"
+  }
+}

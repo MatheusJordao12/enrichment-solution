@@ -182,6 +182,17 @@ public class EnrichmentSolutionMod {
                 (be, side) -> be.getEnergyStorage(side)
         );
 
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.PELLETIZER_CONTROLLER.get(),
+                (be, side) -> be.getEnergyStorage(side)
+        );
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.PELLETIZER_CONTROLLER.get(),
+                (be, side) -> be.getItemHandler(side)
+        );
+
         event.registerItem(
                 Capabilities.EnergyStorage.ITEM,
                 (stack, ctx) -> new net.neoforged.neoforge.energy.ComponentEnergyStorage(
