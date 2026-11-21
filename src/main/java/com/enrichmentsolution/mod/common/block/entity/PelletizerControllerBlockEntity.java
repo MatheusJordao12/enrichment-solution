@@ -1,5 +1,6 @@
 package com.enrichmentsolution.mod.common.block.entity;
 
+import com.enrichmentsolution.mod.common.block.ConveyorBeltBlock;
 import com.enrichmentsolution.mod.common.block.PelletizerControllerBlock;
 import com.enrichmentsolution.mod.common.block.SinteringHeaterBlock;
 import com.enrichmentsolution.mod.common.block.entity.base.AbstractMachineBlockEntity;
@@ -25,11 +26,22 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
- * BlockEntity for the 3x3x4 Pelletizer Multiblock Controller.
- * Processes {@link MachineRecipeKind#PELLETIZING} recipes when the 3x3x4 structure is valid.
+ * BlockEntity for the Pelletizer Multiblock Controller.
+ * Validates a connected {@code reactor_casing} shell containing {@code crusher_module},
+ * {@code hydraulic_press_head}, and {@code sintering_heater}, pulls {@code enriched_uranium}
+ * from conveyor belts inside/adjacent to the machine, and outputs {@code uranium_pellet}
+ * onto the outgoing conveyor belt.
  */
 public class PelletizerControllerBlockEntity extends AbstractMachineBlockEntity implements MenuProvider {
 
@@ -40,10 +52,25 @@ public class PelletizerControllerBlockEntity extends AbstractMachineBlockEntity 
     public static final int MAX_RECEIVE = 1_000;
     public static final int DEFAULT_PROCESS_TIME = 100;
 
+    private static final int MIN_REACTOR_CASINGS = 20;
+    private static final int MAX_SCAN_BLOCKS = 96;
+
     private final MachineRecipeCache recipes = new MachineRecipeCache(MachineRecipeKind.PELLETIZING);
 
     private int progress = 0;
     private boolean structureValid = false;
+
+    private record StructureScan(
+            boolean valid,
+            int casings,
+            int crushers,
+            int presses,
+            int heaters,
+            List<BlockPos> heaterPositions,
+            BlockPos minBound,
+            BlockPos maxBound
+    ) {
+    }
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -100,11 +127,13 @@ public class PelletizerControllerBlockEntity extends AbstractMachineBlockEntity 
 
     @Override
     protected void tickServer(Level level, BlockPos pos, BlockState state) {
-        boolean valid = validateStructure(level, pos, state);
-        this.structureValid = valid;
+        StructureScan scan = scanStructure(level, pos);
+        this.structureValid = scan.valid();
 
         boolean isWorking = false;
-        if (valid) {
+        if (scan.valid()) {
+            pullFromTunnelBelts(level, scan);
+
             RecipeHolder<MachineRecipe> holder = findRecipe(itemHandler.getStackInSlot(SLOT_INPUT));
             MachineRecipe recipe = holder == null ? null : holder.value();
             int energyCost = recipe == null ? 0 : recipe.energyPerTick();
@@ -123,6 +152,8 @@ public class PelletizerControllerBlockEntity extends AbstractMachineBlockEntity 
                 progress = 0;
                 setChanged();
             }
+
+            pushToExitBelt(level, scan);
         } else if (progress > 0) {
             progress = 0;
             setChanged();
@@ -131,18 +162,104 @@ public class PelletizerControllerBlockEntity extends AbstractMachineBlockEntity 
         if (state.getValue(PelletizerControllerBlock.ACTIVE) != isWorking) {
             level.setBlock(pos, state.setValue(PelletizerControllerBlock.ACTIVE, isWorking), Block.UPDATE_ALL);
         }
-        setHeaterActive(level, pos, state, isWorking);
+        setHeatersActive(level, scan.heaterPositions(), isWorking);
+    }
+
+    private void pullFromTunnelBelts(Level level, StructureScan scan) {
+        for (int x = scan.minBound().getX(); x <= scan.maxBound().getX(); x++) {
+            for (int y = scan.minBound().getY(); y <= scan.maxBound().getY(); y++) {
+                for (int z = scan.minBound().getZ(); z <= scan.maxBound().getZ(); z++) {
+                    BlockPos p = new BlockPos(x, y, z);
+                    if (!(level.getBlockEntity(p) instanceof ConveyorBeltBlockEntity belt)) {
+                        continue;
+                    }
+                    ItemStack beltItem = belt.getStoredItem();
+                    if (beltItem.isEmpty()) {
+                        continue;
+                    }
+                    if (!isValidPelletizingInput(beltItem)) {
+                        continue;
+                    }
+                    ItemStack currentInput = itemHandler.getStackInSlot(SLOT_INPUT);
+                    if (currentInput.isEmpty()
+                            || (ItemStack.isSameItemSameComponents(currentInput, beltItem)
+                            && currentInput.getCount() + beltItem.getCount() <= currentInput.getMaxStackSize())) {
+                        ItemStack taken = belt.takeStoredItem();
+                        if (!taken.isEmpty()) {
+                            ItemStack rem = ItemHandlerHelper.insertItemStacked(itemHandler, taken, false);
+                            if (!rem.isEmpty()) {
+                                belt.acceptItem(rem);
+                            }
+                            setChanged();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void pushToExitBelt(Level level, StructureScan scan) {
+        ItemStack output = itemHandler.getStackInSlot(SLOT_OUTPUT);
+        if (output.isEmpty()) {
+            return;
+        }
+
+        ConveyorBeltBlockEntity bestBelt = null;
+        int bestScore = Integer.MIN_VALUE;
+
+        for (int x = scan.minBound().getX(); x <= scan.maxBound().getX(); x++) {
+            for (int y = scan.minBound().getY(); y <= scan.maxBound().getY(); y++) {
+                for (int z = scan.minBound().getZ(); z <= scan.maxBound().getZ(); z++) {
+                    BlockPos p = new BlockPos(x, y, z);
+                    BlockState bs = level.getBlockState(p);
+                    if (!(bs.getBlock() instanceof ConveyorBeltBlock)
+                            || !(level.getBlockEntity(p) instanceof ConveyorBeltBlockEntity belt)
+                            || !belt.canAcceptItem()) {
+                        continue;
+                    }
+                    Direction facing = bs.getValue(ConveyorBeltBlock.FACING);
+                    Direction moveDir = belt.isReverse() ? facing.getOpposite() : facing;
+                    // Prefer the belt closest to the exit in moveDir
+                    int score = p.getX() * moveDir.getStepX() + p.getZ() * moveDir.getStepZ();
+                    if (bestBelt == null || score > bestScore) {
+                        bestBelt = belt;
+                        bestScore = score;
+                    }
+                }
+            }
+        }
+
+        if (bestBelt != null) {
+            ItemStack toSend = itemHandler.extractItem(SLOT_OUTPUT, output.getCount(), false);
+            if (!toSend.isEmpty()) {
+                if (!bestBelt.acceptItem(toSend)) {
+                    itemHandler.insertItem(SLOT_OUTPUT, toSend, false);
+                } else {
+                    setChanged();
+                }
+            }
+        }
+    }
+
+    private boolean isValidPelletizingInput(ItemStack stack) {
+        return recipes.find(level, recipe ->
+                recipe.hasItemInputs()
+                        && recipe.itemInputs().size() == 1
+                        && recipe.hasItemOutput()
+                        && recipe.itemInputs().get(0).ingredient().test(stack)) != null;
     }
 
     public void setHeaterActive(Level level, BlockPos controllerPos, BlockState controllerState, boolean active) {
-        Direction facing = controllerState.hasProperty(PelletizerControllerBlock.FACING)
-                ? controllerState.getValue(PelletizerControllerBlock.FACING)
-                : Direction.NORTH;
-        BlockPos heaterPos = controllerPos.relative(facing.getOpposite(), 3).above(2);
-        BlockState heaterState = level.getBlockState(heaterPos);
-        if (heaterState.getBlock() instanceof SinteringHeaterBlock
-                && heaterState.getValue(SinteringHeaterBlock.ACTIVE) != active) {
-            level.setBlock(heaterPos, heaterState.setValue(SinteringHeaterBlock.ACTIVE, active), Block.UPDATE_ALL);
+        setHeatersActive(level, scanStructure(level, controllerPos).heaterPositions(), active);
+    }
+
+    private static void setHeatersActive(Level level, List<BlockPos> heaters, boolean active) {
+        for (BlockPos heaterPos : heaters) {
+            BlockState heaterState = level.getBlockState(heaterPos);
+            if (heaterState.getBlock() instanceof SinteringHeaterBlock
+                    && heaterState.getValue(SinteringHeaterBlock.ACTIVE) != active) {
+                level.setBlock(heaterPos, heaterState.setValue(SinteringHeaterBlock.ACTIVE, active), Block.UPDATE_ALL);
+            }
         }
     }
 
@@ -150,7 +267,7 @@ public class PelletizerControllerBlockEntity extends AbstractMachineBlockEntity 
         if (level == null) {
             return structureValid;
         }
-        return validateStructure(level, worldPosition, getBlockState());
+        return scanStructure(level, worldPosition).valid();
     }
 
     @Nullable
@@ -158,63 +275,100 @@ public class PelletizerControllerBlockEntity extends AbstractMachineBlockEntity 
         if (level == null) {
             return null;
         }
-        BlockState state = getBlockState();
-        Direction facing = state.hasProperty(PelletizerControllerBlock.FACING)
-                ? state.getValue(PelletizerControllerBlock.FACING)
-                : Direction.NORTH;
-        Direction backDir = facing.getOpposite();
-        Direction rightDir = facing.getClockWise();
-
-        for (int back = 0; back <= 3; back++) {
-            for (int y = 0; y <= 2; y++) {
-                for (int x = -1; x <= 1; x++) {
-                    Block expected = expectedBlockAt(x, y, back);
-                    BlockPos checkPos = worldPosition.relative(rightDir, x).relative(backDir, back).above(y);
-                    if (!level.getBlockState(checkPos).is(expected)) {
-                        return Component.literal("Missing " + expected.getName().getString()
-                                + " at (" + checkPos.getX() + ", " + checkPos.getY() + ", " + checkPos.getZ() + ")");
-                    }
-                }
-            }
+        StructureScan scan = scanStructure(level, worldPosition);
+        if (scan.valid()) {
+            return null;
+        }
+        if (scan.casings() < MIN_REACTOR_CASINGS) {
+            return Component.literal("Missing Reactor Casing (" + scan.casings() + "/" + MIN_REACTOR_CASINGS + ")");
+        }
+        if (scan.crushers() < 1) {
+            return Component.literal("Missing Crusher Module");
+        }
+        if (scan.presses() < 1) {
+            return Component.literal("Missing Hydraulic Press Head");
+        }
+        if (scan.heaters() < 1) {
+            return Component.literal("Missing Sintering Heater");
         }
         return null;
     }
 
-    private boolean validateStructure(Level level, BlockPos controllerPos, BlockState controllerState) {
-        Direction facing = controllerState.hasProperty(PelletizerControllerBlock.FACING)
-                ? controllerState.getValue(PelletizerControllerBlock.FACING)
-                : Direction.NORTH;
-        Direction backDir = facing.getOpposite();
-        Direction rightDir = facing.getClockWise();
+    private StructureScan scanStructure(Level level, BlockPos origin) {
+        Set<BlockPos> visited = new HashSet<>();
+        Deque<BlockPos> queue = new ArrayDeque<>();
+        visited.add(origin);
+        queue.add(origin);
 
-        for (int back = 0; back <= 3; back++) {
-            for (int y = 0; y <= 2; y++) {
-                for (int x = -1; x <= 1; x++) {
-                    Block expected = expectedBlockAt(x, y, back);
-                    BlockPos checkPos = controllerPos.relative(rightDir, x).relative(backDir, back).above(y);
-                    if (!level.getBlockState(checkPos).is(expected)) {
-                        return false;
-                    }
+        int casings = 0;
+        int crushers = 0;
+        int presses = 0;
+        int heaters = 0;
+        List<BlockPos> heaterPositions = new ArrayList<>();
+
+        int minX = origin.getX(), minY = origin.getY(), minZ = origin.getZ();
+        int maxX = origin.getX(), maxY = origin.getY(), maxZ = origin.getZ();
+
+        while (!queue.isEmpty() && visited.size() < MAX_SCAN_BLOCKS) {
+            BlockPos current = queue.poll();
+            BlockState state = level.getBlockState(current);
+            Block block = state.getBlock();
+
+            if (block == ModBlocks.REACTOR_CASING.get()) {
+                casings++;
+            } else if (block == ModBlocks.CRUSHER_MODULE.get()) {
+                crushers++;
+            } else if (block == ModBlocks.HYDRAULIC_PRESS_HEAD.get()) {
+                presses++;
+            } else if (block == ModBlocks.SINTERING_HEATER.get()) {
+                heaters++;
+                heaterPositions.add(current);
+            }
+
+            minX = Math.min(minX, current.getX());
+            minY = Math.min(minY, current.getY());
+            minZ = Math.min(minZ, current.getZ());
+            maxX = Math.max(maxX, current.getX());
+            maxY = Math.max(maxY, current.getY());
+            maxZ = Math.max(maxZ, current.getZ());
+
+            for (Direction dir : Direction.values()) {
+                BlockPos next = current.relative(dir);
+                if (visited.contains(next)) {
+                    continue;
+                }
+                if (Math.abs(next.getX() - origin.getX()) > 6
+                        || Math.abs(next.getY() - origin.getY()) > 4
+                        || Math.abs(next.getZ() - origin.getZ()) > 6) {
+                    continue;
+                }
+                Block nextBlock = level.getBlockState(next).getBlock();
+                if (isStructurePart(nextBlock)) {
+                    visited.add(next);
+                    queue.add(next);
                 }
             }
         }
-        return true;
+
+        boolean valid = casings >= MIN_REACTOR_CASINGS && crushers >= 1 && presses >= 1 && heaters >= 1;
+        return new StructureScan(
+                valid,
+                casings,
+                crushers,
+                presses,
+                heaters,
+                heaterPositions,
+                new BlockPos(minX, minY, minZ),
+                new BlockPos(maxX, maxY, maxZ)
+        );
     }
 
-    private static Block expectedBlockAt(int x, int y, int back) {
-        if (x == 0 && y == 0 && back == 0) {
-            return ModBlocks.PELLETIZER_CONTROLLER.get();
-        }
-        if (x == 0 && y == 2 && back == 1) {
-            return ModBlocks.CRUSHER_MODULE.get();
-        }
-        if (x == 0 && y == 2 && back == 2) {
-            return ModBlocks.HYDRAULIC_PRESS_HEAD.get();
-        }
-        if (x == 0 && y == 2 && back == 3) {
-            return ModBlocks.SINTERING_HEATER.get();
-        }
-        return ModBlocks.MACHINE_CASING.get();
+    private static boolean isStructurePart(Block block) {
+        return block == ModBlocks.REACTOR_CASING.get()
+                || block == ModBlocks.CRUSHER_MODULE.get()
+                || block == ModBlocks.HYDRAULIC_PRESS_HEAD.get()
+                || block == ModBlocks.SINTERING_HEATER.get()
+                || block == ModBlocks.PELLETIZER_CONTROLLER.get();
     }
 
     @Nullable

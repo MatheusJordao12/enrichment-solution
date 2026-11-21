@@ -84,6 +84,18 @@ public class ConveyorBeltBlockEntity extends BlockEntity {
         return true;
     }
 
+    public ItemStack takeStoredItem() {
+        if (storedItem.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack taken = storedItem;
+        storedItem = ItemStack.EMPTY;
+        progress = 0.0F;
+        prevProgress = 0.0F;
+        setChangedAndSync();
+        return taken;
+    }
+
     public void dropStoredItem(Level level, BlockPos pos) {
         if (!storedItem.isEmpty()) {
             Containers.dropItemStack(level, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, storedItem);

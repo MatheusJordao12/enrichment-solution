@@ -559,7 +559,7 @@ public final class ModGameTests {
                     } else if (x == 0 && y == 2 && back == 3) {
                         helper.setBlock(pos, ModBlocks.SINTERING_HEATER.get());
                     } else {
-                        helper.setBlock(pos, ModBlocks.MACHINE_CASING.get());
+                        helper.setBlock(pos, ModBlocks.REACTOR_CASING.get());
                     }
                 }
             }
